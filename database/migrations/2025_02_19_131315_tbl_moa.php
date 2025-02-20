@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('File_name');
             $table->string('File_type');
+            $table->string('File');
             $table->date('Start');
             $table->date('End');
             $table->timestamps();

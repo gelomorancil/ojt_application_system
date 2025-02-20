@@ -9,6 +9,7 @@ export default function Dashboard() {
                     Dashboard
                 </h2>
             }
+
         >
             <Head title="Dashboard" />
 
@@ -21,6 +22,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+
         </AuthenticatedLayout>
     );
 }

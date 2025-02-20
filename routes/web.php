@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\MoaController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,6 +16,7 @@ Route::get('/', function () {
     ]);
 });
 
+//Dashboard Routes
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -23,5 +26,45 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+//Student Routing
+Route::get('/student', [StudentController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('student');
+
+// Show Create Student Form (GET)
+Route::get('/student/create', function () {
+    return Inertia::render('Student/Partials/Create_Student');
+})->middleware(['auth'])->name('student.create');
+
+// CRUD Routes (Protected by Auth Middleware)
+Route::middleware('auth')->group(function () {
+    Route::post('/student', [StudentController::class, 'store'])->name('student.store');
+    Route::get('/student/{id}', [StudentController::class, 'show'])->name('student.show');
+    Route::get('/student/{id}/edit', [StudentController::class, 'edit'])->name('student.edit');
+    Route::patch('/student/{id}', [StudentController::class, 'update'])->name('student.update');
+    Route::delete('/student/{id}', [StudentController::class, 'destroy'])->name('student.destroy');
+});
+
+// Moa Routing
+Route::middleware('auth')->group(function () {
+    Route::get('/moa', [MoaController::class, 'index'])->name('moa');
+    Route::get('/moa/create', function () {
+        return Inertia::render('Moa/Partials/Create_Moa');
+    })->name('moa.create');
+
+    Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
+    Route::get('/moa/{id}', [MoaController::class, 'show'])->name('moa.show');
+    Route::get('/moa/{id}/edit', [MoaController::class, 'edit'])->name('moa.edit');
+    Route::patch('/moa/{id}', [MoaController::class, 'update'])->name('moa.update');
+    Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
+    Route::get('/moa/download/{file_name}/{file_type}', [MoaController::class, 'download'])->name('moa.download');
+    Route::get('/moa/preview/{file_name}', [MoaController::class, 'preview'])
+    ->where('file_name', '.*') // Allows handling filenames with spaces or special characters
+    ->name('moa.preview');
+
+
+});
+
 
 require __DIR__.'/auth.php';
