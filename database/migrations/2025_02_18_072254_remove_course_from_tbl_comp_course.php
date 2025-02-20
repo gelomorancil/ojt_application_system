@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tbl_comp_course', function (Blueprint $table) {
-            $table->id();
-            $table->integer('Comp_ID');
-            $table->string('Course');
-            $table->integer('Capacity');
-            $table->integer('Mode');
-            $table->timestamps();
+        Schema::table('tbl_comp_course', function (Blueprint $table) {
+            //
         });
     }
 
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_comp_course');
+        Schema::table('tbl_comp_course', function (Blueprint $table) {
+            //
+        });
     }
 };
