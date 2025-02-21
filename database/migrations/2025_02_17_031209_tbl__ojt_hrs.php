@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('tbl_ojt_hrs', function (Blueprint $table) {
             $table->id();
-            $table->integer('Course_ID');
-            $table->time('Hrs');
-            $table->string('Sem');
-            $table->year('Year');
+            $table->unsignedBigInteger('Course_ID');
+            $table->integer('Hrs');
+            $table->enum('Sem', ['1st Semester', '2nd Semester', 'Summer']);
+            $table->string('Year');
             $table->timestamps();
+
+            $table->foreign('Course_ID')->references('id')->on('tbl_course')->onDelete('cascade');
         });
     }
 

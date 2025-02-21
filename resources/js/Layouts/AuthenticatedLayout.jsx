@@ -46,6 +46,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Moa
                                 </NavLink>
+                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink
+                                    href={route('course.index')}
+                                    active={route().current('course.index')}
+                                >
+                                    Course
+                                </NavLink>
                             </div>
                         </div>
 
@@ -135,6 +142,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             </button>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 <div
