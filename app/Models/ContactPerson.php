@@ -15,6 +15,7 @@ class ContactPerson extends Model
         'Comp_ID',
         'name',
         'department',
+        'position',
         'email',
         'phone',
     ];

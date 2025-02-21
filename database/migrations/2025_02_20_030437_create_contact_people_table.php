@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->foreignId('Comp_ID');
             $table->string('name');
             $table->string('department');
+            $table->string('position');
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->timestamps();
