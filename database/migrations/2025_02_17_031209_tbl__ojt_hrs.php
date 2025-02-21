@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('Course_ID');
             $table->integer('Hrs');
-            $table->enum('Sem', ['1st Semester', '2nd Semester', 'Summer']);
+            $table->enum('Sem', ['First', 'Second', 'Summer']);
             $table->string('Year');
             $table->timestamps();
 
