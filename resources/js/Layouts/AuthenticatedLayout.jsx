@@ -38,6 +38,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Student
                                 </NavLink>
+
+                                <NavLink
+                                    href={route('company')}
+                                    active={route().current('company')}
+                                >
+                                    Companies
+                                </NavLink>
                             </div>
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
@@ -53,9 +60,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Course
                                 </NavLink>
+                                <NavLink
+                                    href={route('compcourse.index')}
+                                    active={route().current('compcourse.index')}
+                                >
+                                    Internship Opportunities
+                                </NavLink>
                             </div>
                         </div>
-
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
