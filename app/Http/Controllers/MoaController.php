@@ -12,7 +12,7 @@ class MoaController extends Controller
 {
     public function index()
     {
-        // Retrieve MOAs
+        // Retrieve MOAs with uploader info
         $moas = Moa::all()->map(function ($moa) {
             return [
                 'id' => $moa->id,
@@ -20,7 +20,7 @@ class MoaController extends Controller
                 'File_type' => $moa->File_type,
                 'Start' => $moa->Start,
                 'End' => $moa->End,
-                'uploaded_by' => session("uploaded_by_{$moa->id}", 'Unknown'), // Get uploader from session
+                'uploaded_by' => $moa->uploaded_by, // Now stored in DB
             ];
         });
 
@@ -40,16 +40,14 @@ class MoaController extends Controller
         $filePath = $file->storeAs('moa_files', $concatenatedFileName, 'public');
 
         // Store the file in database
-        $moa = Moa::create([
+        Moa::create([
             'File_name' => $originalName,
             'File_type' => $fileExtension,
             'File' => $filePath,
             'Start' => $request->input('start', now()),
             'End' => $request->input('end', now()->addYear()),
+            'uploaded_by' => Auth::user()->name, // Store uploader's name in the database
         ]);
-
-        // Store uploader's name in session
-        session(["uploaded_by_{$moa->id}" => Auth::user()->name]);
 
         return redirect()->route('moa')->with('success', 'PDF uploaded successfully.');
     }
@@ -90,9 +88,6 @@ class MoaController extends Controller
         if (Storage::disk('public')->exists($moa->File)) {
             Storage::disk('public')->delete($moa->File);
         }
-
-        // Remove session data for deleted file
-        session()->forget("uploaded_by_{$moa->id}");
 
         $moa->delete();
 

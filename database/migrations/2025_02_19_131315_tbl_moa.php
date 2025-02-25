@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('File');
             $table->date('Start');
             $table->date('End');
+            $table->string('uploaded_by');
             $table->timestamps();
         });
     }
