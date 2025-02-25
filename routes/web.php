@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CompanyController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,5 +24,14 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::middleware('auth')->group(function () {
+    Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+    Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
+    Route::resource('companies', CompanyController::class);
+
+});
+
+
 
 require __DIR__.'/auth.php';
