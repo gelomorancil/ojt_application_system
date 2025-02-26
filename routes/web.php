@@ -66,6 +66,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/moa/preview/{file_name}', [MoaController::class, 'preview'])
     ->where('file_name', '.*') // Allows handling filenames with spaces or special characters
     ->name('moa.preview');
+});
+Route::middleware('auth')->group(function () {
+    Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+    Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
+    Route::resource('companies', CompanyController::class);
 
 });
 

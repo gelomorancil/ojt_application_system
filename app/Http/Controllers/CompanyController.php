@@ -6,70 +6,69 @@ use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\ContactPerson;
 use Inertia\Inertia;
+use App\Models\CompCourse;
+use Illuminate\Support\Facades\DB;
 
 class CompanyController extends Controller
 {
     public function index()
-    {
-        return Inertia::render('Company/Company', [
-            'companies' => Company::all(),
-        ]);
-    }
-    public function create()
-    {
-        return Inertia::render('Company/Create');
-    }
+{
+    $company_course = CompCourse::with('company')->get()->map(function ($compCourse) {
+        return $compCourse;
+    });
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'Comp_name' => 'required|string|max:255',
-            'Address' => 'required|string|max:500',
-            'Tel_num' => 'required|string|max:20',
-        ]);
+    $company_list = Company::all()->map(function ($company) {
+        return [
+            'id' => $company->id,
+            'Comp_name' => $company->Comp_name,
+            'Contact' => $company->Tel_num,
+            'Address' => $company->Address,
+        ];
+    });
 
-        Company::create($request->all());
+    // dd($company_course);
 
-        return redirect()->route('company');
-    }
+    return Inertia::render('Companies/Index', [
+        'company_course' => $company_course,
+        'company_list' => $company_list,
+    ]);
+}
 
-    public function edit($id)
-    {
-    $company = Company::findOrFail($id);
-    return Inertia::render('Company/Edit', compact('company'));
-    }
 
-    public function update(Request $request, $id)
-    {
+public function store(Request $request)
+{
     $request->validate([
-        'Comp_name' => 'required|string|max:255',
-        'Address' => 'required|string|max:255',
-        'Tel_num' => 'required|string|max:20',
+        'Comp_name' => 'required',
+        'email' => 'required|email',
+        'Tel_num' => 'required',
+        'address' => 'required',
+        'Position' => 'required',
+        'course' => 'required',
+        'capacity' => 'required|integer',
+        'mode' => 'required',
     ]);
 
-    $company = Company::findOrFail($id);
-    $company->update($request->all());
+    $company = Company::create([
+        'Comp_name' => $request->Comp_name,
+        'Address' => $request->address,
+        'Tel_num' => $request->Tel_num,
+    ]);
 
-    return redirect()->route('company')->with('success', 'Company updated successfully.');
-    }
+    CompCourse::create([
+        'Comp_ID' => $company->id,
+        'email' => $request->email,
+        'Position' => $request->Position,
+        'Course' => $request->course,
+        'Capacity' => $request->capacity,
+        'Mode' => $request->mode,
+    ]);
 
-    public function destroy($id)    
+    return redirect()->route('companies.index');
+}
+
+    public function destroy(Company $company)
     {
-    $company = Company::findOrFail($id);
-    $company->delete();
-
-    return redirect()->route('company')->with('success', 'Company deleted successfully.');
+        $company->delete();
+        return redirect()->route('companies.index');
     }
-
-    public function showContacts($id)
-    {
-        $company = Company::findOrFail($id);
-        $contacts = ContactPerson::where('Comp_ID', $id)->get();
-
-        return Inertia::render('Company/Contacts', [
-            'company' => $company,
-            'contacts' => $contacts
-        ]);
-    }
-
 }

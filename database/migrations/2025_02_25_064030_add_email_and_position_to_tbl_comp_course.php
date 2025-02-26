@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tbl_course', function (Blueprint $table) {
-            $table->id();
-            $table->string('College');
-            $table->string('Course');
-            $table->timestamps();
+        Schema::table('tbl_comp_course', function (Blueprint $table) {
+            $table->string('email')->after('Comp_ID'); 
+            $table->string('Position')->after('email'); 
         });
     }
 
@@ -24,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_course');
+        Schema::table('tbl_comp_course', function (Blueprint $table) {
+            $table->dropColumn(['email', 'Position']); // Remove columns if rollback
+        });
     }
 };

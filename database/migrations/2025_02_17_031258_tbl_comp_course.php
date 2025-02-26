@@ -6,22 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('tbl_comp_course', function (Blueprint $table) {
             $table->id();
             $table->integer('Comp_ID');
-            $table->unsignedBigInteger('Course_ID');
             $table->string('Course');
             $table->integer('Capacity');
-            $table->enum('Mode', ['On-site', 'Blended', 'Work from Home']);
+            $table->enum('Mode', ['1', '2', '3'])->default('1');
             $table->timestamps();
-
-            // $table->foreign('Comp_ID')->references('id')->on('tbl_company')->onDelete('cascade');
-            // $table->foreign('Course_ID')->references('id')->on('tbl_course')->onDelete('cascade');
-        });
+        });        
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('tbl_comp_course');
