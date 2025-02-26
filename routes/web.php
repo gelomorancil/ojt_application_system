@@ -67,7 +67,6 @@ Route::middleware('auth')->group(function () {
     ->where('file_name', '.*') // Allows handling filenames with spaces or special characters
     ->name('moa.preview');
 
-
 });
 
 

@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\OjtHours;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class CourseController extends Controller
 {
@@ -25,7 +26,7 @@ class CourseController extends Controller
     // Store a new course along with OJT Hours
     public function store(Request $request)
     {
-        \Log::info('Request Data:', $request->all()); 
+        Log::info('Request Data:', $request->all());
 
         $validatedData = $request->validate([
             'College' => 'required|string|max:255',
@@ -87,7 +88,7 @@ class CourseController extends Controller
 
             return redirect()->route('course.index')->with('success', 'Course updated successfully!');
         } catch (\Exception $e) {
-            \Log::error("Course Update Failed: " . $e->getMessage());
+            Log::error("Course Update Failed: " . $e->getMessage());
             return redirect()->route('course.index')->with('error', 'Failed to update course. Please try again.');
         }
     }

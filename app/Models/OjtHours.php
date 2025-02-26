@@ -15,6 +15,6 @@ class OjtHours extends Model
 
     public function course()
     {
-        return $this->hasMany(OjtHour::class, 'Course_ID', 'id');
+        return $this->hasMany(OjtHours::class, 'Course_ID', 'id');
     }
 }

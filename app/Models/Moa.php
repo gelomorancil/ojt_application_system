@@ -17,6 +17,7 @@ class Moa extends Model
         'File',
         'Start',
         'End',
+        'uploaded_by',
     ];
 
 }
