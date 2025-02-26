@@ -19,7 +19,7 @@ export default function Index({ company_course }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (editingCompany) {
-            put(route('companies.update', editingCompany.id), { onSuccess: () => resetForm() });
+            put(route('companies.update', editingCompany.Comp_ID), { onSuccess: () => resetForm() });
         } else {
             post(route('companies.store'), { onSuccess: () => resetForm() });
         }
@@ -29,14 +29,14 @@ export default function Index({ company_course }) {
     const handleEdit = (company) => {
         setEditingCompany(company);
         setData({
-            Comp_name: company.company.Comp_name,
-            email: company.company_course?.email || '',
-            Tel_num: company.company.Tel_num,
-            Position: company.company_course?.Position || '',
-            course: company.company_course?.Course || '',
-            address: company.company.Address,
-            capacity: company.company_course?.Capacity || '',
-            Mode: company.company_course?.Mode || '',
+            Comp_name: company.company?.Comp_name || '',
+            email: company.email || '',
+            Tel_num: company.company?.Tel_num || '',
+            Position: company.Position || '',
+            course: company.Course || '',
+            address: company.company?.Address || '',
+            capacity: company.Capacity || '',
+            mode: company.Mode || '',
         });
     };
     
@@ -73,7 +73,7 @@ export default function Index({ company_course }) {
                     <div className="col-span-1 bg-white p-6 shadow-sm sm:rounded-lg">
                         <h3 className="mb-4 text-lg font-semibold">{editingCompany ? 'Edit Company' : 'Add Company'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <input type="text" placeholder="Company Name" className="w-full p-2 border rounded" value={data.Comp_name} onChange={(e) => setData('Comp_name', e.target.value)} required />
+                            <input type="text" placeholder="Company Name" className="w-full p-2 border rounded" id="name" value={data.Comp_name} onChange={(e) => setData('Comp_name', e.target.value)} required />
                             <input type="email" placeholder="Email" className="w-full p-2 border rounded" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
                             <input type="text" placeholder="Contact Number" className="w-full p-2 border rounded" value={data.Tel_num} onChange={(e) => setData('Tel_num', e.target.value)} required />
                             <input type="text" placeholder="Position" className="w-full p-2 border rounded" value={data.Position} onChange={(e) => setData('Position', e.target.value)} required />
@@ -125,7 +125,10 @@ export default function Index({ company_course }) {
                                         <td className="px-6 py-4 whitespace-nowrap">{items.Capacity}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">{items.Mode}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <button onClick={() => handleEdit(items)} className="text-blue-500 hover:underline">Edit</button>
+                                        <button onClick={() => handleEdit(items)} className="text-blue-500 hover:underline">
+                                            Edit
+                                        </button>
+
                                             <button onClick={() => handleDelete(items.Comp_ID)} className="text-red-500 hover:underline ml-4">Delete</button>
                                         </td>
                                     </tr>
