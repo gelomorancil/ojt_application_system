@@ -1,16 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { usePage, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
-export default function EditStudent() {
+export default function EditStudent({ courses = [], colleges = [] }) {
     const { student } = usePage().props; // Inertia passed data
     const { data, setData, patch, errors, processing } = useForm({
-        Course_ID: student.Course_ID || '',
+        College: student.College || '',
+        Course: student.Course || '',
         Fname: student.Fname || '',
         Lname: student.Lname || '',
         Student_Num: student.Student_Num || '',
     });
+
+    // Filter courses based on selected college
+    const filteredCourses = useMemo(() => {
+        if (!data.College) return [];
+        return courses.filter(course => course.College === data.College);
+    }, [data.College, courses]);
+
+    // Ensure pre-selected course exists within filtered list
+    useEffect(() => {
+        if (filteredCourses.length > 0 && !filteredCourses.some(course => course.Course === data.Course)) {
+            setData('Course', filteredCourses[0]?.Course || '');
+        }
+    }, [filteredCourses]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -25,6 +40,10 @@ export default function EditStudent() {
         });
     };
 
+    const handleCancel = () => {
+        router.visit(route("student"));
+    };
+
     return (
         <AuthenticatedLayout
             header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Edit Student</h2>}
@@ -36,14 +55,38 @@ export default function EditStudent() {
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg p-6">
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Course ID</label>
-                                <input
-                                    type="text"
+                                <label className="block text-sm font-medium text-gray-700">College</label>
+                                <select
                                     className="w-full border rounded-lg p-2"
-                                    value={data.Course_ID}
-                                    onChange={(e) => setData('Course_ID', e.target.value)}
-                                />
-                                {errors.Course_ID && <p className="text-red-500">{errors.Course_ID}</p>}
+                                    value={data.College}
+                                    onChange={(e) => setData('College', e.target.value)}
+                                >
+                                    <option value="">Select College</option>
+                                    {colleges.map((college) => (
+                                        <option key={college} value={college}>
+                                            {college}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.College && <p className="text-red-500">{errors.College}</p>}
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Course</label>
+                                <select
+                                    className="w-full border rounded-lg p-2"
+                                    value={data.Course}
+                                    onChange={(e) => setData('Course', e.target.value)}
+                                    disabled={!data.College || filteredCourses.length === 0}
+                                >
+                                    <option value="">Select Course</option>
+                                    {filteredCourses.map((course) => (
+                                        <option key={course.id} value={course.Course}>
+                                            {course.Course}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.Course && <p className="text-red-500">{errors.Course}</p>}
                             </div>
 
                             <div className="mb-4">
@@ -79,13 +122,25 @@ export default function EditStudent() {
                                 {errors.Student_Num && <p className="text-red-500">{errors.Student_Num}</p>}
                             </div>
 
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                                disabled={processing}
-                            >
-                                Update Student
-                            </button>
+                            {/* Update Button */}
+                            <div className="mt-6 flex justify-end gap-4">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="bg-blue-500 text-white px-4 py-2 rounded"
+                                >
+                                    Update
+                                </button>
+
+                            {/* Cancel Button */}
+                                <button
+                                    type="button"
+                                    onClick={handleCancel}
+                                    className="bg-gray-500 text-white px-4 py-2 rounded"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

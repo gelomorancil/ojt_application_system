@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('tbl_course', function (Blueprint $table) {
             $table->id();
-            $table->string('College');
+            $table->enum('College', ['CECS', 'CAS', 'CBA', 'CE', 'CON']);
             $table->string('Course');
             $table->timestamps();
         });

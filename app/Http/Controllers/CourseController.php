@@ -13,8 +13,8 @@ class CourseController extends Controller
     // Display all courses
     public function index()
     {
-        $courses = Course::with('ojtHours')->get();
-        return Inertia::render('Courses/Index', ['courses' => $courses]);
+        $courses = Course::with('ojtHours')->get(); 
+        return Inertia::render('Courses/Course', ['courses' => $courses]);
     }
 
     // Show the create course form
@@ -23,11 +23,11 @@ class CourseController extends Controller
         return Inertia::render('Courses/Create');
     }
 
-    // Store a new course along with OJT Hours
     public function store(Request $request)
     {
-        Log::info('Request Data:', $request->all());
+        \Log::info('Request Data:', $request->all());
 
+        // Validate request data
         $validatedData = $request->validate([
             'College' => 'required|string|max:255',
             'Course' => 'required|string|max:255',
@@ -35,6 +35,17 @@ class CourseController extends Controller
             'Sem' => 'required|string|max:50',
             'Year' => 'required|string|max:9', // Format: YYYY-YYYY
         ]);
+
+        // Check for duplicate course in the same school year
+        $duplicate = Course::where('Course', trim(strtolower($validatedData['Course'])))
+            ->whereHas('ojtHours', function ($query) use ($validatedData) {
+                $query->where('Year', $validatedData['Year']);
+            })
+            ->exists();
+
+        if ($duplicate) {
+            return redirect()->back()->withErrors(['Course' => 'This course already exists for the selected school year.']);
+        }
 
         // Create Course
         $course = Course::create([
