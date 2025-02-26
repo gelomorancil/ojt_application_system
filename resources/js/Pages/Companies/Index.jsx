@@ -24,12 +24,32 @@ export default function Index({ company_course }) {
             post(route('companies.store'), { onSuccess: () => resetForm() });
         }
     };
+    
 
     const handleEdit = (company) => {
         setEditingCompany(company);
-        setData(company);
+        setData({
+            Comp_name: company.company.Comp_name,
+            email: company.company_course?.email || '',
+            Tel_num: company.company.Tel_num,
+            Position: company.company_course?.Position || '',
+            course: company.company_course?.Course || '',
+            address: company.company.Address,
+            capacity: company.company_course?.Capacity || '',
+            Mode: company.company_course?.Mode || '',
+        });
     };
-
+    
+    const fetchCompanyData = async (Comp_ID) => {
+        try {
+            const response = await axios.get(`/companies/${Comp_ID}/edit`);
+            handleEdit(response.data);
+        } catch (error) {
+            console.error('Error fetching company data:', error);
+        }
+    };
+    
+    
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to delete this company?')) {
             destroy(route('companies.destroy', id), {

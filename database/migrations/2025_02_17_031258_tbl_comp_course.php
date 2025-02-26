@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('Comp_ID');
             $table->string('Course');
             $table->integer('Capacity');
-            $table->enum('Mode', ['1', '2', '3'])->default('1');
+            $table->string('Mode', 20)->change();
             $table->timestamps();
         });        
     }

@@ -66,6 +66,26 @@ public function store(Request $request)
     return redirect()->route('companies.index');
 }
 
+public function edit($id)
+{
+    $companyCourse = CompCourse::where('Comp_ID', $id)->first();
+    $company_list = Company::all()->map(function ($company) {
+        return [
+            'id' => $company->id,
+            'Comp_name' => $company->Comp_name,
+            'Contact' => $company->Tel_num,
+            'Address' => $company->Address,
+            'Comp_ID' => $companyCourse->id,
+            'email' => $companyCourse->email,
+            'Position' => $companyCourse->Position,
+            'Course' => $companyCourset->course,
+            'Capacity' => $companyCourse->capacity,
+            'Mode' => $companyCourse->mode,
+        ];
+    });
+}
+
+
 public function destroy(Request $request)
 {
     // Ensure related internship records are deleted first
@@ -75,14 +95,5 @@ public function destroy(Request $request)
 
     return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
 }
-// public function d(Request $request)
-// {
-//     // Ensure related internship records are deleted first
-//     Company::where('id', $request->id)->delete();
-//     // $company->delete();
-
-//     return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
-// }
-
 
 }
