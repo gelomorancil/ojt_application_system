@@ -78,7 +78,7 @@ const sortedMoas = [...filteredMoas].sort((a, b) => {
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold text-gray-800">MOA Management</h2>}
+            // header={<h2 className="text-xl font-semibold text-gray-800">MOA Management</h2>}
         >
             <Head title="MOA Management" />
             <div className="py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -91,7 +91,7 @@ const sortedMoas = [...filteredMoas].sort((a, b) => {
                                 <label className="block text-sm font-medium text-gray-700">Upload PDF:</label>
                                 <input
                                     type="file"
-                                    accept="application/pdf"
+                                    accept="pdf/*"
                                     onChange={(e) => setData("file", e.target.files[0])}
                                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                     required

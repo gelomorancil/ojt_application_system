@@ -76,36 +76,37 @@ Route::middleware('auth')->group(function () {
 
 
 // Route for displaying the courses page
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
-//     Route::get('/courses/create', [CourseController::class, 'create'])->name('course.create');
-//     Route::post('/courses', [CourseController::class, 'store'])->name('course.store');
-//     Route::get('/courses/edit/{id}', [CourseController::class, 'edit'])->name('course.edit');
-//     Route::put('/courses/{id}', [CourseController::class, 'update'])->name('course.update');
-//     Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->name('course.destroy');
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/company', [CompanyController::class, 'index'])->name('company');
-//     Route::get('/company/create', [CompanyController::class, 'create'])->name('company.create');
-//     Route::post('/company', [CompanyController::class, 'store'])->name('company.store');
-//     Route::get('/company/{company}/edit', [CompanyController::class, 'edit'])->name('company.edit');
-//     Route::put('/company/{company}', [CompanyController::class, 'update'])->name('company.update');
-//     Route::delete('/company/{id}', [CompanyController::class, 'destroy'])->name('company.destroy');
-//     Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
-// });
+ Route::middleware(['auth', 'verified'])->group(function () {
+     Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
+     Route::get('/courses/create', [CourseController::class, 'create'])->name('course.create');
+    Route::post('/courses', [CourseController::class, 'store'])->name('course.store');
+    Route::get('/courses/edit/{id}', [CourseController::class, 'edit'])->name('course.edit');
+    Route::put('/courses/{id}', [CourseController::class, 'update'])->name('course.update');
+    Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->name('course.destroy');
+ });
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/company', [CompanyController::class, 'index'])->name('company');
+    Route::get('/company/create', [CompanyController::class, 'create'])->name('company.create');
+    Route::post('/company', [CompanyController::class, 'store'])->name('company.store');
+    Route::get('/company/{company}/edit', [CompanyController::class, 'edit'])->name('company.edit');
+    Route::put('/company/{company}', [CompanyController::class, 'update'])->name('company.update');
+    Route::delete('/company/{id}', [CompanyController::class, 'destroy'])->name('company.destroy');
+    Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
+});
 
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
-//     Route::post('/contacts', [ContactController::class, 'store'])->name('contact.store');
-//     Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contact.update');
-//     Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contact.destroy');
-// });
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
+    Route::post('/contacts', [ContactController::class, 'store'])->name('contact.store');
+    Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contact.update');
+    Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contact.destroy');
+});
 
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/compcourse', [CompCourseController::class, 'index'])->name('compcourse.index');
-//     Route::get('/compcourse/create', [CompCourseController::class, 'create'])->name('compcourse.create');
-//     Route::post('/compcourse', [CompCourseController::class, 'store'])->name('compcourse.store');
-// });
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/compcourse', [CompCourseController::class, 'index'])->name('compcourse.index');
+    Route::get('/compcourse/create', [CompCourseController::class, 'create'])->name('compcourse.create');
+    Route::post('/compcourse', [CompCourseController::class, 'store'])->name('compcourse.store');
+});
 
 require __DIR__.'/auth.php';

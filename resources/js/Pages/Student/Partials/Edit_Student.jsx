@@ -14,10 +14,22 @@ export default function EditStudent({ courses = [], colleges = [] }) {
         Student_Num: student.Student_Num || '',
     });
 
-    // Filter courses based on selected college
     const filteredCourses = useMemo(() => {
         if (!data.College) return [];
-        return courses.filter(course => course.College === data.College);
+        
+        // Get courses for the selected college
+        const collegeFilteredCourses = courses.filter(course => course.College === data.College);
+        
+        // Remove duplicates by creating a Map with course names as keys
+        const uniqueCoursesMap = new Map();
+        collegeFilteredCourses.forEach(course => {
+            if (!uniqueCoursesMap.has(course.Course)) {
+                uniqueCoursesMap.set(course.Course, course);
+            }
+        });
+        
+        // Convert Map values back to array
+        return Array.from(uniqueCoursesMap.values());
     }, [data.College, courses]);
 
     // Ensure pre-selected course exists within filtered list
@@ -74,18 +86,18 @@ export default function EditStudent({ courses = [], colleges = [] }) {
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700">Course</label>
                                 <select
-                                    className="w-full border rounded-lg p-2"
-                                    value={data.Course}
-                                    onChange={(e) => setData('Course', e.target.value)}
-                                    disabled={!data.College || filteredCourses.length === 0}
-                                >
-                                    <option value="">Select Course</option>
-                                    {filteredCourses.map((course) => (
-                                        <option key={course.id} value={course.Course}>
-                                            {course.Course}
-                                        </option>
-                                    ))}
-                                </select>
+    className="w-full border rounded-lg p-2"
+    value={data.Course}
+    onChange={(e) => setData('Course', e.target.value)}
+    disabled={!data.College || filteredCourses.length === 0}
+>
+    <option value="">Select Course</option>
+    {filteredCourses.map((course) => (
+        <option key={course.id} value={course.Course}>
+            {course.Course}
+        </option>
+    ))}
+</select>
                                 {errors.Course && <p className="text-red-500">{errors.Course}</p>}
                             </div>
 

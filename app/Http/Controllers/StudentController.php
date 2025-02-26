@@ -95,15 +95,24 @@ class StudentController extends Controller {
         return Inertia::render('StudentDetail', ['student' => $student]);
     }
 
-    // Edit student details (fetch and pass data to Edit_Student.jsx)
     public function edit($id): Response
     {
-        $student = Student::findOrFail($id);
+        // Get student with course relationship
+        $student = Student::with('course')->findOrFail($id);
+        
+        // Get all courses for dropdown
         $courses = Course::select('id', 'College', 'Course')->get();
+        
+        // Get predefined colleges list
         $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
-
+        
+        // Add the selected college and course to the student data
+        $studentData = $student->toArray();
+        $studentData['College'] = $student->course ? $student->course->College : '';
+        $studentData['Course'] = $student->course ? $student->course->Course : '';
+        
         return Inertia::render('Student/Partials/Edit_Student', [
-            'student' => $student,
+            'student' => $studentData,
             'courses' => $courses,
             'colleges' => $colleges
         ]);

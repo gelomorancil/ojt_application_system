@@ -100,7 +100,7 @@ const Course = ({ courses }) => {
 
     return (
         <AuthenticatedLayout
-        header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Course Management</h2>}
+        // header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Course Management</h2>}
         >
             <Head title="Course Management" />
 
@@ -288,13 +288,16 @@ const Course = ({ courses }) => {
                                     ) : (
                                         <tr>
                                             <td colSpan="7" className="px-4 py-6 text-center text-gray-500">
-                                                {!selectedCollege ? (
-                                                    "Please select a college to view courses."
-                                                ) : (
-                                                    searchTerm || selectedCourseFilter ? 
+                                            {!selectedCollege ? (
+                                                "Please select a college to view courses."
+                                            ) : (
+                                                filteredCourses.length === 0 ?
+                                                    (searchTerm || selectedSemester || selectedYear ? 
                                                         "No courses found matching your search criteria." :
                                                         "No courses found for this college."
-                                                )}
+                                                    ) :
+                                                    null
+                                            )}
                                             </td>
                                         </tr>
                                     )}

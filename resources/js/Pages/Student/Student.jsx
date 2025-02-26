@@ -145,7 +145,7 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Student Management</h2>}
+            // header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Student Management</h2>}
         >
             <Head title="Student Management" />
 
