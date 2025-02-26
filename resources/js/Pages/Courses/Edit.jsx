@@ -29,14 +29,20 @@ export default function Edit({ course }) {
                     <h2 className="text-2xl font-bold mb-4">Edit Course</h2>
                     <form onSubmit={handleSubmit}>
                         {/* College */}
-                        <div>
+                        <div className="mt-2">
                             <label className="block text-gray-700">College:</label>
-                            <input
-                                type="text"
-                                value={data.College}
-                                onChange={(e) => setData("College", e.target.value)}
-                                className="border p-2 w-full"
-                            />
+                                <select
+                                    value={data.College}
+                                    onChange={(e) => setData("College", e.target.value)}
+                                    className="border p-2 w-full"
+                                >
+                                    <option value="">Select College</option>
+                                    <option value="CECS">CECS</option>
+                                    <option value="CAS">CAS</option>
+                                    <option value="CBA">CBA</option>
+                                    <option value="CE">CE</option>
+                                    <option value="CON">CON</option>
+                                </select>
                             {errors.College && <p className="text-red-500">{errors.College}</p>}
                         </div>
 
@@ -108,18 +114,16 @@ export default function Edit({ course }) {
                         </div>
 
                         {/* Submit Button */}
-                        <div className="mt-6">
+                        <div className="mt-6 flex justify-end gap-4">
                             <button
                                 type="submit"
                                 disabled={processing}
                                 className="bg-blue-500 text-white px-4 py-2 rounded"
                             >
-                                Update Course
+                                Update
                             </button>
-                        </div>
                         
                         {/* Cancel Button */}
-                        <div className="mt-4">
                             <button
                                 type="button"
                                 onClick={handleCancel}
@@ -128,7 +132,6 @@ export default function Edit({ course }) {
                                 Cancel
                             </button>
                         </div>
-
                     </form>
                 </div>
             </div>

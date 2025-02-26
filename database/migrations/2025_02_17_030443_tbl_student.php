@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('tbl_student', function (Blueprint $table) {
             $table->id();
-            $table->integer('Course_ID');
+            $table->foreignId('Course_ID')->constrained('tbl_course')->onDelete('cascade');
             $table->string('Fname');
             $table->string('Lname');
-            $table->string('Student_Num');
+            $table->string('Student_Num')->unique();
             $table->timestamps();
         });
     }
