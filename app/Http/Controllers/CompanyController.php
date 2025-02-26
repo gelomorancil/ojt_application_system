@@ -13,13 +13,6 @@ class CompanyController extends Controller
     public function index()
 {
     $company_course = CompCourse::with('company')->get()->map(function ($compCourse) {
-        $modeMapping = [
-            '1' => 'On-site',
-            '2' => 'Blended',
-            '3' => 'Work from Home',
-        ];
-        $compCourse->Mode = $modeMapping[$compCourse->Mode] ?? 'Unknown';
-
         return $compCourse;
     });
 
@@ -32,7 +25,7 @@ class CompanyController extends Controller
         ];
     });
 
-    dd($company_course);
+    // dd($company_course);
 
     return Inertia::render('Companies/Index', [
         'company_course' => $company_course,
@@ -46,24 +39,24 @@ public function store(Request $request)
     $request->validate([
         'Comp_name' => 'required',
         'email' => 'required|email',
-        'contact' => 'required',
+        'Tel_num' => 'required',
         'address' => 'required',
-        'position' => 'required',
+        'Position' => 'required',
         'course' => 'required',
         'capacity' => 'required|integer',
-        'mode' => 'required|in:1,2,3',
+        'mode' => 'required',
     ]);
 
     $company = Company::create([
         'Comp_name' => $request->Comp_name,
         'Address' => $request->address,
-        'Tel_num' => $request->contact,
+        'Tel_num' => $request->Tel_num,
     ]);
 
     CompCourse::create([
         'Comp_ID' => $company->id,
         'email' => $request->email,
-        'Position' => $request->position,
+        'Position' => $request->Position,
         'Course' => $request->course,
         'Capacity' => $request->capacity,
         'Mode' => $request->mode,
