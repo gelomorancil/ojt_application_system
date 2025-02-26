@@ -66,9 +66,23 @@ public function store(Request $request)
     return redirect()->route('companies.index');
 }
 
-    public function destroy(Company $company)
-    {
-        $company->delete();
-        return redirect()->route('companies.index');
-    }
+public function destroy(Request $request)
+{
+    // Ensure related internship records are deleted first
+    CompCourse::where('Comp_ID', $request->id)->delete();
+    Company::where('id', $request->id)->delete();
+    // $company->delete();
+
+    return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
+}
+// public function d(Request $request)
+// {
+//     // Ensure related internship records are deleted first
+//     Company::where('id', $request->id)->delete();
+//     // $company->delete();
+
+//     return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
+// }
+
+
 }

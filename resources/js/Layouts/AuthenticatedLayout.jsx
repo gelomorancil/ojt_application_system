@@ -3,7 +3,7 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { FaTachometerAlt, FaUserGraduate, FaFileContract, FaBook, FaSearch } from 'react-icons/fa';
+import { FaTachometerAlt, FaUserGraduate, FaFileContract, FaBook, FaSearch, FaRegBuilding } from 'react-icons/fa';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -33,6 +33,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             Dashboard
                         </span>
                     </NavLink>
+                    <NavLink href={route('companies.index')} active={route().current('companies.index')} className="flex items-center gap-4 text-lg font-medium text-white transition-all duration-300 ease-in-out">
+                        <FaRegBuilding className="w-7 h-7 text-white" />
+                        <span className={`overflow-hidden transition-opacity duration-300 ${expanded ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                            Companies
+                        </span>
+                    </NavLink>
                     <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-4 text-lg font-medium text-white transition-all duration-300 ease-in-out">
                         <FaUserGraduate className="w-7 h-7 text-white" />
                         <span className={`overflow-hidden transition-opacity duration-300 ${expanded ? 'opacity-100' : 'opacity-0 hidden'}`}>
@@ -51,6 +57,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             Course
                         </span>
                     </NavLink>
+                    
                 </nav>
             </aside>
 
