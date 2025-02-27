@@ -2,12 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Index({company_course, company_list}) {
-
-    // console.log(company_course)
-    // console.log(company_list)
-    const { companies } = usePage().props;
-    const [editingCompany, setEditingCompany] = useState(null);
+export default function Index({ company_course }) {
     const { data, setData, post, put, reset, delete: destroy } = useForm({
         Comp_name: '',
         email: '',
@@ -18,25 +13,48 @@ export default function Index({company_course, company_list}) {
         capacity: '',
         mode: '',
     });
+    
+    const [editingCompany, setEditingCompany] = useState(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (editingCompany) {
-            put(route('companies.update', editingitems.id), { onSuccess: () => resetForm() });
+            put(route('companies.update', editingCompany.Comp_ID), { onSuccess: () => resetForm() });
         } else {
-            console.log(data)
             post(route('companies.store'), { onSuccess: () => resetForm() });
         }
     };
+    
 
     const handleEdit = (company) => {
         setEditingCompany(company);
-        setData(company);
+        setData({
+            Comp_name: company.company?.Comp_name || '',
+            email: company.email || '',
+            Tel_num: company.company?.Tel_num || '',
+            Position: company.Position || '',
+            course: company.Course || '',
+            address: company.company?.Address || '',
+            capacity: company.Capacity || '',
+            mode: company.Mode || '',
+        });
     };
-
+    
+    const fetchCompanyData = async (Comp_ID) => {
+        try {
+            const response = await axios.get(`/companies/${Comp_ID}/edit`);
+            handleEdit(response.data);
+        } catch (error) {
+            console.error('Error fetching company data:', error);
+        }
+    };
+    
+    
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to delete this company?')) {
-            destroy(route('companies.destroy', id));
+            destroy(route('companies.destroy', id), {
+                
+             });
         }
     };
 
@@ -52,14 +70,13 @@ export default function Index({company_course, company_list}) {
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 grid grid-cols-3 gap-6">
                     
-                    {/* Left: CRUD Form */}
                     <div className="col-span-1 bg-white p-6 shadow-sm sm:rounded-lg">
                         <h3 className="mb-4 text-lg font-semibold">{editingCompany ? 'Edit Company' : 'Add Company'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <input type="text" placeholder="Company Name" className="w-full p-2 border rounded" value={data.Comp_name} onChange={(e) => setData('Comp_name', e.target.value)} required />
+                            <input type="text" placeholder="Company Name" className="w-full p-2 border rounded" id="name" value={data.Comp_name} onChange={(e) => setData('Comp_name', e.target.value)} required />
                             <input type="email" placeholder="Email" className="w-full p-2 border rounded" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
                             <input type="text" placeholder="Contact Number" className="w-full p-2 border rounded" value={data.Tel_num} onChange={(e) => setData('Tel_num', e.target.value)} required />
-                            <input type="text" placeholder="Position of Contact Person" className="w-full p-2 border rounded" value={data.Position} onChange={(e) => setData('Position', e.target.value)} required />
+                            <input type="text" placeholder="Position" className="w-full p-2 border rounded" value={data.Position} onChange={(e) => setData('Position', e.target.value)} required />
                             <input type="text" placeholder="Course" className="w-full p-2 border rounded" value={data.course} onChange={(e) => setData('course', e.target.value)} required />
                             <input type="text" placeholder="Address" className="w-full p-2 border rounded" value={data.address} onChange={(e) => setData('address', e.target.value)} required />
                             <input type="number" placeholder="Capacity" className="w-full p-2 border rounded" value={data.capacity} onChange={(e) => setData('capacity', e.target.value)} required />
@@ -80,46 +97,45 @@ export default function Index({company_course, company_list}) {
                         </form>
                     </div>
 
-                    
                     <div className="col-span-2 bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto">
                         <h3 className="mb-4 text-lg font-semibold">List of Companies</h3>
-                        <div className="overflow-x-auto max-w-full">
-                            <table className="min-w-[1200px] max-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacity</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {company_course.map((items) => (
-                                        <tr key={items.id}>
-                                            <td className="px-6 py-4 whitespace-nowrap">{items.company.Comp_name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{items.email}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{items.company.Tel_num}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{items.Position}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{items.Course}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{items.company.Address}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{items.Capacity}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{items.Mode}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <button onClick={() => handleEdit(company)} className="text-blue-500 hover:underline">Edit</button>
-                                                <button onClick={() => handleDelete(items.id)} className="text-red-500 hover:underline ml-4">Delete</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacity</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                                {company_course.map((items) => (
+                                    <tr key={items.id}>
+                                        <td className="px-6 py-4 whitespace-nowrap">{items.company.Comp_name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{items.email}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{items.company.Tel_num}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{items.Position}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{items.Course}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{items.company.Address}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{items.Capacity}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{items.Mode}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <button onClick={() => handleEdit(items)} className="text-blue-500 hover:underline">
+                                            Edit
+                                        </button>
 
+                                            <button onClick={() => handleDelete(items.Comp_ID)} className="text-red-500 hover:underline ml-4">Delete</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </AuthenticatedLayout>
