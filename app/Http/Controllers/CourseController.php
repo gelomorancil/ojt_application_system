@@ -13,7 +13,7 @@ class CourseController extends Controller
     // Display all courses
     public function index()
     {
-        $courses = Course::with('ojtHours')->get(); 
+        $courses = Course::with('ojtHours')->get();
         return Inertia::render('Courses/Course', ['courses' => $courses]);
     }
 
@@ -25,7 +25,7 @@ class CourseController extends Controller
 
     public function store(Request $request)
     {
-        \Log::info('Request Data:', $request->all());
+        Log::info('Request Data:', $request->all());
 
         // Validate request data
         $validatedData = $request->validate([

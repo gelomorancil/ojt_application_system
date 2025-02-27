@@ -78,7 +78,7 @@ const sortedMoas = [...filteredMoas].sort((a, b) => {
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="text-xl font-semibold text-gray-800">MOA Management</h2>}
+            // header={<h2 className="text-xl font-semibold text-gray-800">MOA Management</h2>}
         >
             <Head title="MOA Management" />
             <div className="py-12 mx-auto max-w-7xl sm:px-6 lg:px-8">
