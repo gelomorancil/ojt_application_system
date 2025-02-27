@@ -9,9 +9,9 @@ class Company extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_company'; 
+    protected $table = 'tbl_company';
 
-    protected $fillable = ['Comp_name', 'Address', 'Tel_num'];
+    protected $fillable = ['Comp_name', 'Address', 'Tel_num', 'email', 'Position', 'Course', 'Capacity', 'Mode'];
 
     public function compCourse()
     {

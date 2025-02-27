@@ -16,9 +16,9 @@ return new class extends Migration
             $table->integer('Comp_ID');
             $table->string('Course');
             $table->integer('Capacity');
-            $table->string('Mode', 20)->change();
+            $table->string('Mode', 20);
             $table->timestamps();
-        });        
+        });
     }
 
     /**
