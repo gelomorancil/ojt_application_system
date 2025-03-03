@@ -73,7 +73,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/companies/{id}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
     Route::put('/companies/{id}', [CompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/delete/{id}', [CompanyController::class, 'destroy'])->name('companies.destroy');
+
+    // COMPANY PROFILE
+    Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
 });
+
+Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
+Route::post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
 
 
 // Route for displaying the courses page

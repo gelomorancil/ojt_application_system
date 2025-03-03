@@ -39,6 +39,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             Companies
                         </span>
                     </NavLink>
+                    {/* <NavLink href={route("departments.index")} active={route().current('companies.index')} className="flex items-center gap-4 text-lg font-medium text-white transition-all duration-300 ease-in-out">
+                        <FaRegBuilding className="w-7 h-7 text-white" />
+                        <span className={`overflow-hidden transition-opacity duration-300 ${expanded ? 'opacity-100' : 'opacity-0 hidden'}`}>    
+                            Manage Departments
+                            </span>
+                    </NavLink> */}
                     <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-4 text-lg font-medium text-white transition-all duration-300 ease-in-out">
                         <FaUserGraduate className="w-7 h-7 text-white" />
                         <span className={`overflow-hidden transition-opacity duration-300 ${expanded ? 'opacity-100' : 'opacity-0 hidden'}`}>

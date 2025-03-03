@@ -11,10 +11,16 @@ class Company extends Model
 
     protected $table = 'tbl_company'; 
 
-    protected $fillable = ['Comp_name', 'Address', 'Tel_num'];
+    protected $fillable = ['Comp_name', 'Address', 'Course'];
 
     public function compCourse()
     {
         return $this->hasOne(CompCourse::class, 'Comp_ID', 'id');
     }
+
+    public function departments()
+    {
+    return $this->hasMany(Department::class, 'Comp_ID');
+    }
+
 }
