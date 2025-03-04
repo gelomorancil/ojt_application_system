@@ -95,34 +95,10 @@ class StudentController extends Controller {
         return Inertia::render('StudentDetail', ['student' => $student]);
     }
 
-    public function edit($id): Response
-    {
-        // Get student with course relationship
-        $student = Student::with('course')->findOrFail($id);
-        
-        // Get all courses for dropdown
-        $courses = Course::select('id', 'College', 'Course')->get();
-        
-        // Get predefined colleges list
-        $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
-        
-        // Add the selected college and course to the student data
-        $studentData = $student->toArray();
-        $studentData['College'] = $student->course ? $student->course->College : '';
-        $studentData['Course'] = $student->course ? $student->course->Course : '';
-        
-        return Inertia::render('Student/Partials/Edit_Student', [
-            'student' => $studentData,
-            'courses' => $courses,
-            'colleges' => $colleges
-        ]);
-    }
-
     // Update student details
     public function update(Request $request, $id)
     {
         $student = Student::findOrFail($id);
-
         $validated = $request->validate([
             'College' => 'required',
             'Course' => 'required',
@@ -131,9 +107,10 @@ class StudentController extends Controller {
             'Student_Num' => 'required|string|max:20|unique:tbl_student,Student_Num,' . $id,
         ]);
 
+        // Find the appropriate course based on College and Course name
         $course = Course::where('College', $validated['College'])
-                        ->where('Course', $validated['Course'])
-                        ->first();
+            ->where('Course', $validated['Course'])
+            ->first();
 
         if (!$course) {
             return redirect()->back()->withErrors(['Course' => 'Invalid course selection.']);

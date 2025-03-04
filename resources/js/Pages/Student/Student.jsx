@@ -1,43 +1,120 @@
-import { Head, useForm, router, Link } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import axios from 'axios';
+import { Head, useForm, router, Link } from "@inertiajs/react";
+import { useEffect, useMemo, useState } from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import axios from "axios";
 
 export default function Student({ students = [], courses = [], colleges = [] }) {
-    const { data, setData, post, processing, errors } = useForm({
-        College: '',
-        Course: '',
-        Fname: '',
-        Lname: '',
-        Student_Num: ''
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingStudentId, setEditingStudentId] = useState(null);
+    const { data, setData, post, put, processing, errors, reset } = useForm({
+        College: "",
+        Course: "",
+        Fname: "",
+        Lname: "",
+        Student_Num: ""
     });
 
-    // State for search and filters
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCourseFilter, setSelectedCourseFilter] = useState('');
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCourseFilter, setSelectedCourseFilter] = useState("");
     const [showCourseFilter, setShowCourseFilter] = useState(false);
-    
-    // State for currently selected college (for filtering the table)
-    const [selectedCollege, setSelectedCollege] = useState('');
+    const [selectedCollege, setSelectedCollege] = useState("");
 
-    // Filter courses based on selected college AND remove duplicates
+    // Populate form when editing a student
+    const editStudent = (studentId) => {
+        const studentToEdit = students.find(student => student.id === studentId);
+        if (studentToEdit) {
+            setData({
+                College: studentToEdit.College_Name || "",
+                Course: studentToEdit.Course_Name || "",
+                Fname: studentToEdit.Fname || "",
+                Lname: studentToEdit.Lname || "",
+                Student_Num: studentToEdit.Student_Num || "",
+            });
+            setIsEditing(true);
+            setEditingStudentId(studentId);
+        }
+    };
+
+    // Handle form submission
+    const handleSubmit = (e) => {
+        e.preventDefault();
+    
+        if (!data.Student_Num || !data.Fname || !data.Lname || !data.College || !data.Course) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        if (isEditing) {
+            // Update existing student
+            put(route("student.update", editingStudentId), {
+                onSuccess: () => {
+                    alert("Student updated successfully.");
+                    resetForm();
+                },
+                onError: (errors) => {
+                    console.error("Update error:", errors);
+                    alert("Failed to update student. Please check input fields.");
+                }
+            });
+        } else {
+            // Check for duplicates
+            const isDuplicate = students.some(student => 
+                student.Student_Num === data.Student_Num
+            );
+
+            if (isDuplicate) {
+                alert("This student already exists.");
+                return;
+            }
+
+            // Add new student
+            post(route("student.store"), {
+                onSuccess: () => {
+                    alert("Student added successfully.");
+                    resetForm();
+                },
+                onError: (errors) => {
+                    console.error("Submission error:", errors);
+                    alert("Failed to add student. Please check input fields.");
+                },
+            });
+        }
+    };
+
+    const resetForm = () => {
+        reset();
+        setData({
+            College: "",
+            Course: "",
+            Fname: "",
+            Lname: "",
+            Student_Num: ""
+        });
+        setIsEditing(false);
+        setEditingStudentId(null);
+    };
+
     const filteredCourses = useMemo(() => {
         if (!data.College) return [];
-        
+    
         // Get courses for the selected college
         const collegeCourses = courses.filter(course => course.College === data.College);
-        
-        // Remove duplicates by creating a Map with course name as key
+    
+        // Ensure the pre-selected course (for editing) is included
+        if (data.Course && !collegeCourses.some(course => course.Course === data.Course)) {
+            collegeCourses.push({ Course: data.Course });
+        }
+    
+        // Remove duplicates
         const uniqueCoursesMap = new Map();
         collegeCourses.forEach(course => {
             if (!uniqueCoursesMap.has(course.Course)) {
                 uniqueCoursesMap.set(course.Course, course);
             }
         });
-        
-        // Convert the Map values back to an array
+    
         return Array.from(uniqueCoursesMap.values());
-    }, [data.College, courses]);
+    }, [data.College, data.Course, courses]);    
 
     // Filter courses for dropdown based on selected college (for table filtering)
     const collegeFilteredCourses = useMemo(() => {
@@ -96,37 +173,13 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
         }
         
         return result;
-    }, [students, selectedCollege, searchTerm, selectedCourseFilter]);
-
-    const submit = (e) => {
-        e.preventDefault();
-    
-        if (!data.Student_Num || !data.Fname || !data.Lname || !data.College || !data.Course) {
-            alert("Please fill in all required fields.");
-            return;
-        }
-    
-        // Check if the student already exists based on Student Number
-        const isDuplicate = students.some(student => 
-            student.Student_Num === data.Student_Num
-        );
-    
-        if (isDuplicate) {
-            alert("This student already exists!");
-            return;
-        }
-    
-        post(route("student.store"), {
-            onSuccess: () => alert("Student added successfully!"),
-            onError: (errors) => console.error("Submission error:", errors)
-        });
-    };      
+    }, [students, selectedCollege, searchTerm, selectedCourseFilter]);     
 
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to delete this student?')) {
             axios.delete(`/student/${id}`)
                 .then(() => {
-                    alert('Student deleted successfully!');
+                    alert('Student deleted successfully.');
                     window.location.reload();
                 })
                 .catch((error) => {
@@ -150,91 +203,67 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
             <Head title="Student Management" />
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="flex gap-6">
                         {/* Form Section */}
-                        <div className="w-1/3 bg-white shadow-sm sm:rounded-lg p-6">
-                            <h3 className="text-lg font-semibold mb-4">Add Student</h3>
-                            <form onSubmit={submit}>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">College</label>
-                                    <select
-                                        className="w-full border rounded-lg p-2"
-                                        value={data.College}
-                                        onChange={(e) => setData('College', e.target.value)}
-                                    >
-                                        <option value="">Select College</option>
-                                        {colleges.map((college) => (
-                                            <option key={college} value={college}>
-                                                {college}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.College && <p className="text-red-500">{errors.College}</p>}
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">Course</label>
-                                    <select
-                                        className="w-full border rounded-lg p-2"
-                                        value={data.Course}
-                                        onChange={(e) => setData('Course', e.target.value)}
-                                        disabled={!data.College}
-                                    >
-                                        <option value="">Select Course</option>
-                                        {filteredCourses.map((course) => (
-                                            <option key={course.id} value={course.Course}>
-                                                {course.Course}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.Course && <p className="text-red-500">{errors.Course}</p>}
-                                    {!data.College && (
-                                        <p className="text-sm text-gray-500 mt-1">Please select a college first</p>
+                        <div className="w-1/3 bg-white shadow-sm rounded-lg p-6">
+                            <h3 className="text-lg font-semibold mb-4">
+                                {isEditing ? "Edit Student" : "Add Student"}
+                            </h3>
+                            <form onSubmit={handleSubmit}>
+                            {[
+                                { label: "College", name: "College", type: "select", options: colleges },
+                                { label: "Course", name: "Course", type: "select", options: filteredCourses.map(c => c.Course) },
+                                { label: "First Name", name: "Fname", type: "text" },
+                                { label: "Last Name", name: "Lname", type: "text" },
+                                { label: "Student Number", name: "Student_Num", type: "text" },
+                            ].map(({ label, name, type, options }, index) => (
+                                <div className="mb-4" key={`${name}-${index}`}>
+                                    <label className="block text-sm font-medium text-gray-700">{label}</label>
+                                    {type === "select" ? (
+                                        <select
+                                            className="w-full border rounded-lg p-2"
+                                            value={data[name]}
+                                            onChange={(e) => setData(name, e.target.value)}
+                                            disabled={name === "Course" && !data.College} // Disable Course dropdown if no College is selected
+                                        >
+                                            <option value="">Select {label}</option>
+                                            {options.map((option, optIndex) => (
+                                                <option key={`${name}-option-${optIndex}`} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type={type}
+                                            className="w-full border rounded-lg p-2"
+                                            value={data[name]}
+                                            onChange={(e) => setData(name, e.target.value)}
+                                        />
                                     )}
+                                    {errors[name] && <p className="text-red-500">{errors[name]}</p>}
                                 </div>
+                            ))}
 
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">First Name</label>
-                                    <input
-                                        type="text"
-                                        className="w-full border rounded-lg p-2"
-                                        value={data.Fname}
-                                        onChange={(e) => setData('Fname', e.target.value)}
-                                    />
-                                    {errors.Fname && <p className="text-red-500">{errors.Fname}</p>}
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                                    <input
-                                        type="text"
-                                        className="w-full border rounded-lg p-2"
-                                        value={data.Lname}
-                                        onChange={(e) => setData('Lname', e.target.value)}
-                                    />
-                                    {errors.Lname && <p className="text-red-500">{errors.Lname}</p>}
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">Student Number</label>
-                                    <input
-                                        type="text"
-                                        className="w-full border rounded-lg p-2"
-                                        value={data.Student_Num}
-                                        onChange={(e) => setData('Student_Num', e.target.value)}
-                                    />
-                                    {errors.Student_Num && <p className="text-red-500">{errors.Student_Num}</p>}
-                                </div>
-
-                                <div className="mt-4 flex space-x-4">
+                                <div className="mt-4 flex gap-2">
                                     <button
                                         type="submit"
                                         disabled={processing}
                                         className="bg-blue-500 text-white px-4 py-2 rounded"
                                     >
-                                        Add Student
+                                        {isEditing ? "Update Student" : "Add Student"}
                                     </button>
+                                    
+                                    {isEditing && (
+                                        <button
+                                            type="button"
+                                            onClick={resetForm}
+                                            className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
+                                        >
+                                            Cancel
+                                        </button>
+                                    )}
                                 </div>
                             </form>
                         </div>
@@ -360,9 +389,7 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
                                                 <td className="px-4 py-2">{student.College_Name || "N/A"}</td>
                                                 <td className="px-4 py-2">{student.Course_Name || "N/A"}</td>
                                                 <td className="px-4 py-2">
-                                                    <Link href={route('student.edit', student.id)} className="text-blue-600 mr-4">
-                                                        Edit
-                                                    </Link>
+                                                    <button onClick={() => editStudent(student.id)} className="text-blue-600 mr-4" >Edit</button>
                                                     <button onClick={() => handleDelete(student.id)} className="text-red-600">
                                                         Delete
                                                     </button>

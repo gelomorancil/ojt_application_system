@@ -64,13 +64,17 @@ class CourseController extends Controller
         return redirect()->route('course.index')->with('success', 'Course created successfully with OJT details!');
     }
 
-    // Show the edit form for a course
-    public function edit($id) {
-        $course = Course::with('ojtHours')->findOrFail($id);
-        return Inertia::render('Courses/Edit', ['course' => $course]);
+    public function edit($id)
+    {
+        $course = Course::with('ojt_hours')->findOrFail($id);
+        $courses = Course::with('ojt_hours')->get();
+        
+        return Inertia::render('Courses/Course', [
+            'course' => $course,
+            'courses' => $courses,
+        ]);
     }
 
-    // Update course details along with OJT Hours
     public function update(Request $request, $id)
     {
         try {
