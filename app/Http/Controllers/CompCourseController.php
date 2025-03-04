@@ -14,7 +14,6 @@ class CompCourseController extends Controller
     {
         $CompCourses = CompCourse::with('Company', 'Course')->get();
         return Inertia::render('CompCourse/Index', ["CompCourses"=>$CompCourses]);
-        //dd($CompCourses);
     }
 
     public function create()

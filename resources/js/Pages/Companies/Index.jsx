@@ -16,7 +16,7 @@ export default function Index({ company_list }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (editingCompany) {
-            put(route('companies.update', editingCompany.Comp_ID), { onSuccess: () => resetForm() });
+            put(route('companies.update', editingCompany.id), { onSuccess: () => resetForm() });
         } else {
             post(route('companies.store'), { onSuccess: () => resetForm() });
         }
@@ -25,9 +25,9 @@ export default function Index({ company_list }) {
     const handleEdit = (company) => {
         setEditingCompany(company);
         setData({
-            Comp_name: company.company?.Comp_name || '',
-            course: company.Course || '',
-            address: company.company?.Address || '',
+            Comp_name: company.Comp_name || '',
+            Course: company.Course || '',
+            Address: company.Address || '',
         });
     };
     

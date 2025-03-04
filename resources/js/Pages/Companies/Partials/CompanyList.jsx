@@ -27,7 +27,10 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                             <td className="align-top px-4 py-4  max-w-[200px]">{items.Address}</td>
                             <td className="align-top px-4 py-4  max-w-[250px]">{items.Course}</td>
                             <td className="align-top px-4 py-4 flex gap-2">
-                                <button onClick={() => handleEdit(items.id)} className="text-blue-500 hover:underline">Edit</button>
+                                <button onClick={() => handleEdit(items)} className="text-blue-500 hover:underline">
+                                    Edit
+                                </button>
+
                                 <button onClick={() => handleDelete(items.id)} className="text-red-500 hover:underline ml-2">Delete</button>
                             </td>
                         </tr>

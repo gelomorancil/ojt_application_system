@@ -11,7 +11,14 @@ class CompCourse extends Model
 
     protected $table = 'tbl_comp_course'; 
 
-    protected $fillable = ['Comp_ID', 'email', 'Position', 'Course', 'Capacity', 'Mode'];
+    protected $fillable = ['Comp_ID', 
+    'name', 
+    'position', 
+    'Course', 
+    'email', 
+    'contact_number', 
+    'Capacity', 
+    'mode'];
 
 
     public function company()

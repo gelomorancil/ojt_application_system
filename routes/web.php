@@ -73,6 +73,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/companies/{id}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
     Route::put('/companies/{id}', [CompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/delete/{id}', [CompanyController::class, 'destroy'])->name('companies.destroy');
+    Route::get('/companies/{id}/profile', [CompanyController::class, 'profile'])->name('companies.profile');
+
 
     // COMPANY PROFILE
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
@@ -102,19 +104,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 //     Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
 // });
 
-
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
-//     Route::post('/contacts', [ContactController::class, 'store'])->name('contact.store');
-//     Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contact.update');
-//     Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contact.destroy');
-// });
-
+// Route::post('/companies/{companyId}/contacts', [ContactController::class, 'store'])->name('contacts.store');
+// Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contacts.update');
+// Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/compcourse', [CompCourseController::class, 'index'])->name('compcourse.index');
-    Route::get('/compcourse/create', [CompCourseController::class, 'create'])->name('compcourse.create');
-    Route::post('/compcourse', [CompCourseController::class, 'store'])->name('compcourse.store');
+    Route::get('/compcourse', [ContactController::class, 'index'])->name('compcourse.index');
+    // Route::get('/compcourse/create', [ContactController::class, 'create'])->name('compcourse.create');
+    Route::post('/compcourse/store', [ContactController::class, 'store'])->name('compcourse.store');
+    // Route::put('/compcourse/update', [ContactController::class, 'update'])->name('compcourse.update');
+    Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
+
 });
 
 require __DIR__.'/auth.php';

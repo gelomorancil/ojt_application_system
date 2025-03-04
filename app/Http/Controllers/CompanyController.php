@@ -11,138 +11,91 @@ use Illuminate\Support\Facades\DB;
 
 class CompanyController extends Controller
 {
-//     public function index()
-// {
-//     $company_course = CompCourse::with('company')->get()->map(function ($compCourse) {
-//         return $compCourse;
-//     });
+    // INDEX METHOD
+    public function index()
+    {
+        $company_list = Company::all(); 
 
-//     $company_list = Company::all()->map(function ($company) {
-//         return [
-//             'id' => $company->id,
-//             'Comp_name' => $company->Comp_name,
-//             'Contact' => $company->Tel_num,
-//             'Address' => $company->Address,
-//         ];
-//     });
+        return Inertia::render('Companies/Index', [
+            'company_list' => $company_list,
+        ]);
+    }
 
-//     // dd($company_course);
+    // STORE METHOD
+    public function store(Request $request)
+    {
+        $request->validate([
+            'Comp_name' => 'required',
+            'Address' => 'required',
+            'Course' => 'required',
+        ]);
 
-//     return Inertia::render('Companies/Index', [
-//         'company_course' => $company_course,
-//         'company_list' => $company_list,
-//     ]);
-// }
+        Company::create([
+            'Comp_name' => $request->Comp_name,
+            'Address' => $request->Address,
+            'Course' => $request->Course,
+        ]);
 
-// NEW INDEX
+        return redirect()->route('companies.index');
+    }
 
-public function index()
+    public function edit($id)
 {
-    $company_list = Company::all(); // Missing semicolon fixed
+    $company = Company::findOrFail($id);
 
-    return Inertia::render('Companies/Index', [
-        'company_list' => $company_list,
+    return Inertia::render('Companies/Edit', [
+        'company' => $company,
     ]);
 }
 
 
-public function store(Request $request)
-{
-    $request->validate([
-        'Comp_name' => 'required',
-        'Address' => 'required',
-        'Course' => 'required',
-    ]);
-
-    Company::create([
-        'Comp_name' => $request->Comp_name,
-        'Address' => $request->Address,
-        'Course' => $request->Course,
-    ]);
-
-    return redirect()->route('companies.index');
-}
-
-public function edit($id)
-{
-    $companyCourse = CompCourse::where('Comp_ID', $id)->first();
-    $company_list = Company::all()->map(function ($company) {
-        return [
-            'id' => $company->id,
-            'Comp_name' => $company->Comp_name,
-            'Address' => $company->Address,
-            'Course' => $companyCourse->course,
-        ];
-    });
-}
-
+    // UPDATE METHOD (FIXED)
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([
-            'Comp_name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'Tel_num' => 'nullable|string|max:20',
-            'Position' => 'nullable|string|max:255',
-            'course' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'capacity' => 'nullable|integer|min:1',
-            'mode' => 'nullable|string|in:On-Site,Blended,Work From Home',
+            'Comp_name' => 'required',
+            'Address' => 'required',
+            'Course' => 'required',
         ]);
 
-        
         $company = Company::findOrFail($id);
         $company->update([
             'Comp_name' => $validatedData['Comp_name'],
-            'Tel_num' => $validatedData['Tel_num'],
-            'Address' => $validatedData['address'],
+            'Course' => $validatedData['Course'],
+            'Address' => $validatedData['Address'],
         ]);
 
-       
-        $companyCourse = CompCourse::where('Comp_ID', $id);
-        if ($companyCourse) {
-            $companyCourse->update([
-                'email' => $validatedData['email'],
-                'Position' => $validatedData['Position'],
-                'Course' => $validatedData['course'],
-                'Capacity' => $validatedData['capacity'],
-                'Mode' => $validatedData['mode'],
-            ]);
-        } else {
-            CompCourse::create([
-                'Comp_ID' => $id,
-                'email' => $validatedData['email'],
-                'Position' => $validatedData['Position'],
-                'Course' => $validatedData['course'],
-                'Capacity' => $validatedData['capacity'],
-                'Mode' => $validatedData['mode'],
-            ]);
-        }
+        return redirect()->route('companies.index');
+    }
+    // DELETE METHOD
+    public function destroy(Request $request)
+    {
+        CompCourse::where('Comp_ID', $request->id)->delete();
+        Company::where('id', $request->id)->delete();
 
-        return redirect()->back()->with('success', 'Company updated successfully.');
+        return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
     }
 
-
-
-
-public function destroy(Request $request)
+    // DETAILS METHOD
+    public function details($id)
 {
-    // Ensure related internship records are deleted first
-    CompCourse::where('Comp_ID', $request->id)->delete();
-    Company::where('id', $request->id)->delete();
-    // $company->delete();
+    $company = Company::findOrFail($id);
+    $contact_list = CompCourse::where('Comp_ID', $id)->get();
 
-    return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
+    return Inertia::render('Companies/View', [
+        'company' => $company,
+        'contact_list' => $contact_list
+    ]);
 }
 
-public function details($id)
-    {
-        // Retrieve the company by id using `where` clause
-        $company = Company::where('id', $id)->firstOrFail();
 
-        // Return Inertia response with the company data
-        return Inertia::render('Companies/View', [
-            'company' => $company
-        ]);
-    }
+    // PROFILE METHOD
+    public function profile($id)
+{
+    $company = Company::with('contacts')->findOrFail($id);
+    return Inertia::render('Companies/Profile', [
+        'company' => $company
+    ]);
+}
 
 }

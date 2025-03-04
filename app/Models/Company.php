@@ -22,5 +22,10 @@ class Company extends Model
     {
     return $this->hasMany(Department::class, 'Comp_ID');
     }
+    public function contacts()
+    {
+    return $this->hasMany(ContactPerson::class, 'Comp_ID');
+    }
+
 
 }
