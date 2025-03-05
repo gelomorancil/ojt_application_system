@@ -3,7 +3,7 @@ import { useForm } from "@inertiajs/react";
 
 export default function ContactForm({data, setData, handleSubmit, editingContact, resetForm, errors }) {
     return (
-        <div className="bg-white p-6 shadow-sm sm:rounded-lg">
+        <div className="bg-white p-6 shadow-sm sm:rounded-lg w-full max-w-md m-4">
             <h3 className="mb-4 text-lg font-semibold">
                 {editingContact ? 'Edit Contact' : 'Add Contacts'}
             </h3>
