@@ -9,7 +9,7 @@ return new class extends Migration {
         Schema::create('tbl_comp_course', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('Comp_ID'); // Foreign key to tbl_company
-            $table->unsignedBigInteger('Course');  // Foreign key to tbl_course
+            $table->string('Course');  // Foreign key to tbl_course
             $table->integer('Capacity')->nullable();
             $table->string('mode', 50)->nullable(); // On-site, Blended, Work from Home
             $table->string('name'); // Contact Person's Full Name
