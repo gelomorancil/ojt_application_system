@@ -81,9 +81,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
 });
 
-Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
-Route::post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
-
 
 // Route for displaying the courses page
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -95,16 +92,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->name('course.destroy');
 });
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/company', [CompanyController::class, 'index'])->name('company');
-//     Route::get('/company/create', [CompanyController::class, 'create'])->name('company.create');
-//     Route::post('/company', [CompanyController::class, 'store'])->name('company.store');
-//     Route::get('/company/{company}/edit', [CompanyController::class, 'edit'])->name('company.edit');
-//     Route::put('/company/{company}', [CompanyController::class, 'update'])->name('company.update');
-//     Route::delete('/company/{id}', [CompanyController::class, 'destroy'])->name('company.destroy');
-//     Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
-// });
-
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
@@ -113,9 +100,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contact.destroy');
 });
 
-// Route::post('/companies/{companyId}/contacts', [ContactController::class, 'store'])->name('contacts.store');
-// Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contacts.update');
-// Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/compcourse', [ContactController::class, 'index'])->name('compcourse.index');

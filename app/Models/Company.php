@@ -18,14 +18,4 @@ class Company extends Model
         return $this->hasOne(CompCourse::class, 'Comp_ID', 'id');
     }
 
-    public function departments()
-    {
-    return $this->hasMany(Department::class, 'Comp_ID');
-    }
-    public function contacts()
-    {
-    return $this->hasMany(ContactPerson::class, 'Comp_ID');
-    }
-
-
 }

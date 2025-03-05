@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 export default function ContactList({ contacts = [], handleDelete, contact_list, handleEdit }) {
     const [activeTab, setActiveTab] = useState('contacts');
-    
+
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full">
             {/* Tab Navigation */}
