@@ -110,11 +110,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/compcourse', [ContactController::class, 'index'])->name('compcourse.index');
-    // Route::get('/compcourse/create', [ContactController::class, 'create'])->name('compcourse.create');
     Route::post('/compcourse/store', [ContactController::class, 'store'])->name('compcourse.store');
-    // Route::put('/compcourse/update', [ContactController::class, 'update'])->name('compcourse.update');
     Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
-
+    Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
 });
+
 
 require __DIR__.'/auth.php';
