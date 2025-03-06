@@ -58,7 +58,7 @@ class ContactController extends Controller
      */
     public function destroy($id)
     {
-        $contact = Contact::findOrFail($id);
+        $contact = CompCourse::findOrFail($id);
         $contact->delete();
 
         return redirect()->back()->with('success', 'Contact deleted successfully.');

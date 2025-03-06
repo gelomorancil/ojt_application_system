@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
 import React, { useState } from 'react';
 
-export default function ContactList({ contacts = [], handleDelete, contact_list, handleEdit }) {
+export default function ContactList({ contacts = [], handleDelete = () => {}, contact_list = [], handleEdit = () => {} }) {
     const [activeTab, setActiveTab] = useState('contacts');
-    
+
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full">
             {/* Tab Navigation */}
@@ -54,9 +54,9 @@ export default function ContactList({ contacts = [], handleDelete, contact_list,
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                         {contact_list.length > 0 ? (
-                            contact_list.map((contact, store) => (
+                            contact_list.map((contact, index) => (
                                 <tr key={contact.id} className="hover:bg-gray-50">
-                                    <td className="align-top px-4 py-4">{store + 1}</td>
+                                    <td className="align-top px-4 py-4">{index + 1}</td>
                                     <td className="align-top px-4 py-4">{contact.name}</td>
                                     <td className="align-top px-4 py-4">{contact.position}</td>
                                     <td className="align-top px-4 py-4 max-w-[200px]">{contact.Course || 'N/A'}</td>
