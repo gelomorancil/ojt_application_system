@@ -11,64 +11,91 @@ use Illuminate\Support\Facades\DB;
 
 class CompanyController extends Controller
 {
+    // INDEX METHOD
     public function index()
-{
-    $company_course = CompCourse::with('company')->get()->map(function ($compCourse) {
-        return $compCourse;
-    });
-
-    $company_list = Company::all()->map(function ($company) {
-        return [
-            'id' => $company->id,
-            'Comp_name' => $company->Comp_name,
-            'Contact' => $company->Tel_num,
-            'Address' => $company->Address,
-        ];
-    });
-
-    // dd($company_course);
-
-    return Inertia::render('Companies/Index', [
-        'company_course' => $company_course,
-        'company_list' => $company_list,
-    ]);
-}
-
-
-public function store(Request $request)
-{
-    $request->validate([
-        'Comp_name' => 'required',
-        'email' => 'required|email',
-        'Tel_num' => 'required',
-        'address' => 'required',
-        'Position' => 'required',
-        'course' => 'required',
-        'capacity' => 'required|integer',
-        'mode' => 'required',
-    ]);
-
-    $company = Company::create([
-        'Comp_name' => $request->Comp_name,
-        'Address' => $request->address,
-        'Tel_num' => $request->Tel_num,
-    ]);
-
-    CompCourse::create([
-        'Comp_ID' => $company->id,
-        'email' => $request->email,
-        'Position' => $request->Position,
-        'Course' => $request->course,
-        'Capacity' => $request->capacity,
-        'Mode' => $request->mode,
-    ]);
-
-    return redirect()->route('companies.index');
-}
-
-    public function destroy(Company $company)
     {
-        $company->delete();
+        $company_list = Company::all(); 
+
+        return Inertia::render('Companies/Index', [
+            'company_list' => $company_list,
+        ]);
+    }
+
+    // STORE METHOD
+    public function store(Request $request)
+    {
+        $request->validate([
+            'Comp_name' => 'required',
+            'Address' => 'required',
+            'Course' => 'required',
+        ]);
+
+        Company::create([
+            'Comp_name' => $request->Comp_name,
+            'Address' => $request->Address,
+            'Course' => $request->Course,
+        ]);
+
         return redirect()->route('companies.index');
     }
+
+    public function edit($id)
+{
+    $company = Company::findOrFail($id);
+
+    return Inertia::render('Companies/Edit', [
+        'company' => $company,
+    ]);
+}
+
+
+    // UPDATE METHOD (FIXED)
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'Comp_name' => 'required',
+            'Address' => 'required',
+            'Course' => 'required',
+        ]);
+
+        $company = Company::findOrFail($id);
+        $company->update([
+            'Comp_name' => $validatedData['Comp_name'],
+            'Course' => $validatedData['Course'],
+            'Address' => $validatedData['Address'],
+        ]);
+
+        return redirect()->route('companies.index');
+    }
+    // DELETE METHOD
+    public function destroy(Request $request)
+    {
+        CompCourse::where('Comp_ID', $request->id)->delete();
+        Company::where('id', $request->id)->delete();
+
+        return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
+    }
+
+    // DETAILS METHOD
+    public function details($id)
+{
+    $company = Company::findOrFail($id);
+    $contact_list = CompCourse::where('Comp_ID', $id)->get();
+
+    return Inertia::render('Companies/View', [
+        'company' => $company,
+        'contact_list' => $contact_list
+    ]);
+}
+
+
+    // PROFILE METHOD
+    public function profile($id)
+{
+    $company = Company::with('contacts')->findOrFail($id);
+    return Inertia::render('Companies/Profile', [
+        'company' => $company
+    ]);
+}
+
 }

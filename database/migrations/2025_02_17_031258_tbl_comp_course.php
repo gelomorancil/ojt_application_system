@@ -4,28 +4,27 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
+return new class extends Migration {
+    public function up() {
         Schema::create('tbl_comp_course', function (Blueprint $table) {
             $table->id();
-            $table->integer('Comp_ID');
-            $table->string('Course');
-            $table->integer('Capacity');
-            $table->enum('Mode', ['1', '2', '3'])->default('1');
+            $table->unsignedBigInteger('Comp_ID'); // Foreign key to tbl_company
+            $table->string('Course');  // Foreign key to tbl_course
+            $table->integer('Capacity')->nullable();
+            $table->string('mode', 50)->nullable(); // On-site, Blended, Work from Home
+            $table->string('name'); // Contact Person's Full Name
+            $table->string('position');  // Contact Person's Position
+            $table->string('email')->unique();
+            $table->string('contact_number', 20);
             $table->timestamps();
-        });        
+
+            // // Foreign Key Constraints
+            // $table->foreign('Comp_ID')->references('id');
+            // $table->foreign('Course')->references('id');
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
+    public function down() {
         Schema::dropIfExists('tbl_comp_course');
     }
 };
