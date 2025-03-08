@@ -7,6 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompCourseController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\MoaProcessController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -59,7 +60,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
     Route::get('/moa/{id}', [MoaController::class, 'show'])->name('moa.show');
-    Route::get('/moa/{id}/edit', [MoaController::class, 'edit'])->name('moa.edit');
+    // Route::get('/moa/{id}/edit', [MoaController::class, 'edit'])->name('moa.edit');
     Route::patch('/moa/{id}', [MoaController::class, 'update'])->name('moa.update');
     Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
     Route::get('/moa/download/{file_name}/{file_type}', [MoaController::class, 'download'])->name('moa.download');
@@ -107,6 +108,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/compcourse/store', [ContactController::class, 'store'])->name('compcourse.store');
     // Route::put('/compcourse/update', [ContactController::class, 'update'])->name('compcourse.update');
     Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
+
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/moaprocess', [MoaProcessController::class, 'index'])->name('moaprocess.index');
+    // Route::get('/moaprocess/create', [MoaProcessController::class, 'create'])->name('moaprocess.create');
+    Route::post('/moaprocess', [MoaProcessController::class, 'store'])->name('moaprocess.store');
+    Route::get('/moaprocess/{moaprocess}/edit', [MoaProcessController::class, 'edit'])->name('moaprocess.edit');
+    Route::put('/moaProcess/{moaprocess}', [MoaProcessController::class, 'update'])->name('moaProcess.update');
+
+    Route::delete('/moa-process/{id}', [MoaProcessController::class, 'destroy'])->name('moaProcess.destroy');
+    Route::get('/company/{id}', [MoaProcessController::class, 'showCompany'])->name('company.show');
 
 });
 

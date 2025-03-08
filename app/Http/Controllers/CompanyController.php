@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\ContactPerson;
 use Inertia\Inertia;
 use App\Models\CompCourse;
+use App\Models\MoaProcess;
 use Illuminate\Support\Facades\DB;
 
 class CompanyController extends Controller
@@ -14,7 +15,8 @@ class CompanyController extends Controller
     // INDEX METHOD
     public function index()
     {
-        $company_list = Company::all(); 
+
+        $company_list = Company::all();
 
         return Inertia::render('Companies/Index', [
             'company_list' => $company_list,
@@ -70,11 +72,15 @@ class CompanyController extends Controller
     // DELETE METHOD
     public function destroy(Request $request)
     {
-        CompCourse::where('Comp_ID', $request->id)->delete();
+        // Delete from tbl_company first
         Company::where('id', $request->id)->delete();
+
+        // Then delete related records from tbl_moa_process
+        MoaProcess::where('Comp_ID', $request->id)->delete();
 
         return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
     }
+
 
     // DETAILS METHOD
     public function details($id)
