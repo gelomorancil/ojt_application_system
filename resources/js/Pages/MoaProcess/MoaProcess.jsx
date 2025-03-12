@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { usePage, useForm } from '@inertiajs/react';
+import { FaSearch } from 'react-icons/fa';
 
 export default function MoaProcess() {
     const { moaProcesses } = usePage().props;
@@ -18,6 +19,7 @@ export default function MoaProcess() {
     });
 
     const [editing, setEditing] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this company?")) {
@@ -37,10 +39,10 @@ export default function MoaProcess() {
             put(route("moaProcess.update", data.id), {
                 onSuccess: () => {
                     resetForm();
-                    window.location.reload(); // ✅ Refresh the table after update
+                    window.location.reload();
                 },
                 onError: (errors) => {
-                    console.error(errors); // ✅ Log errors for debugging
+                    console.error(errors);
                 },
             });
         }
@@ -67,6 +69,10 @@ export default function MoaProcess() {
         setEditing(false);
     };
 
+    const filteredMoaProcesses = moaProcesses.filter((moa) =>
+        moa.company?.Comp_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <AuthenticatedLayout>
             <div className="p-6 flex flex-row">
@@ -76,7 +82,6 @@ export default function MoaProcess() {
                         {editing ? "Edit MOA Process" : "MOA Process Form"}
                     </h2>
                     <form onSubmit={handleSubmit}>
-                        {/* ✅ Display Selected Company Name */}
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">Company</label>
                             <input
@@ -87,10 +92,8 @@ export default function MoaProcess() {
                             />
                         </div>
 
-                        {/* Hidden Field for Comp_ID */}
                         <input type="hidden" value={data.Comp_ID} />
 
-                        {/* Form Fields */}
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">For Review</label>
                             <input
@@ -146,15 +149,15 @@ export default function MoaProcess() {
                             />
                         </div>
                         <div className="flex space-x-2">
-                        <button
-                            type="submit"
-                            className={`w-full py-2 rounded text-white ${
-                                editing ? "bg-green-500 hover:bg-green-700" : "bg-gray-500 cursor-not-allowed"
-                            }`}
-                            disabled={!editing || processing} // ✅ Disable if no company is selected
-                        >
-                            Update MOA
-                        </button>
+                            <button
+                                type="submit"
+                                className={`w-full py-2 rounded text-white ${
+                                    editing ? "bg-green-500 hover:bg-green-700" : "bg-gray-500 cursor-not-allowed"
+                                }`}
+                                disabled={!editing || processing}
+                            >
+                                Update MOA
+                            </button>
 
                             <button
                                 type="button"
@@ -170,6 +173,19 @@ export default function MoaProcess() {
                 {/* ✅ Table Section (RIGHT) */}
                 <div className="w-3/4 bg-white p-4 rounded-lg shadow border border-gray-300">
                     <h1 className="text-md font-semibold text-gray-700 mb-2">MOA Process List</h1>
+
+                    {/* ✅ Search Bar */}
+                    <div className="mb-4 w-1/2 relative"> {/* Adjust width here */}
+    <FaSearch className="absolute left-3 top-3 text-gray-500" /> {/* Search icon */}
+    <input
+        type="text"
+        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Search by Company Name..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+    />
+</div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse text-sm">
                             <thead>
@@ -185,27 +201,27 @@ export default function MoaProcess() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {moaProcesses.length > 0 ? (
-                                    moaProcesses.map((moa, index) => (
+                                {filteredMoaProcesses.length > 0 ? (
+                                    filteredMoaProcesses.map((moa, index) => (
                                         <tr key={moa.id} className="h-10 border-b">
                                             <td className="p-2">{index + 1}</td>
                                             <td
                                                 className="p-2 text-blue-500 hover:underline cursor-pointer"
                                                 onClick={() => handleEdit(moa)}
                                             >
-                                                {moa.company?.Comp_name || 'N/A'}
+                                                {moa.company?.Comp_name || ''}
                                             </td>
-                                            <td className="p-2">{moa.For_Review || 'N/A'}</td>
-                                            <td className="p-2">{moa.For_Coordinator || 'N/A'}</td>
-                                            <td className="p-2">{moa.For_VCAA || 'N/A'}</td>
-                                            <td className="p-2">{moa.For_Company || 'N/A'}</td>
-                                            <td className="p-2">{moa.For_Notarization || 'N/A'}</td>
-                                            <td className="p-2">{moa.Expiry || 'N/A'}</td>
+                                            <td className="p-2">{moa.For_Review || ''}</td>
+                                            <td className="p-2">{moa.For_Coordinator || ''}</td>
+                                            <td className="p-2">{moa.For_VCAA || ''}</td>
+                                            <td className="p-2">{moa.For_Company || ''}</td>
+                                            <td className="p-2">{moa.For_Notarization || ''}</td>
+                                            <td className="p-2">{moa.Expiry || ''}</td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="9" className="p-2 text-center text-gray-500">
+                                        <td colSpan="8" className="p-2 text-center text-gray-500">
                                             No MOA processes found.
                                         </td>
                                     </tr>
