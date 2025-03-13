@@ -6,7 +6,8 @@ use App\Http\Controllers\MoaController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompCourseController;
-use App\Http\Controllers\ContactController; 
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\MoaProcessController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -59,7 +60,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
     Route::get('/moa/{id}', [MoaController::class, 'show'])->name('moa.show');
-    Route::get('/moa/{id}/edit', [MoaController::class, 'edit'])->name('moa.edit');
+    // Route::get('/moa/{id}/edit', [MoaController::class, 'edit'])->name('moa.edit');
     Route::patch('/moa/{id}', [MoaController::class, 'update'])->name('moa.update');
     Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
     Route::get('/moa/download/{file_name}/{file_type}', [MoaController::class, 'download'])->name('moa.download');
@@ -67,6 +68,7 @@ Route::middleware('auth')->group(function () {
     ->where('file_name', '.*') // Allows handling filenames with spaces or special characters
     ->name('moa.preview');
 });
+
 Route::middleware('auth')->group(function () {
     Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
     Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
@@ -80,9 +82,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
 });
 
-Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
-Route::post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
-
 
 // Route for displaying the courses page
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -94,19 +93,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/courses/{id}', [CourseController::class, 'destroy'])->name('course.destroy');
 });
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/company', [CompanyController::class, 'index'])->name('company');
-//     Route::get('/company/create', [CompanyController::class, 'create'])->name('company.create');
-//     Route::post('/company', [CompanyController::class, 'store'])->name('company.store');
-//     Route::get('/company/{company}/edit', [CompanyController::class, 'edit'])->name('company.edit');
-//     Route::put('/company/{company}', [CompanyController::class, 'update'])->name('company.update');
-//     Route::delete('/company/{id}', [CompanyController::class, 'destroy'])->name('company.destroy');
-//     Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
-// });
 
-// Route::post('/companies/{companyId}/contacts', [ContactController::class, 'store'])->name('contacts.store');
-// Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contacts.update');
-// Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/company/{id}/contacts', [CompanyController::class, 'showContacts'])->name('company.contacts');
+    Route::post('/contacts', [ContactController::class, 'store'])->name('contact.store');
+    Route::put('/contacts/{id}', [ContactController::class, 'update'])->name('contact.update');
+    Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contact.destroy');
+});
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/compcourse', [ContactController::class, 'index'])->name('compcourse.index');
@@ -115,5 +109,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/moaprocess', [MoaProcessController::class, 'index'])->name('moaprocess.index');
+    // Route::get('/moaprocess/create', [MoaProcessController::class, 'create'])->name('moaprocess.create');
+    Route::post('/moaprocess', [MoaProcessController::class, 'store'])->name('moaprocess.store');
+    Route::get('/moaprocess/{moaprocess}/edit', [MoaProcessController::class, 'edit'])->name('moaprocess.edit');
+    Route::put('/moaProcess/{moaprocess}', [MoaProcessController::class, 'update'])->name('moaProcess.update');
+
+    Route::delete('/moa-process/{id}', [MoaProcessController::class, 'destroy'])->name('moaProcess.destroy');
+    Route::get('/company/{id}', [MoaProcessController::class, 'showCompany'])->name('company.show');
+
+});
 
 require __DIR__.'/auth.php';
