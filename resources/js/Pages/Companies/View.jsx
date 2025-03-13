@@ -49,8 +49,8 @@ export default function View({ company, contact_list }) {
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Companies</h2>}>
-            <Head title="Companies" />
+        <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800"></h2>}>
+            <Head title="" />
             <div className="py-12">
                 <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
                     <div className="col-span-1">

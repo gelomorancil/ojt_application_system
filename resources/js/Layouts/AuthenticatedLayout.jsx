@@ -28,28 +28,28 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* Center - Navigation Links */}
                 <div className={`lg:flex gap-6 ${menuOpen ? 'flex flex-col absolute top-16 left-0 w-full bg-white p-4 border-t border-gray-200' : 'hidden lg:flex'}`}>
                     <NavLink href={route('dashboard')} active={route().current('dashboard')} className="nav-item text-black hover:text-gray-700">
-                        <FaTachometerAlt className="w-5 h-5" />
+                        {/* <FaTachometerAlt className="w-5 h-5" /> */}
                         <span>Dashboard</span>
                     </NavLink>
                     <NavLink href={route('companies.index')} active={route().current('companies.index')} className="nav-item text-black hover:text-gray-700">
-                        <FaRegBuilding className="w-5 h-5" />
-                        <span>Companies</span>
+                        {/* <FaRegBuilding className="w-5 h-5" /> */}
+                        <span>Company</span>
                     </NavLink>
                     <NavLink href={route('student')} active={route().current('student')} className="nav-item text-black hover:text-gray-700">
-                        <FaUserGraduate className="w-5 h-5" />
-                        <span>Student</span>
+                        {/* <FaUserGraduate className="w-5 h-5" /> */}
+                        <span>Student Management</span>
                     </NavLink>
                     <NavLink href={route('moa')} active={route().current('moa')} className="nav-item text-black hover:text-gray-700">
-                        <FaFileContract className="w-5 h-5" />
+                        {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>MOA</span>
                     </NavLink>
                     <NavLink href={route('course.index')} active={route().current('course.index')} className="nav-item text-black hover:text-gray-700">
-                        <FaBook className="w-5 h-5" />
+                        {/* <FaBook className="w-5 h-5" /> */}
                         <span>Course</span>
                     </NavLink>
                     <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="nav-item text-black hover:text-gray-700">
-                        <FaFileContract className="w-5 h-5" />
-                        <span>Moa Process</span>
+                        {/* <FaFileContract className="w-5 h-5" /> */}
+                        <span>Moa Processing</span>
                     </NavLink>
                 </div>
 

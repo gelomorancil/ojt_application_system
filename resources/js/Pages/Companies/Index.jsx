@@ -10,7 +10,7 @@ export default function Index({ company_list }) {
         Course: '',
         Address: '',
     });
-    
+
     const [editingCompany, setEditingCompany] = useState(null);
 
     const handleSubmit = (e) => {
@@ -30,7 +30,7 @@ export default function Index({ company_list }) {
             Address: company.Address || '',
         });
     };
-    
+
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to delete this company?')) {
             destroy(route('companies.destroy', id));
@@ -43,8 +43,8 @@ export default function Index({ company_list }) {
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Companies</h2>}>
-            <Head title="Companies" />
+        <AuthenticatedLayout>
+            <Head title="" />
             <div className="py-12">
                 <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
                     <div className="col-span-1">
