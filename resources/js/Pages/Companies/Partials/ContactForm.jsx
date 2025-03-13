@@ -24,9 +24,9 @@ export default function ContactForm({data, setData, handleSubmit, editingContact
                     {editingContact ? 'Update Contact' : 'Add Contact'}
                 </button>
                 {editingContact && (
-                    <button 
-                        type="button" 
-                        onClick={resetForm} 
+                    <button
+                        type="button"
+                        onClick={resetForm}
                         className="w-full bg-gray-500 text-white py-2 rounded mt-2"
                     >
                         Cancel Edit

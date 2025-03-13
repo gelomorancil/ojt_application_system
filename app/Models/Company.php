@@ -9,23 +9,22 @@ class Company extends Model
 {
     use HasFactory;
 
-    protected $table = 'tbl_company'; 
+    protected $table = 'tbl_company';
 
     protected $fillable = ['Comp_name', 'Address', 'Course'];
 
-    public function compCourse()
+    protected static function boot()
     {
-        return $this->hasOne(CompCourse::class, 'Comp_ID', 'id');
-    }
+        parent::boot();
 
-    public function departments()
-    {
-    return $this->hasMany(Department::class, 'Comp_ID');
-    }
-    public function contacts()
-    {
-    return $this->hasMany(ContactPerson::class, 'Comp_ID');
-    }
+        // ✅ Automatically insert a record in tbl_moa_process when a new company is added
+        static::created(function ($company) {
+            MoaProcess::create(['Comp_ID' => $company->id]);
+        });
 
-
+        // ✅ Automatically delete the related record in tbl_moa_process when a company is deleted
+        static::deleting(function ($company) {
+            MoaProcess::where('Comp_ID', $company->id)->delete();
+        });
+    }
 }
