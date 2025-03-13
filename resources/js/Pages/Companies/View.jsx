@@ -17,8 +17,7 @@ export default function View({ company, contact_list }) {
         mode: "",
         Comp_ID: company.id,
     });
-
-    // DIRI MO PARA MA UNDERSTAND MO NGA DIRI ANG PROCESS
+    
     const handleSubmit = (e) => {
         e.preventDefault();
         if (editingContact) {
