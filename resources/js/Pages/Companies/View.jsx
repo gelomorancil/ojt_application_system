@@ -48,16 +48,16 @@ export default function View({ company, contact_list }) {
     };
 
     const handleDelete = (id) => {
-        if (confirm('Are you sure you want to delete this company?')) {
+        if (confirm('Are you sure you want to delete this contact person?')) {
             destroy(route('compcourse.destroy', id));
         }
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Companies</h2>}>
+        <AuthenticatedLayout>
             <Head title="Companies" />
             <div className="py-12">
-                <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
+                <div className="w-11/12 mx-auto grid grid-cols-3">
                     <div className="col-span-1">
                         <CompanyDetails company={company} />
                         <ContactForm Comp_ID={company.id} data={data} setData={setData} handleSubmit={handleSubmit} editingContact={editingContact} resetForm={resetForm} errors={errors}/>

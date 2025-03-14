@@ -43,7 +43,7 @@ export default function Index({ company_list }) {
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Companies</h2>}>
+        <AuthenticatedLayout>
             <Head title="Companies" />
             <div className="py-12">
                 <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
