@@ -58,11 +58,17 @@ class ContactController extends Controller
      */
     public function destroy($id)
     {
-        $contact = Contact::findOrFail($id);
-        $contact->delete();
+        try {
+            // Find the contact, if not found, return an error response
+            $contact = CompCourse::findOrFail($id);
+            $contact->delete();
 
-        return redirect()->back()->with('success', 'Contact deleted successfully.');
+            return redirect()->back()->with('success', 'Contact deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete contact: ' . $e->getMessage());
+        }
     }
+
 
 
 }

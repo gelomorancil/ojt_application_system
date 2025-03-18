@@ -1,64 +1,129 @@
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import CompanyDetails from './Partials/CompanyDetails';
 import ContactList from './Partials/ContactList';
 import ContactForm from './Partials/ContactForm';
-import { useState } from 'react';
+import MoaForm from './Partials/MoaForm';
+import MoaList from './Partials/MoaList';
+import Tabs from './Partials/Tabs';
 
-export default function View({ company, contact_list }) {
+export default function View({ company, contact_list, moa_list }) {
+    const [activeTab, setActiveTab] = useState('contacts');
     const [editingContact, setEditingContact] = useState(null);
+    const [editingMoa, setEditingMoa] = useState(null);
+
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({
         name: "",
         position: "",
         Course: "",
         email: "",
-        contact_number:"",
+        contact_number: "",
         Capacity: "",
         mode: "",
         Comp_ID: company.id,
     });
 
-    // DIRI MO PARA MA UNDERSTAND MO NGA DIRI ANG PROCESS
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (editingContact) {
-            put(route('compcourse.update', editingContact.id), { onSuccess: () => resetForm() });
-        } else {
-            post(route('compcourse.store'), { onSuccess: () => reset() });
+        if (activeTab === "contacts") {
+            if (editingContact) {
+                put(route('compcourse.update', editingContact.id), { onSuccess: () => resetForm() });
+            } else {
+                post(route('compcourse.store'), { onSuccess: () => reset() });
+            }
+        } else if (activeTab === "moa") {
+            if (editingMoa) {
+                put(route('moa.update', editingMoa.id), { onSuccess: () => resetForm() });
+            } else {
+                post(route('moa.store'), { onSuccess: () => reset() });
+            }
         }
         reset();
     };
 
-    const handleEdit = (contact) => {
-        setEditingContact(contact);
-        setData({
-            name: contact?.name || "",
-            position: contact?.position || "",
-            Course: contact?.Course || "",
-            email: contact?.email || "",
-            contact_number: contact?.contact_number || "",
-            Capacity: contact?.Capacity || "",
-            mode: contact?.mode || "",
-            Comp_ID: company.id,
-        });
+    const handleEdit = (item) => {
+        if (activeTab === "contacts") {
+            setEditingContact(item);
+            setData({
+                name: item?.name || "",
+                position: item?.position || "",
+                Course: item?.Course || "",
+                email: item?.email || "",
+                contact_number: item?.contact_number || "",
+                Capacity: item?.Capacity || "",
+                mode: item?.mode || "",
+                Comp_ID: company.id,
+            });
+        } else if (activeTab === "moa") {
+            setEditingMoa(item);
+            setData({
+                title: item?.title || "",
+                Comp_ID: company.id,
+            });
+        }
     };
 
     const resetForm = () => {
         reset();
         setEditingContact(null);
+        setEditingMoa(null);
+    };
+
+    const handleDelete = (id) => {
+        if (confirm("Are you sure you want to delete this item?")) {
+            destroy(`/compcourse/${id}`);
+        }
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold leading-tight text-gray-800"></h2>}>
-            <Head title="" />
+        <AuthenticatedLayout>
             <div className="py-12">
                 <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
                     <div className="col-span-1">
                         <CompanyDetails company={company} />
-                        <ContactForm Comp_ID={company.id} data={data} setData={setData} handleSubmit={handleSubmit} editingContact={editingContact} resetForm={resetForm} errors={errors}/>
+                        {activeTab === 'contacts' && (
+                            <ContactForm
+                                Comp_ID={company.id}
+                                data={data}
+                                setData={setData}
+                                handleSubmit={handleSubmit}
+                                editingContact={editingContact}
+                                resetForm={resetForm}
+                                errors={errors}
+                            />
+                        )}
+{activeTab === 'moa' && (
+    <MoaForm
+        compId={company.id} // Ensure Comp_ID is passed
+        data={data}
+        setData={setData}
+        handleSubmit={handleSubmit}
+        editingMoa={editingMoa}
+        resetForm={resetForm}
+        errors={errors}
+        moaList={moa_list} // Pass moa_list if needed
+    />
+)}
+
                     </div>
                     <div className="col-span-2">
-                        <ContactList contacts={company.contacts} contact_list={contact_list} handleEdit={handleEdit}/>
+                        <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                        {activeTab === "contacts" && (
+                            <ContactList
+                                contacts={company.contacts}
+                                contact_list={contact_list}
+                                handleEdit={handleEdit}
+                                handleDelete={handleDelete}
+                            />
+                        )}
+                        {activeTab === "moa" && (
+                            <MoaList
+                                moa_list={moa_list}
+                                handleEdit={handleEdit}
+                                handleDelete={handleDelete}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

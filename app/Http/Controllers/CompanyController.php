@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Company;
+use App\Models\Moa;
 use App\Models\ContactPerson;
 use Inertia\Inertia;
 use App\Models\CompCourse;
@@ -84,15 +85,17 @@ class CompanyController extends Controller
 
     // DETAILS METHOD
     public function details($id)
-{
-    $company = Company::findOrFail($id);
-    $contact_list = CompCourse::where('Comp_ID', $id)->get();
+    {
+        $company = Company::findOrFail($id);
+        $contact_list = CompCourse::where('Comp_ID', $id)->get();
+        $moa_list = Moa::where('Comp_ID', $id)->get(); // Fetch MOA list for this company
 
-    return Inertia::render('Companies/View', [
-        'company' => $company,
-        'contact_list' => $contact_list
-    ]);
-}
+        return Inertia::render('Companies/View', [
+            'company' => $company,
+            'contact_list' => $contact_list,
+            'moa_list' => $moa_list // Pass MOA list to the frontend
+        ]);
+    }
 
 
     // PROFILE METHOD
@@ -101,6 +104,7 @@ class CompanyController extends Controller
     $company = Company::with('contacts')->findOrFail($id);
     return Inertia::render('Companies/Profile', [
         'company' => $company
+
     ]);
 }
 

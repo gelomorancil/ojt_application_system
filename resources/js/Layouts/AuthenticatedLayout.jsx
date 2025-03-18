@@ -43,10 +43,10 @@ export default function AuthenticatedLayout({ header, children }) {
                         {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>MOA</span>
                     </NavLink>
-                    <NavLink href={route('course.index')} active={route().current('course.index')} className="nav-item text-black hover:text-gray-700">
-                        {/* <FaBook className="w-5 h-5" /> */}
+                    {/* <NavLink href={route('course.index')} active={route().current('course.index')} className="nav-item text-black hover:text-gray-700">
+                        <FaBook className="w-5 h-5" />
                         <span>Course</span>
-                    </NavLink>
+                    </NavLink> */}
                     <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="nav-item text-black hover:text-gray-700">
                         {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>Moa Processing</span>

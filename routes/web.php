@@ -80,6 +80,7 @@ Route::middleware('auth')->group(function () {
 
     // COMPANY PROFILE
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
+
 });
 
 
@@ -108,17 +109,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/compcourse/store', [ContactController::class, 'store'])->name('compcourse.store');
     // Route::put('/compcourse/update', [ContactController::class, 'update'])->name('compcourse.update');
     Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
+    Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
 
 });
 
 Route::middleware('auth')->group(function () {
     Route::get('/moaprocess', [MoaProcessController::class, 'index'])->name('moaprocess.index');
-    // Route::get('/moaprocess/create', [MoaProcessController::class, 'create'])->name('moaprocess.create');
     Route::post('/moaprocess', [MoaProcessController::class, 'store'])->name('moaprocess.store');
     Route::get('/moaprocess/{moaprocess}/edit', [MoaProcessController::class, 'edit'])->name('moaprocess.edit');
     Route::put('/moaProcess/{moaprocess}', [MoaProcessController::class, 'update'])->name('moaProcess.update');
-
-    Route::delete('/moa-process/{id}', [MoaProcessController::class, 'destroy'])->name('moaProcess.destroy');
     Route::get('/company/{id}', [MoaProcessController::class, 'showCompany'])->name('company.show');
 
 });

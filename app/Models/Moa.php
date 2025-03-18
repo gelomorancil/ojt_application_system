@@ -12,6 +12,7 @@ class Moa extends Model
     protected $table = 'tbl_moa';
 
     protected $fillable = [
+        'Comp_ID',
         'File_name',
         'File_type',
         'File',
@@ -20,4 +21,8 @@ class Moa extends Model
         'uploaded_by',
     ];
 
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'Comp_ID', 'id');
+    }
 }
