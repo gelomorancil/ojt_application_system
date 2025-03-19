@@ -20,7 +20,8 @@ class MoaController extends Controller
         ]);
 
         $file = $request->file('file');
-        $fileName = time() . '_' . $file->getClientOriginalName();
+        $fileName = $file->getClientOriginalName();
+
         $filePath = $file->storeAs('moa_files', $fileName, 'public');
 
         Moa::create([

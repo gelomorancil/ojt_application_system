@@ -93,18 +93,18 @@ export default function View({ company, contact_list, moa_list }) {
                                 errors={errors}
                             />
                         )}
-{activeTab === 'moa' && (
-    <MoaForm
-        compId={company.id} // Ensure Comp_ID is passed
-        data={data}
-        setData={setData}
-        handleSubmit={handleSubmit}
-        editingMoa={editingMoa}
-        resetForm={resetForm}
-        errors={errors}
-        moaList={moa_list} // Pass moa_list if needed
-    />
-)}
+                    {activeTab === 'moa' && (
+                        <MoaForm
+                            compId={company.id} // Ensure Comp_ID is passed
+                            data={data}
+                            setData={setData}
+                            handleSubmit={handleSubmit}
+                            editingMoa={editingMoa}
+                            resetForm={resetForm}
+                            errors={errors}
+                            moaList={moa_list} // Pass moa_list if needed
+                        />
+                    )}
 
                     </div>
                     <div className="col-span-2">

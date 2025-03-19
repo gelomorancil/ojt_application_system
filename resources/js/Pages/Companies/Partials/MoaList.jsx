@@ -1,4 +1,8 @@
+import { useState } from "react";
+
 export default function MoaList({ moa_list = [] }) {
+    const [previewFile, setPreviewFile] = useState(null);
+
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full">
             <h3 className="mb-4 text-lg font-semibold">MOA Files</h3>
@@ -21,9 +25,13 @@ export default function MoaList({ moa_list = [] }) {
                                 <td className="px-4 py-4">{moa.Start}</td>
                                 <td className="px-4 py-4">{moa.End}</td>
                                 <td className="px-4 py-4 flex space-x-4">
-                                    <a href={`/storage/${moa.File}`} target="_blank" className="text-blue-500 hover:underline">
-                                        View
-                                    </a>
+                                    {/* Preview Button */}
+                                    <button
+                                        onClick={() => setPreviewFile(`/storage/${moa.File}`)}
+                                        className="text-blue-500 hover:underline"
+                                    >
+                                        Preview
+                                    </button>
                                 </td>
                             </tr>
                         ))
@@ -36,6 +44,21 @@ export default function MoaList({ moa_list = [] }) {
                     )}
                 </tbody>
             </table>
+
+            {/* Modal for PDF Preview */}
+            {previewFile && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-4 rounded-lg shadow-lg max-w-3xl w-full">
+                        <div className="flex justify-between items-center mb-2">
+                            <h2 className="text-lg font-semibold">MOA Preview</h2>
+                            <button onClick={() => setPreviewFile(null)} className="text-red-500 text-lg">
+                                &times;
+                            </button>
+                        </div>
+                        <iframe src={previewFile} className="w-full h-[500px]"></iframe>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
