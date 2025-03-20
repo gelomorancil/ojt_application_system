@@ -1,34 +1,33 @@
 import { Link } from '@inertiajs/react';
 import React, { useState } from 'react';
+import { FiEdit } from 'react-icons/fi';
+import { MdDelete } from 'react-icons/md';
 
-export default function ContactList({ contacts = [], handleDelete = () => {}, contact_list = [], handleEdit = () => {} }) {
+export default function ContactList({ contacts = [], handleDelete = () => { }, contact_list = [], handleEdit = () => { } }) {
     const [activeTab, setActiveTab] = useState('contacts');
 
     return (
-        <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full">
+        <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full min-w-full">
             {/* Tab Navigation */}
             <div className="border-b">
                 <nav className="flex space-x-8">
                     <button
-                        className={`py-2 px-4 font-medium ${
-                            activeTab === 'contacts' ? 'border-b-2 border-black' : 'text-gray-500'
-                        }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'contacts' ? 'border-b-2 border-black' : 'text-gray-500'
+                            }`}
                         onClick={() => setActiveTab('contacts')}
                     >
                         List of Contacts
                     </button>
                     <button
-                        className={`py-2 px-4 font-medium ${
-                            activeTab === 'interns' ? 'border-b-2 border-black' : 'text-gray-500'
-                        }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'interns' ? 'border-b-2 border-black' : 'text-gray-500'
+                            }`}
                         onClick={() => setActiveTab('interns')}
                     >
                         List of Interns
                     </button>
                     <button
-                        className={`py-2 px-4 font-medium ${
-                            activeTab === 'moa' ? 'border-b-2 border-black' : 'text-gray-500'
-                        }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'moa' ? 'border-b-2 border-black' : 'text-gray-500'
+                            }`}
                         onClick={() => setActiveTab('moa')}
                     >
                         List of MOA
@@ -59,17 +58,22 @@ export default function ContactList({ contacts = [], handleDelete = () => {}, co
                                     <td className="align-top px-4 py-4">{index + 1}</td>
                                     <td className="align-top px-4 py-4">{contact.name}</td>
                                     <td className="align-top px-4 py-4">{contact.position}</td>
-                                    <td className="align-top px-4 py-4 max-w-[200px]">{contact.Course || 'N/A'}</td>
+                                    <td className="align-top px-4 py-4 max-w-[200px]">
+                                        {contact.course_names && contact.course_names.length > 0
+                                            ? contact.course_names.join(', ') // Join names with commas
+                                            : 'N/A'}
+                                    </td>
+
                                     <td className="align-top px-4 py-4">{contact.email}</td>
                                     <td className="align-top px-4 py-4">{contact.contact_number}</td>
                                     <td className="align-top px-4 py-4">{contact.Capacity || 'N/A'}</td>
                                     <td className="align-top px-4 py-4">{contact.mode}</td>
-                                    <td className="align-top px-4 py-4 flex gap-2">
-                                        <button onClick={() => handleEdit(contact)} className="text-blue-500 hover:underline">
-                                            Edit
+                                    <td className="align-top px-4 py-4 flex gap-1">
+                                        <button onClick={() => handleEdit(contact)} className="text-blue-500 hover:text-blue-700">
+                                            <FiEdit size={18} />
                                         </button>
-                                        <button onClick={() => handleDelete(contact.id)} className="text-red-500 hover:underline ml-2">
-                                            Delete
+                                        <button onClick={() => handleDelete(contact.id)} className="text-red-500 hover:text-red-700 ml-2">
+                                            <MdDelete size={20} />
                                         </button>
                                     </td>
                                 </tr>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Company extends Model
 {
@@ -11,7 +12,7 @@ class Company extends Model
 
     protected $table = 'tbl_company';
 
-    protected $fillable = ['Comp_name', 'Address', 'Course'];
+    protected $fillable = ['Comp_name', 'Address'];
 
     protected static function boot()
     {
@@ -27,4 +28,14 @@ class Company extends Model
             MoaProcess::where('Comp_ID', $company->id)->delete();
         });
     }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'tbl_comp_course', 'Comp_ID', 'Course'); 
+    }
+
+    public function CompCourse(): HasMany
+{
+    return $this->hasMany(CompCourse::class, 'Comp_ID', 'id');
+}
 }

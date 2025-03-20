@@ -15,10 +15,10 @@ export default function AuthenticatedLayout({ header, children }) {
             <nav className="border-b border-gray-100 bg-white p-4 flex justify-between items-center text-white">
                 {/* Logo and Mobile Menu Button */}
                 <div className="flex items-center gap-4">
-                    <button className="lg:hidden text-white" onClick={() => setMenuOpen(!menuOpen)}>
+                    <button className="lg:hidden text-black" onClick={() => setMenuOpen(!menuOpen)}>
                         <FaBars className="text-2xl" />
                     </button>
-                    <ApplicationLogo className="h-10 w-auto fill-current text-white" />
+                    <ApplicationLogo className="h-10 w-auto fill-current text-black" />
                 </div>
 
                 {/* Navigation Links */}
@@ -33,20 +33,20 @@ export default function AuthenticatedLayout({ header, children }) {
                     </NavLink>
                     <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaUserGraduate className="w-5 h-5" /> */}
-                        <span>Student</span>
+                        <span>Student Management</span>
                     </NavLink>
                     <NavLink href={route('moa')} active={route().current('moa')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>MOA</span>
-                    </NavLink>
+                    </NavLink> */}
                     <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaBook className="w-5 h-5" /> */}
                         <span>Course</span>
                     </NavLink>
                     <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
-    {/* <FaFileContract className="w-5 h-5" /> */}
-    <span>Moa Process</span>
-</NavLink>
+                        {/* <FaFileContract className="w-5 h-5" /> */}
+                        <span>MOA Processing</span>
+                    </NavLink>
 
                 </div>
 
@@ -54,12 +54,12 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div className="flex items-center gap-6">
                     {/* Search Bar */}
                     <div className="relative flex items-center">
-                        <FaSearch className="absolute left-3 text-gray-400" />
+                        {/* <FaSearch className="absolute left-3 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Search..."
                             className="w-64 pl-10 pr-4 py-2 border rounded-lg text-black focus:outline-none focus:ring focus:border-blue-300"
-                        />
+                        /> */}
                     </div>
 
                     {/* User Dropdown */}
