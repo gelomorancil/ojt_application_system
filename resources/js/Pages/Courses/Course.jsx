@@ -164,7 +164,7 @@ const Course = ({ courses, course = null }) => {
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="flex gap-6">
                         {/* Form Section */}
-                        <div className="w-1/3 bg-white shadow-sm sm:rounded-lg p-6">
+                        <div className="w-1/4 bg-white shadow-sm sm:rounded-lg p-6">
                             <h3 className="text-lg font-semibold mb-4">
                                 {isEditing ? "Edit Course" : "Add Course"}
                             </h3>
@@ -174,7 +174,7 @@ const Course = ({ courses, course = null }) => {
                                     { label: "Course", name: "Course", type: "text" },
                                     { label: "OJT Hours", name: "Hrs", type: "number", min: 0, step: 10 },
                                     { label: "Semester", name: "Sem", type: "select", options: ["First", "Second", "Summer"] },
-                                    { label: "School Year", name: "Year", type: "select", options: ["2025-2026", "2024-2025", "2023-2024", "2022-2023"] },
+                                    { label: "School Year", name: "Year", type: "select", options: ["2024-2025", "2025-2026"] },
                                 ].map(({ label, name, type, options, ...rest }) => (
                                     <div className="mb-4" key={name}>
                                         <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -206,7 +206,7 @@ const Course = ({ courses, course = null }) => {
                                     <button
                                         type="submit"
                                         disabled={processing}
-                                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                                        className="bg-gray-400 text-white px-4 py-2 rounded"
                                     >
                                         {isEditing ? "Update Course" : "Add Course"}
                                     </button>
@@ -225,7 +225,7 @@ const Course = ({ courses, course = null }) => {
                         </div>
 
                         {/* Courses Table Section */}
-                        <div className="bg-white p-6 shadow rounded w-2/3">
+                        <div className="bg-white p-6 shadow rounded w-3/4">
                             {/* Header & College Filter */}
                             <div className="flex justify-between items-center mb-4">
                                 <div className="relative">

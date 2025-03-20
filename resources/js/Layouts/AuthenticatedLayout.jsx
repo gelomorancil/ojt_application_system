@@ -12,7 +12,7 @@ export default function AuthenticatedLayout({ header, children }) {
     return (
         <div className="min-h-screen bg-[#F8F6F0] flex flex-col">
             {/* Top Navigation Bar */}
-            <nav className="border-b border-gray-100 bg-gray-900 p-4 flex justify-between items-center text-white">
+            <nav className="border-b border-gray-100 bg-white p-4 flex justify-between items-center text-white">
                 {/* Logo and Mobile Menu Button */}
                 <div className="flex items-center gap-4">
                     <button className="lg:hidden text-white" onClick={() => setMenuOpen(!menuOpen)}>
@@ -24,27 +24,27 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* Navigation Links */}
                 <div className={`lg:flex gap-6 ${menuOpen ? 'flex flex-col absolute top-16 left-0 w-full bg-gray-900 p-4' : 'hidden'}`}>
                     <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-2 text-lg font-medium">
-                        <FaTachometerAlt className="w-5 h-5" />
+                        {/* <FaTachometerAlt className="w-5 h-5" /> */}
                         <span>Dashboard</span>
                     </NavLink>
                     <NavLink href={route('companies.index')} active={route().current('companies.index')} className="flex items-center gap-2 text-lg font-medium">
-                        <FaRegBuilding className="w-5 h-5" />
+                        {/* <FaRegBuilding className="w-5 h-5" /> */}
                         <span>Companies</span>
                     </NavLink>
                     <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-2 text-lg font-medium">
-                        <FaUserGraduate className="w-5 h-5" />
+                        {/* <FaUserGraduate className="w-5 h-5" /> */}
                         <span>Student</span>
                     </NavLink>
                     <NavLink href={route('moa')} active={route().current('moa')} className="flex items-center gap-2 text-lg font-medium">
-                        <FaFileContract className="w-5 h-5" />
+                        {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>MOA</span>
                     </NavLink>
                     <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
-                        <FaBook className="w-5 h-5" />
+                        {/* <FaBook className="w-5 h-5" /> */}
                         <span>Course</span>
                     </NavLink>
                     <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
-    <FaFileContract className="w-5 h-5" />
+    {/* <FaFileContract className="w-5 h-5" /> */}
     <span>Moa Process</span>
 </NavLink>
 

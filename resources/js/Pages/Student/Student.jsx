@@ -3,15 +3,20 @@ import { useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import axios from "axios";
 
-export default function Student({ students = [], courses = [], colleges = [] }) {
+export default function Student({ students = [], courses = [], colleges = [], availableYears = [], selectedYear }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editingStudentId, setEditingStudentId] = useState(null);
+    const [year, setYear] = useState(selectedYear || "");
+
     const { data, setData, post, put, processing, errors, reset } = useForm({
         College: "",
         Course: "",
         Fname: "",
         Lname: "",
-        Student_Num: ""
+        Student_Num: "",
+        Hrs: "",
+        Sem: "",
+        Year: ""
     });
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -19,17 +24,29 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
     const [showCourseFilter, setShowCourseFilter] = useState(false);
     const [selectedCollege, setSelectedCollege] = useState("");
 
-    // Populate form when editing a student
     const editStudent = (studentId) => {
         const studentToEdit = students.find(student => student.id === studentId);
         if (studentToEdit) {
+            // First set the college
             setData({
                 College: studentToEdit.College_Name || "",
-                Course: studentToEdit.Course_Name || "",
+                Course: "", // Temporarily set to empty
                 Fname: studentToEdit.Fname || "",
                 Lname: studentToEdit.Lname || "",
                 Student_Num: studentToEdit.Student_Num || "",
+                Hrs: studentToEdit.Hrs || "",
+                Sem: studentToEdit.Sem || "",
+                Year: studentToEdit.Year || "",
             });
+            
+            // Then set the course in a separate update to ensure college filtering has occurred
+            setTimeout(() => {
+                setData(prevData => ({
+                    ...prevData,
+                    Course: studentToEdit.Course_Name || ""
+                }));
+            }, 0);
+            
             setIsEditing(true);
             setEditingStudentId(studentId);
         }
@@ -88,7 +105,10 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
             Course: "",
             Fname: "",
             Lname: "",
-            Student_Num: ""
+            Student_Num: "",
+            Hrs: "",
+            Sem: "",
+            Year: ""
         });
         setIsEditing(false);
         setEditingStudentId(null);
@@ -101,8 +121,15 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
         const collegeCourses = courses.filter(course => course.College === data.College);
     
         // Ensure the pre-selected course (for editing) is included
-        if (data.Course && !collegeCourses.some(course => course.Course === data.Course)) {
-            collegeCourses.push({ Course: data.Course });
+        if (isEditing && editingStudentId) {
+            const studentToEdit = students.find(student => student.id === editingStudentId);
+            if (studentToEdit && studentToEdit.Course_Name && 
+                !collegeCourses.some(course => course.Course === studentToEdit.Course_Name)) {
+                collegeCourses.push({ 
+                    Course: studentToEdit.Course_Name, 
+                    College: studentToEdit.College_Name 
+                });
+            }
         }
     
         // Remove duplicates
@@ -114,7 +141,7 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
         });
     
         return Array.from(uniqueCoursesMap.values());
-    }, [data.College, data.Course, courses]);    
+    }, [data.College, courses, isEditing, editingStudentId, students]);   
 
     // Filter courses for dropdown based on selected college (for table filtering)
     const collegeFilteredCourses = useMemo(() => {
@@ -138,12 +165,62 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
     // Reset course selection when college changes
     useEffect(() => {
         setData('Course', '');
+        setData('Hrs', '');
     }, [data.College]);
 
     // Reset course filter when college selection changes
     useEffect(() => {
         setSelectedCourseFilter('');
     }, [selectedCollege]);
+
+    useEffect(() => {
+        // Fetch OJT hours from the database
+        axios.get("/api/ojt-hours") // Adjust API endpoint as needed
+            .then(response => {
+                const hoursData = response.data.reduce((acc, item) => {
+                    acc[item.Course_Name] = item.Hours; // Map Course_Name to Hours
+                    return acc;
+                }, {});
+                setOjtHours(hoursData);
+            })
+            .catch(error => console.error("Error fetching OJT hours:", error));
+    }, []);
+
+    // Update hours when course changes
+    useEffect(() => {
+        if (data.Course) {
+            // Find the course in the courses array
+            const selectedCourse = courses.find(
+                course => course.College === data.College && course.Course === data.Course
+            );
+            
+            // Set the hours based on the selected course
+            if (selectedCourse && selectedCourse.Hours) {
+                setData('Hrs', selectedCourse.Hours);
+            } else {
+                // If no hours defined, set a default value or leave empty
+                setData('Hrs', '');
+            }
+        } else {
+            setData('Hrs', '');
+        }
+    }, [data.Course, data.College, courses]);
+
+    const handleSelection = (name, value) => {
+        setData(name, value);
+    
+        if (name === "Course") {
+            // Find the selected course
+            const selectedCourse = courses.find(c => c.Course === value);
+    
+            if (selectedCourse) {
+                // Update OJT Hours only, not affecting Year
+                setData("Hrs", selectedCourse.Hours || "");
+            } else {
+                setData("Hrs", "");
+            }
+        }
+    };    
 
     // Filter students based on selected college, search, and course filter
     const filteredStudents = useMemo(() => {
@@ -203,21 +280,22 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
             <Head title="Student Management" />
 
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
                     <div className="flex gap-6">
                         {/* Form Section */}
-                        <div className="w-1/3 bg-white shadow-sm rounded-lg p-6">
+                        <div className="w-1/4 bg-white shadow-sm rounded-lg p-6">
                             <h3 className="text-lg font-semibold mb-4">
                                 {isEditing ? "Edit Student" : "Add Student"}
                             </h3>
                             <form onSubmit={handleSubmit}>
                             {[
+                                { label: "Student Number", name: "Student_Num", type: "text" },
+                                { label: "First Name", name: "Fname", type: "text" },                                
+                                { label: "Last Name", name: "Lname", type: "text" },
                                 { label: "College", name: "College", type: "select", options: colleges },
                                 { label: "Course", name: "Course", type: "select", options: filteredCourses.map(c => c.Course) },
-                                { label: "First Name", name: "Fname", type: "text" },
-                                { label: "Last Name", name: "Lname", type: "text" },
-                                { label: "Student Number", name: "Student_Num", type: "text" },
-                            ].map(({ label, name, type, options }, index) => (
+                                { label: "School Year", name: "Year", type: "select", options: ["2024-2025", "2025-2026"] },
+                            ].map(({ label, name, type, options, disabled }, index) => (
                                 <div className="mb-4" key={`${name}-${index}`}>
                                     <label className="block text-sm font-medium text-gray-700">{label}</label>
                                     {type === "select" ? (
@@ -225,51 +303,68 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
                                             className="w-full border rounded-lg p-2"
                                             value={data[name]}
                                             onChange={(e) => setData(name, e.target.value)}
-                                            disabled={name === "Course" && !data.College} // Disable Course dropdown if no College is selected
                                         >
                                             <option value="">Select {label}</option>
-                                            {options.map((option, optIndex) => (
-                                                <option key={`${name}-option-${optIndex}`} value={option}>
-                                                    {option}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        
+                                            {/* School Year Dropdown (Fixed Options) */}
+                                            {name === "Year"
+                                                ? ["2024-2025", "2025-2026"].map((option, optIndex) => (
+                                                    <option key={`${name}-option-${optIndex}`} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))
+                                                : // Course Dropdown (Filtered Options)
+                                                name === "Course"
+                                                ? filteredCourses.map((course, index) => (
+                                                    <option key={`course-${index}`} value={course.Course}>
+                                                        {course.Course}
+                                                    </option>
+                                                ))
+                                                : // Default Dropdown (Generic Options)
+                                                options.map((option, optIndex) => (
+                                                    <option key={`${name}-option-${optIndex}`} value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))
+                                            }
+                                        </select>                                                                   
                                     ) : (
                                         <input
                                             type={type}
                                             className="w-full border rounded-lg p-2"
                                             value={data[name]}
                                             onChange={(e) => setData(name, e.target.value)}
+                                            disabled={disabled}
                                         />
                                     )}
                                     {errors[name] && <p className="text-red-500">{errors[name]}</p>}
                                 </div>
                             ))}
 
-                                <div className="mt-4 flex gap-2">
+                            <div className="mt-4 flex gap-2">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="bg-gray-400 text-white px-4 py-2 rounded"
+                                >
+                                    {isEditing ? "Update Student" : "Add Student"}
+                                </button>
+                                
+                                {isEditing && (
                                     <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                                        type="button"
+                                        onClick={resetForm}
+                                        className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
                                     >
-                                        {isEditing ? "Update Student" : "Add Student"}
+                                        Cancel
                                     </button>
-                                    
-                                    {isEditing && (
-                                        <button
-                                            type="button"
-                                            onClick={resetForm}
-                                            className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
-                                        >
-                                            Cancel
-                                        </button>
-                                    )}
-                                </div>
-                            </form>
+                                )}
+                            </div>
+                        </form>
                         </div>
 
                         {/* Table Section */}
-                        <div className="bg-white p-6 shadow rounded w-2/3">
+                        <div className="bg-white p-6 shadow rounded w-3/4">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-semibold">Student List</h2>
 
@@ -329,7 +424,7 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
                                             </svg>
                                             Filter Course
                                             {selectedCourseFilter && (
-                                                <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
+                                                <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
                                                     {selectedCourseFilter}
                                                 </span>
                                             )}
@@ -366,51 +461,63 @@ export default function Student({ students = [], courses = [], colleges = [] }) 
                                 </div>
                             </div>
 
-                            <table className="min-w-full border">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-4 py-2 text-left"></th>
-                                        <th className="px-4 py-2 text-left">Student Number</th>
-                                        <th className="px-4 py-2 text-left">First Name</th>
-                                        <th className="px-4 py-2 text-left">Last Name</th>
-                                        <th className="px-4 py-2 text-left">College</th>
-                                        <th className="px-4 py-2 text-left">Course</th>
-                                        <th className="px-4 py-2 text-left">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white">
-                                    {filteredStudents.length > 0 ? (
-                                        filteredStudents.map((student, index) => (
-                                            <tr key={student.id} className="border-t">
-                                                <td className="px-4 py-2">{index + 1}</td>
-                                                <td className="px-4 py-2">{student.Student_Num}</td>
-                                                <td className="px-4 py-2">{student.Fname}</td>
-                                                <td className="px-4 py-2">{student.Lname}</td>
-                                                <td className="px-4 py-2">{student.College_Name || "N/A"}</td>
-                                                <td className="px-4 py-2">{student.Course_Name || "N/A"}</td>
-                                                <td className="px-4 py-2">
-                                                    <button onClick={() => editStudent(student.id)} className="text-blue-600 mr-4" >Edit</button>
-                                                    <button onClick={() => handleDelete(student.id)} className="text-red-600">
-                                                        Delete
-                                                    </button>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full border">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-2 text-left"></th>
+                                            <th className="px-4 py-2 text-left">Student Number</th>
+                                            <th className="px-4 py-2 text-left">Name</th>
+                                            <th className="px-4 py-2 text-left">College</th>
+                                            <th className="px-4 py-2 text-left">Course</th>
+                                            <th className="px-4 py-2">OJT Hours</th>
+                                            <th className="px-4 py-2">Semester</th>
+                                            <th className="px-4 py-2">Year</th>
+                                            <th className="px-4 py-2 text-left">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white">
+                                        {filteredStudents.length > 0 ? (
+                                            filteredStudents.map((student, index) => (
+                                                <tr key={student.id} className="border-t">
+                                                    <td className="px-4 py-2">{index + 1}</td>
+                                                    <td className="px-4 py-2 text-black">
+                                                        <Link href={route('student.show', student.id)} className="text-black">
+                                                            {student.Student_Num}
+                                                        </Link>
+                                                    </td>
+                                                    <td className="px-4 py-2">{`${student.Lname}, ${student.Fname}`}</td>
+                                                    <td className="px-4 py-2">{student.College_Name || "N/A"}</td>
+                                                    <td className="px-4 py-2">{student.Course_Name || "N/A"}</td>
+                                                    <td className="px-4 py-2">{student.Ojt_Hours || "N/A"}</td>
+                                                    <td className="px-4 py-2">{student.Semester || "N/A"}</td>                                             
+                                                    <td className="px-4 py-2">{student.Year || student.School_Year || "N/A"}</td>
+                                                    <td className="px-4 py-2">
+                                                        <button onClick={() => editStudent(student.id)} className="text-blue-600 mr-4">
+                                                            Edit
+                                                        </button>
+                                                        <button onClick={() => handleDelete(student.id)} className="text-red-600">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="9" className="px-4 py-6 text-center text-gray-500">
+                                                    {!selectedCollege ? (
+                                                        "Please select a college to view students."
+                                                    ) : (
+                                                        searchTerm || selectedCourseFilter ?
+                                                            "No students found matching your search criteria." :
+                                                            "No students found for this college. Add a new student using the form."
+                                                    )}
                                                 </td>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="7" className="px-4 py-6 text-center text-gray-500">
-                                                {!selectedCollege ? (
-                                                    "Please select a college to view students."
-                                                ) : (
-                                                    searchTerm || selectedCourseFilter ?
-                                                        "No students found matching your search criteria." :
-                                                        "No students found for this college. Add a new student using the form."
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

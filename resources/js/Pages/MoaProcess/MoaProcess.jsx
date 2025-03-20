@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { usePage, useForm } from '@inertiajs/react';
+import { FaSearch } from 'react-icons/fa';
+import { AlertCircle, CalendarDays, Clock } from 'lucide-react';
+
 
 export default function MoaProcess() {
     const { moaProcesses } = usePage().props;
@@ -18,6 +21,7 @@ export default function MoaProcess() {
     });
 
     const [editing, setEditing] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this company?")) {
@@ -37,10 +41,10 @@ export default function MoaProcess() {
             put(route("moaProcess.update", data.id), {
                 onSuccess: () => {
                     resetForm();
-                    window.location.reload(); // ✅ Refresh the table after update
+                    window.location.reload();
                 },
                 onError: (errors) => {
-                    console.error(errors); // ✅ Log errors for debugging
+                    console.error(errors);
                 },
             });
         }
@@ -67,6 +71,42 @@ export default function MoaProcess() {
         setEditing(false);
     };
 
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const updatedMoaProcesses = moaProcesses.map((moa) => {
+        const expiryDate = new Date(moa.Expiry);
+        expiryDate.setHours(0, 0, 0, 0);
+        const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+        return {
+            ...moa,
+            daysLeft,
+            isExpiringSoon: daysLeft <= 7 && daysLeft > 0,
+            isExpired: daysLeft < 0,
+            isExpiringToday: daysLeft === 0,
+        };
+    });
+
+    const [filter, setFilter] = useState('');
+
+    const filteredMoaProcesses = updatedMoaProcesses
+    .filter((moa) => {
+        const matchesSearch = moa.company?.Comp_name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+        let matchesFilter = true;
+        if (filter === "On Process") matchesFilter = !moa.Expiry;
+        if (filter === "Expired") matchesFilter = moa.isExpired && moa.Expiry; // Ensure it has an expiry date
+        if (filter === "Today's Expiry") matchesFilter = moa.isExpiringToday;
+        if (filter === "Upcoming Expiry") matchesFilter = moa.isExpiringSoon && !moa.isExpiringToday;
+
+        return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => b.id - a.id); // Sorting by ID in descending order (newest first)
+
+
+
     return (
         <AuthenticatedLayout>
             <div className="p-6 flex flex-row">
@@ -76,7 +116,6 @@ export default function MoaProcess() {
                         {editing ? "Edit MOA Process" : "MOA Process Form"}
                     </h2>
                     <form onSubmit={handleSubmit}>
-                        {/* ✅ Display Selected Company Name */}
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">Company</label>
                             <input
@@ -87,10 +126,8 @@ export default function MoaProcess() {
                             />
                         </div>
 
-                        {/* Hidden Field for Comp_ID */}
                         <input type="hidden" value={data.Comp_ID} />
 
-                        {/* Form Fields */}
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">For Review</label>
                             <input
@@ -100,6 +137,7 @@ export default function MoaProcess() {
                                 onChange={(e) => setData('For_Review', e.target.value)}
                             />
                         </div>
+
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">For Coordinator</label>
                             <input
@@ -107,8 +145,10 @@ export default function MoaProcess() {
                                 className="w-full border-gray-300 rounded-md shadow-sm p-2"
                                 value={data.For_Coordinator}
                                 onChange={(e) => setData('For_Coordinator', e.target.value)}
+                                disabled={!data.For_Review} // Disabled if For Review is empty
                             />
                         </div>
+
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">For VCAA</label>
                             <input
@@ -116,8 +156,10 @@ export default function MoaProcess() {
                                 className="w-full border-gray-300 rounded-md shadow-sm p-2"
                                 value={data.For_VCAA}
                                 onChange={(e) => setData('For_VCAA', e.target.value)}
+                                disabled={!data.For_Coordinator} // Disabled if For Coordinator is empty
                             />
                         </div>
+
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">For Company</label>
                             <input
@@ -125,8 +167,10 @@ export default function MoaProcess() {
                                 className="w-full border-gray-300 rounded-md shadow-sm p-2"
                                 value={data.For_Company}
                                 onChange={(e) => setData('For_Company', e.target.value)}
+                                disabled={!data.For_VCAA} // Disabled if For VCAA is empty
                             />
                         </div>
+
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">For Notarization</label>
                             <input
@@ -134,8 +178,10 @@ export default function MoaProcess() {
                                 className="w-full border-gray-300 rounded-md shadow-sm p-2"
                                 value={data.For_Notarization}
                                 onChange={(e) => setData('For_Notarization', e.target.value)}
+                                disabled={!data.For_Company} // Disabled if For Company is empty
                             />
                         </div>
+
                         <div className="mb-3">
                             <label className="block text-gray-700 text-sm font-medium">Expiry</label>
                             <input
@@ -143,18 +189,20 @@ export default function MoaProcess() {
                                 className="w-full border-gray-300 rounded-md shadow-sm p-2"
                                 value={data.Expiry}
                                 onChange={(e) => setData('Expiry', e.target.value)}
+                                disabled={!data.For_Notarization} // Disabled if For Notarization is empty
                             />
                         </div>
+
                         <div className="flex space-x-2">
-                        <button
-                            type="submit"
-                            className={`w-full py-2 rounded text-white ${
-                                editing ? "bg-green-500 hover:bg-green-700" : "bg-gray-500 cursor-not-allowed"
-                            }`}
-                            disabled={!editing || processing} // ✅ Disable if no company is selected
-                        >
-                            Update MOA
-                        </button>
+                            <button
+                                type="submit"
+                                className={`w-full py-2 rounded text-white ${
+                                    editing ? "bg-green-500 hover:bg-green-700" : "bg-gray-500 cursor-not-allowed"
+                                }`}
+                                disabled={!editing || processing}
+                            >
+                                Update MOA
+                            </button>
 
                             <button
                                 type="button"
@@ -167,9 +215,38 @@ export default function MoaProcess() {
                     </form>
                 </div>
 
+
                 {/* ✅ Table Section (RIGHT) */}
                 <div className="w-3/4 bg-white p-4 rounded-lg shadow border border-gray-300">
                     <h1 className="text-md font-semibold text-gray-700 mb-2">MOA Process List</h1>
+
+                    {/* ✅ Search Bar */}
+                    <div className="mb-4 flex space-x-4">
+                            {/* Search Bar */}
+                            <div className="relative w-1/2">
+                                <FaSearch className="absolute left-3 top-3 text-gray-500" />
+                                <input
+                                    type="text"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Search by Company Name..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+
+                            {/* Filter Dropdown */}
+                            <select
+                                className="border border-gray-300 rounded-md py-2 px-4 shadow-sm"
+                                onChange={(e) => setFilter(e.target.value)}
+                            >
+                                <option value="">All</option>
+                                <option value="On Process">On Process</option>
+                                <option value="Expired">Expired</option>
+                                <option value="Today's Expiry">Today's Expiry</option>
+                                <option value="Upcoming Expiry">Upcoming Expiry</option>
+                            </select>
+                    </div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse text-sm">
                             <thead>
@@ -185,32 +262,54 @@ export default function MoaProcess() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {moaProcesses.length > 0 ? (
-                                    moaProcesses.map((moa, index) => (
-                                        <tr key={moa.id} className="h-10 border-b">
+                                {filteredMoaProcesses.length > 0 ? (
+                                    filteredMoaProcesses.map((moa, index) => (
+                                            <tr
+                                                key={moa.id}
+                                                className={`h-10 border-b
+                                                    ${moa.Expiry ? (moa.isExpired ? "bg-red-100" :
+                                                    moa.isExpiringToday ? "bg-orange-100" :
+                                                    moa.isExpiringSoon ? "bg-yellow-100" : "") : ""}`}
+                                            >
+
                                             <td className="p-2">{index + 1}</td>
                                             <td
                                                 className="p-2 text-blue-500 hover:underline cursor-pointer"
                                                 onClick={() => handleEdit(moa)}
                                             >
-                                                {moa.company?.Comp_name || 'N/A'}
+                                                {moa.company?.Comp_name || ''}
                                             </td>
-                                            <td className="p-2">{moa.For_Review || 'N/A'}</td>
-                                            <td className="p-2">{moa.For_Coordinator || 'N/A'}</td>
-                                            <td className="p-2">{moa.For_VCAA || 'N/A'}</td>
-                                            <td className="p-2">{moa.For_Company || 'N/A'}</td>
-                                            <td className="p-2">{moa.For_Notarization || 'N/A'}</td>
-                                            <td className="p-2">{moa.Expiry || 'N/A'}</td>
+                                            <td className="p-2">{moa.For_Review || ''}</td>
+                                            <td className="p-2">{moa.For_Coordinator || ''}</td>
+                                            <td className="p-2">{moa.For_VCAA || ''}</td>
+                                            <td className="p-2">{moa.For_Company || ''}</td>
+                                            <td className="p-2">{moa.For_Notarization || ''}</td>
+                                            <td className="p-2 flex items-center gap-2">
+                                                {!moa.Expiry ? (
+                                                    <>
+                                                        <span className="text-gray-600">Still in Process</span>
+                                                        <Clock className="text-gray-600" size={18} /> {/* Neutral Gray */}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {moa.Expiry}
+                                                        {moa.isExpired && <AlertCircle className="text-red-600" size={18} />}
+                                                        {moa.isExpiringToday && <Clock className="text-orange-600" size={18} />}
+                                                        {moa.isExpiringSoon && !moa.isExpiringToday && <CalendarDays className="text-yellow-600" size={18} />}
+                                                    </>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="9" className="p-2 text-center text-gray-500">
+                                        <td colSpan="8" className="p-2 text-center text-gray-500">
                                             No MOA processes found.
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
+
                         </table>
                     </div>
                 </div>

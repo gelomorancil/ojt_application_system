@@ -11,10 +11,15 @@ class OjtHours extends Model
 
     protected $table = 'tbl_ojt_hrs';
 
-    protected $fillable = ['Course_ID', 'Hrs', 'Sem', 'Year'];
+    protected $fillable = ['Student_Num', 'Course_ID', 'Hrs', 'Sem', 'Year'];
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'Student_Num', 'Student_Num');
+    }
 
     public function course()
     {
-        return $this->hasMany(OjtHours::class, 'Course_ID', 'id');
+        return $this->belongsTo(Course::class, 'Course_ID', 'id');
     }
 }
