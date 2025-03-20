@@ -5,12 +5,12 @@ import ContactList from './Partials/ContactList';
 import ContactForm from './Partials/ContactForm';
 import { useState } from 'react';
 
-export default function View({ company, contact_list }) {
+export default function View({ company, contact_list, course_list }) {
     const [editingContact, setEditingContact] = useState(null);
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({
         name: "",
         position: "",
-        Course: "",
+        Course_id: [],
         email: "",
         contact_number:"",
         Capacity: "",
@@ -19,21 +19,23 @@ export default function View({ company, contact_list }) {
     });
     
     const handleSubmit = (e) => {
+        console.log(data)
         e.preventDefault();
         if (editingContact) {
-            put(route('compcourse.update', editingContact.id), { onSuccess: () => resetForm() });
+            put(route('contact.update', editingContact.id), { onSuccess: () => resetForm() });
         } else {
-            post(route('compcourse.store'), { onSuccess: () => reset() });
+            post(route('contact.store'), { onSuccess: () => reset() });
         }
         reset();
     };
 
     const handleEdit = (contact) => {
+        // console.log(contact);
         setEditingContact(contact);
         setData({
             name: contact?.name || "",
             position: contact?.position || "",
-            Course: contact?.Course || "",
+            Course_id: contact?.Course_id || [],
             email: contact?.email || "",
             contact_number: contact?.contact_number || "",
             Capacity: contact?.Capacity || "",
@@ -41,7 +43,7 @@ export default function View({ company, contact_list }) {
             Comp_ID: company.id,
         });
     };
-
+    
     const resetForm = () => {
         reset();
         setEditingContact(null);
@@ -60,7 +62,8 @@ export default function View({ company, contact_list }) {
                 <div className="w-11/12 mx-auto grid grid-cols-3">
                     <div className="col-span-1">
                         <CompanyDetails company={company} />
-                        <ContactForm Comp_ID={company.id} data={data} setData={setData} handleSubmit={handleSubmit} editingContact={editingContact} resetForm={resetForm} errors={errors}/>
+                        <ContactForm Comp_ID={company.id} data={data} setData={setData} handleSubmit={handleSubmit} editingContact={editingContact} resetForm={resetForm} errors={errors}
+                        course_list={course_list}/>
                     </div>
                     <div className="col-span-2">
                         <ContactList contacts={company.contacts} contact_list={contact_list} handleEdit={handleEdit} handleDelete={handleDelete}/>

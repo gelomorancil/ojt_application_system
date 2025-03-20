@@ -3,25 +3,41 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Company;
-use App\Models\ContactPerson;
-use Inertia\Inertia;
-use App\Models\CompCourse;
-use App\Models\MoaProcess;
 use Illuminate\Support\Facades\DB;
+use App\Models\Company;
+use Inertia\Inertia;
+use App\Models\MoaProcess;
+use App\Models\Course;
+use App\Models\CompCourse;
 
 class CompanyController extends Controller
 {
     // INDEX METHOD
     public function index()
     {
-
-        $company_list = Company::all();
-
+        $company_list = Company::select('id', 'Comp_name', 'Address')
+            ->with('CompCourse') // Ensure the relationship is loaded
+            ->get()
+            ->map(function ($company) {
+                // Extract course IDs from CompCourse records
+                $courseIds = collect($company->CompCourse)->pluck('Course_id')->map(function ($courseId) {
+                    // Decode only if it's a string (to prevent errors)
+                    return is_string($courseId) ? json_decode($courseId, true) : $courseId;
+                })->flatten()->unique()->toArray();
+    
+                // Fetch course names
+                $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
+                $company->course_names = implode(', ', $courses); // Store as a comma-separated string
+    
+                return $company;
+            });
+    
         return Inertia::render('Companies/Index', [
             'company_list' => $company_list,
         ]);
     }
+    
+
 
     // STORE METHOD
     public function store(Request $request)
@@ -29,79 +45,95 @@ class CompanyController extends Controller
         $request->validate([
             'Comp_name' => 'required',
             'Address' => 'required',
-            'Course' => 'required',
         ]);
 
         Company::create([
             'Comp_name' => $request->Comp_name,
             'Address' => $request->Address,
-            'Course' => $request->Course,
         ]);
 
         return redirect()->route('companies.index');
     }
 
+    // EDIT METHOD
     public function edit($id)
-{
-    $company = Company::findOrFail($id);
+    {
+        $company = Company::findOrFail($id);
 
-    return Inertia::render('Companies/Edit', [
-        'company' => $company,
-    ]);
-}
+        return Inertia::render('Companies/Edit', [
+            'company' => $company,
+        ]);
+    }
 
-
-    // UPDATE METHOD (FIXED)
+    // UPDATE METHOD
     public function update(Request $request, $id)
     {
-        $validatedData = $request->validate([
+        $request->validate([
             'Comp_name' => 'required',
             'Address' => 'required',
-            'Course' => 'required',
         ]);
 
         $company = Company::findOrFail($id);
+
+        // Update company details
         $company->update([
-            'Comp_name' => $validatedData['Comp_name'],
-            'Course' => $validatedData['Course'],
-            'Address' => $validatedData['Address'],
+            'Comp_name' => $request->Comp_name,
+            'Address' => $request->Address,
         ]);
 
         return redirect()->route('companies.index');
     }
-    // DELETE METHOD
-    public function destroy(Request $request)
-    {
-        // Delete from tbl_company first
-        Company::where('id', $request->id)->delete();
 
-        // Then delete related records from tbl_moa_process
-        MoaProcess::where('Comp_ID', $request->id)->delete();
+    // DELETE METHOD
+    public function destroy($id)
+    {
+        // Delete related records first
+        MoaProcess::where('Comp_ID', $id)->delete();
+
+        // Then delete the company
+        Company::destroy($id);
 
         return redirect()->route('companies.index')->with('success', 'Company deleted successfully.');
     }
-
 
     // DETAILS METHOD
     public function details($id)
 {
     $company = Company::findOrFail($id);
-    $contact_list = CompCourse::where('Comp_ID', $id)->get();
+    $course_list = Course::all();
+
+    $contact_list = CompCourse::where('Comp_ID', $id)->get()->map(function ($contact) {
+        // Ensure Course_id is properly formatted
+        $courseIds = is_string($contact->Course_id) ? json_decode($contact->Course_id, true) : $contact->Course_id;
+
+        // If Course_id is still not an array, make it an empty array
+        if (!is_array($courseIds)) {
+            $courseIds = [];
+        }
+
+        // Fetch course names based on IDs
+        $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
+
+        // Attach course names to the contact object
+        $contact->course_names = $courses;
+        return $contact;
+    });
 
     return Inertia::render('Companies/View', [
-        'company' => $company,
-        'contact_list' => $contact_list
-    ]);
-}
+    'company' => $company,
+    'course_list' => $course_list,
+    'contact_list' => $contact_list ?? [], // Ensure it's at least an empty array
+]);
 
+}
 
     // PROFILE METHOD
     public function profile($id)
-{
-    $company = Company::with('contacts')->findOrFail($id);
-    return Inertia::render('Companies/Profile', [
-        'company' => $company
-    ]);
-}
+    {
+        $company = Company::findOrFail($id);
 
+        return Inertia::render('Companies/Profile', [
+            'company' => $company
+        ]);
+    }
 }

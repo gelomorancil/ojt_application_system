@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { MdDelete } from 'react-icons/md';
 
-export default function ContactList({ contacts = [], handleDelete = () => {}, contact_list = [], handleEdit = () => {} }) {
+export default function ContactList({ contacts = [], handleDelete = () => { }, contact_list = [], handleEdit = () => { } }) {
     const [activeTab, setActiveTab] = useState('contacts');
 
     return (
@@ -12,25 +12,22 @@ export default function ContactList({ contacts = [], handleDelete = () => {}, co
             <div className="border-b">
                 <nav className="flex space-x-8">
                     <button
-                        className={`py-2 px-4 font-medium ${
-                            activeTab === 'contacts' ? 'border-b-2 border-black' : 'text-gray-500'
-                        }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'contacts' ? 'border-b-2 border-black' : 'text-gray-500'
+                            }`}
                         onClick={() => setActiveTab('contacts')}
                     >
                         List of Contacts
                     </button>
                     <button
-                        className={`py-2 px-4 font-medium ${
-                            activeTab === 'interns' ? 'border-b-2 border-black' : 'text-gray-500'
-                        }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'interns' ? 'border-b-2 border-black' : 'text-gray-500'
+                            }`}
                         onClick={() => setActiveTab('interns')}
                     >
                         List of Interns
                     </button>
                     <button
-                        className={`py-2 px-4 font-medium ${
-                            activeTab === 'moa' ? 'border-b-2 border-black' : 'text-gray-500'
-                        }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'moa' ? 'border-b-2 border-black' : 'text-gray-500'
+                            }`}
                         onClick={() => setActiveTab('moa')}
                     >
                         List of MOA
@@ -61,7 +58,12 @@ export default function ContactList({ contacts = [], handleDelete = () => {}, co
                                     <td className="align-top px-4 py-4">{index + 1}</td>
                                     <td className="align-top px-4 py-4">{contact.name}</td>
                                     <td className="align-top px-4 py-4">{contact.position}</td>
-                                    <td className="align-top px-4 py-4 max-w-[200px]">{contact.Course || 'N/A'}</td>
+                                    <td className="align-top px-4 py-4 max-w-[200px]">
+                                        {contact.course_names && contact.course_names.length > 0
+                                            ? contact.course_names.join(', ') // Join names with commas
+                                            : 'N/A'}
+                                    </td>
+
                                     <td className="align-top px-4 py-4">{contact.email}</td>
                                     <td className="align-top px-4 py-4">{contact.contact_number}</td>
                                     <td className="align-top px-4 py-4">{contact.Capacity || 'N/A'}</td>

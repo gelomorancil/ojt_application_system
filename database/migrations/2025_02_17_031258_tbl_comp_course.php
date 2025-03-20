@@ -9,7 +9,7 @@ return new class extends Migration {
         Schema::create('tbl_comp_course', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('Comp_ID'); // Foreign key to tbl_company
-            $table->string('Course');  // Foreign key to tbl_course
+            $table->json('Course_id')->nullable(); // ✅ Changed to JSON
             $table->integer('Capacity')->nullable();
             $table->string('mode', 50)->nullable(); // On-site, Blended, Work from Home
             $table->string('name'); // Contact Person's Full Name
@@ -18,9 +18,8 @@ return new class extends Migration {
             $table->string('contact_number', 20);
             $table->timestamps();
 
-            // // Foreign Key Constraints
-            // $table->foreign('Comp_ID')->references('id');
-            // $table->foreign('Course')->references('id');
+            // Foreign Key Constraints (Uncomment if needed)
+            // $table->foreign('Comp_ID')->references('id')->on('tbl_company')->onDelete('cascade');
         });
     }
 

@@ -5,10 +5,12 @@ import CompanyCreate from './Partials/CompanyCreate';
 import CompanyList from './Partials/CompanyList';
 
 export default function Index({ company_list }) {
+    console.log(company_list);
+    
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({
         Comp_name: '',
-        Course: '',
         Address: '',
+        Courses: '',
     });
     
     const [editingCompany, setEditingCompany] = useState(null);
@@ -26,7 +28,6 @@ export default function Index({ company_list }) {
         setEditingCompany(company);
         setData({
             Comp_name: company.Comp_name || '',
-            Course: company.Course || '',
             Address: company.Address || '',
         });
     };
@@ -48,10 +49,21 @@ export default function Index({ company_list }) {
             <div className="py-12">
                 <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
                     <div className="col-span-1">
-                        <CompanyCreate data={data} setData={setData} handleSubmit={handleSubmit} editingCompany={editingCompany} resetForm={resetForm} errors={errors}/>
+                        <CompanyCreate 
+                            data={data} 
+                            setData={setData} 
+                            handleSubmit={handleSubmit} 
+                            editingCompany={editingCompany} 
+                            resetForm={resetForm} 
+                            errors={errors} 
+                        />
                     </div>
                     <div className="col-span-2">
-                        <CompanyList company_list={company_list} handleEdit={handleEdit} handleDelete={handleDelete} />
+                        <CompanyList 
+                            company_list={company_list} 
+                            handleEdit={handleEdit} 
+                            handleDelete={handleDelete} 
+                        />
                     </div>
                 </div>
             </div>

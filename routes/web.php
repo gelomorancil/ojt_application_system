@@ -101,13 +101,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contact.destroy');
 });
 
-
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/compcourse', [ContactController::class, 'index'])->name('compcourse.index');
-    Route::post('/compcourse/store', [ContactController::class, 'store'])->name('compcourse.store');
-    Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
-    Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
-});
+// Route::middleware(['auth', 'verified'])->group(function () {
+//     Route::get('/compcourse', [ContactController::class, 'index'])->name('compcourse.index');
+//     Route::post('/compcourse/store', [ContactController::class, 'store'])->name('compcourse.store');
+//     Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
+//     Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
+// });
 
 Route::middleware('auth')->group(function () {
     Route::get('/moaprocess', [MoaProcessController::class, 'index'])->name('moaprocess.index');

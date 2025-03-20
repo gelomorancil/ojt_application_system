@@ -13,7 +13,7 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"></th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Courses</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                     </tr>
                 </thead>
@@ -26,13 +26,14 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                                     {items.Comp_name}
                                 </Link>
                             </td>
-                            <td className="align-top px-4 py-4  max-w-[200px]">{items.Address}</td>
-                            <td className="align-top px-4 py-4  max-w-[250px]">{items.Course}</td>
+                            <td className="align-top px-4 py-4 max-w-[250px]">{items.Address}</td>
+                            <td className="align-top px-4 py-4 max-w-[250px]">
+                                {items.course_names ? items.course_names : <span className="text-gray-500">No courses</span>}
+                            </td>
                             <td className="align-top px-4 py-4 flex gap-4">
                                 <button onClick={() => handleEdit(items)} className="text-blue-500 hover:text-blue-700">
                                     <FiEdit size={18} />
                                 </button>
-
                                 <button onClick={() => handleDelete(items.id)} className="text-red-500 hover:text-red-700 ml-2">
                                     <MdDelete size={20} />
                                 </button>
