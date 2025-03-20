@@ -51,24 +51,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/student/{id}', [StudentController::class, 'destroy'])->name('student.destroy');
 });
 
-// Moa Routing
-// Route::middleware('auth')->group(function () {
-//     Route::get('/moa', [MoaController::class, 'index'])->name('moa');
-//     Route::get('/moa/create', function () {
-//         return Inertia::render('Moa/Partials/Create_Moa');
-//     })->name('moa.create');
-
-//     Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
-//     Route::get('/moa/{id}', [MoaController::class, 'show'])->name('moa.show');
-//     // Route::get('/moa/{id}/edit', [MoaController::class, 'edit'])->name('moa.edit');
-//     Route::patch('/moa/{id}', [MoaController::class, 'update'])->name('moa.update');
-//     Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
-//     Route::get('/moa/download/{file_name}/{file_type}', [MoaController::class, 'download'])->name('moa.download');
-//     Route::get('/moa/preview/{file_name}', [MoaController::class, 'preview'])
-//     ->where('file_name', '.*') // Allows handling filenames with spaces or special characters
-//     ->name('moa.preview');
-// });
-
 Route::middleware('auth')->group(function () {
     Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
     Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
@@ -82,8 +64,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
     // MOA STORE FUNCTION
     Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
-
-
+    // MOA DELETE FUNCTION
+    Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
 });
 
 

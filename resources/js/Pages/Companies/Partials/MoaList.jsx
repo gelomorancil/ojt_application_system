@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Eye, Trash2 } from "lucide-react";
 
-export default function MoaList({ moa_list = [] }) {
+export default function MoaList({ moa_list = [], handleDelete }) {
     const [previewFile, setPreviewFile] = useState(null);
 
     return (
@@ -26,11 +27,26 @@ export default function MoaList({ moa_list = [] }) {
                                 <td className="px-4 py-4">{moa.End}</td>
                                 <td className="px-4 py-4 flex space-x-4">
                                     {/* Preview Button */}
+<button
+    onClick={() => {
+        if (moa.File) {
+            setPreviewFile(`/storage/${moa.File}`);
+        } else {
+            alert("File not found!");
+        }
+    }}
+    className="text-blue-500 hover:text-blue-700"
+>
+    <Eye size={20} />
+</button>
+
+
+                                    {/* Delete Button */}
                                     <button
-                                        onClick={() => setPreviewFile(`/storage/${moa.File}`)}
-                                        className="text-blue-500 hover:underline"
+                                        onClick={() => handleDelete(moa.id)}
+                                        className="text-red-500 hover:text-red-700"
                                     >
-                                        Preview
+                                        <Trash2 size={20} />
                                     </button>
                                 </td>
                             </tr>
@@ -51,7 +67,10 @@ export default function MoaList({ moa_list = [] }) {
                     <div className="bg-white p-4 rounded-lg shadow-lg max-w-3xl w-full">
                         <div className="flex justify-between items-center mb-2">
                             <h2 className="text-lg font-semibold">MOA Preview</h2>
-                            <button onClick={() => setPreviewFile(null)} className="text-red-500 text-lg">
+                            <button
+                                onClick={() => setPreviewFile(null)}
+                                className="text-red-500 text-lg"
+                            >
                                 &times;
                             </button>
                         </div>

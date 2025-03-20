@@ -47,11 +47,15 @@ class MoaController extends Controller
     {
         $moa = Moa::findOrFail($id);
 
-        if ($moa->File) {
+        // Check if the file exists and delete it
+        if ($moa->File && Storage::disk('public')->exists($moa->File)) {
             Storage::disk('public')->delete($moa->File);
         }
 
+        // Delete the MOA record from the database
         $moa->delete();
+
         return redirect()->back()->with('success', 'MOA deleted successfully.');
     }
+
 }

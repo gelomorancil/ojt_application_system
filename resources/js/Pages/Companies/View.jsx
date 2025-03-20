@@ -70,11 +70,21 @@ export default function View({ company, contact_list, moa_list }) {
         setEditingMoa(null);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = (id, filePath) => {
         if (confirm("Are you sure you want to delete this item?")) {
-            destroy(`/compcourse/${id}`);
+            destroy(`/moa/${id}`, {
+                onSuccess: () => {
+                    if (previewFile === `/storage/${filePath}`) {
+                        setPreviewFile(null); // Reset preview if the deleted file was open
+                    }
+                }
+            });
         }
     };
+
+
+
+
 
     return (
         <AuthenticatedLayout>
