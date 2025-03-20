@@ -47,7 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/student', [StudentController::class, 'store'])->name('student.store');
     Route::get('/student/{id}', [StudentController::class, 'show'])->name('student.show');
     Route::get('/student/{id}/edit', [StudentController::class, 'edit'])->name('student.edit');
-    Route::patch('/student/{id}', [StudentController::class, 'update'])->name('student.update');
+    Route::put('/student/{id}', [StudentController::class, 'update'])->name('student.update');
     Route::delete('/student/{id}', [StudentController::class, 'destroy'])->name('student.destroy');
 });
 
@@ -84,7 +84,7 @@ Route::middleware('auth')->group(function () {
 
 
 // Route for displaying the courses page
-Route::middleware(['auth', 'verified'])->group(function () {
+ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/courses', [CourseController::class, 'index'])->name('course.index');
     Route::get('/courses/create', [CourseController::class, 'create'])->name('course.create');
     Route::post('/courses', [CourseController::class, 'store'])->name('course.store');

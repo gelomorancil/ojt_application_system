@@ -1,73 +1,131 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "@inertiajs/react";
 import { router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
-const Course = ({ courses }) => {
+const Course = ({ courses, course = null }) => {
     const [selectedCollege, setSelectedCollege] = useState(""); // Track selected college
     const [searchTerm, setSearchTerm] = useState(""); // For search functionality
     const [showFilters, setShowFilters] = useState(false); // Toggle filter dropdown
     const [selectedSemester, setSelectedSemester] = useState(""); // Filter by semester
     const [selectedYear, setSelectedYear] = useState(""); // Filter by school year
-
-    const { data, setData, post, processing, errors } = useForm({
-        College: "",
-        Course: "",
-        Hrs: "",
-        Sem: "",
-        Year: "",
+    const [isEditing, setIsEditing] = useState(false); // Track if we're editing or adding
+    const [editingCourseId, setEditingCourseId] = useState(null);
+    
+    // Initialize form with data from the course if editing
+    const { data, setData, post, put, processing, errors, reset } = useForm({
+        College: course?.College || "",
+        Course: course?.Course || "",
+        Hrs: course?.ojt_hours?.Hrs || "",
+        Sem: course?.ojt_hours?.Sem || "",
+        Year: course?.ojt_hours?.Year || "",
     });
 
+    // Set editing mode if a course is provided for editing
+    useEffect(() => {
+        if (course) {
+            setIsEditing(true);
+            setData({
+                College: course.College || "",
+                Course: course.Course || "",
+                Hrs: course.ojt_hours?.Hrs || "",
+                Sem: course.ojt_hours?.Sem || "",
+                Year: course.ojt_hours?.Year || "",
+            });
+        }
+    }, [course]);
+
+    const editCourse = (courseId) => {
+        // Find the course to edit
+        const courseToEdit = courses.find(c => c.id === courseId);
+        
+        if (courseToEdit) {
+            // Populate the form with the course data
+            setData({
+                College: courseToEdit.College || "",
+                Course: courseToEdit.Course || "",
+                Hrs: courseToEdit.ojt_hours?.Hrs || "",
+                Sem: courseToEdit.ojt_hours?.Sem || "",
+                Year: courseToEdit.ojt_hours?.Year || "",
+            });
+            
+            // Set editing mode and remember course ID for update
+            setIsEditing(true);
+            setEditingCourseId(courseId);
+        }
+    };
+
+    // Then modify your handleSubmit function
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const isDuplicate = (Array.isArray(courses?.data) ? courses.data : []).some((course) => {
-            // Ensure data exists before checking
-            if (!course.Course || !course.ojt_hours?.Year) return false;
-
-            // Normalize strings for comparison
-            const courseName = course.Course.trim().toLowerCase();
-            const inputCourse = data.Course.trim().toLowerCase();
-
-            const courseYear = String(course.ojt_hours.Year).trim();
-            const inputYear = String(data.Year).trim();
-
-            // Debugging: Log values being compared
-            console.log(`Checking: ${courseName} (${courseYear}) vs ${inputCourse} (${inputYear})`);
-
-            return courseName === inputCourse && courseYear === inputYear;
-        });
-
-        // Debugging: Check if a duplicate was found
-        console.log("Duplicate found?", isDuplicate);
-
-        if (isDuplicate) {
-            alert("This course already exists for the selected school year!");
-            return;
+        if (isEditing) {
+            // Update existing course
+            put(route("course.update", editingCourseId), {
+                onSuccess: () => {
+                    console.log("Course updated successfully!");
+                    alert("Course updated successfully!");
+                    resetForm();
+                },
+                onError: (errors) => {
+                    console.error("Update error:", errors);
+                    alert("Failed to update course. Please check input fields.");
+                },
+            });
+        } else {
+            // Check for duplicates when adding a new course
+            const isDuplicate = (Array.isArray(courses?.data) ? courses.data : []).some((course) => {
+                // Ensure data exists before checking
+                if (!course.Course || !course.ojt_hours?.Year) return false;
+                
+                // Normalize strings for comparison
+                const courseName = course.Course.trim().toLowerCase();
+                const inputCourse = data.Course.trim().toLowerCase();
+                
+                const courseYear = String(course.ojt_hours.Year).trim();
+                const inputYear = String(data.Year).trim();
+                
+                // Debugging: Log values being compared
+                console.log(`Checking: ${courseName} (${courseYear}) vs ${inputCourse} (${inputYear})`);
+                
+                return courseName === inputCourse && courseYear === inputYear;
+            });
+            
+            // Debugging: Check if a duplicate was found
+            console.log("Duplicate found?", isDuplicate);
+            
+            if (isDuplicate) {
+                alert("This course already exists for the selected school year!");
+                return;
+            }
+            
+            // Add new course
+            post(route("course.store"), {
+                onSuccess: () => {
+                    console.log("Course added successfully!");
+                    alert("Course added successfully!");
+                    resetForm();
+                },
+                onError: (errors) => {
+                    console.error("Submission error:", errors);
+                    alert("Failed to add course. Please check input fields.");
+                },
+            });
         }
-
-
-        post(route("course.store"), {
-            onSuccess: () => {
-                console.log("Course added successfully!");
-                alert("Course added successfully!");
-            },
-            onError: (errors) => {
-                console.error("Submission error:", errors);
-                alert("Failed to add course. Please check input fields.");
-            },
-        });
     };
 
+    // Make sure your resetForm function resets the editingCourseId
+    const resetForm = () => {
+        reset();
+        setIsEditing(false);
+        setEditingCourseId(null);
+    };
+    
     const deleteCourse = (id) => {
         if (confirm("Are you sure you want to delete this course?")) {
             router.delete(route("course.destroy", id));
         }
-    };
-
-    const editCourse = (id) => {
-        router.visit(route("course.edit", id));
     };
 
     // Filter courses based on selected college, search term, semester and year
@@ -99,24 +157,24 @@ const Course = ({ courses }) => {
         .map(course => course.ojt_hours.Year))];
 
     return (
-        <AuthenticatedLayout
-        // header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Course Management</h2>}
-        >
+        <AuthenticatedLayout>
             <Head title="Course Management" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="flex gap-6">
                         {/* Form Section */}
-                        <div className="w-1/3 bg-white shadow-sm sm:rounded-lg p-6">
-                            <h3 className="text-lg font-semibold mb-4">Add Course</h3>
+                        <div className="w-1/4 bg-white shadow-sm sm:rounded-lg p-6">
+                            <h3 className="text-lg font-semibold mb-4">
+                                {isEditing ? "Edit Course" : "Add Course"}
+                            </h3>
                             <form onSubmit={handleSubmit}>
                                 {[
                                     { label: "College", name: "College", type: "select", options: ["CECS", "CAS", "CBA", "CE", "CON"] },
                                     { label: "Course", name: "Course", type: "text" },
                                     { label: "OJT Hours", name: "Hrs", type: "number", min: 0, step: 10 },
                                     { label: "Semester", name: "Sem", type: "select", options: ["First", "Second", "Summer"] },
-                                    { label: "School Year", name: "Year", type: "select", options: ["2025-2026", "2024-2025", "2023-2024", "2022-2023"] },
+                                    { label: "School Year", name: "Year", type: "select", options: ["2024-2025", "2025-2026"] },
                                 ].map(({ label, name, type, options, ...rest }) => (
                                     <div className="mb-4" key={name}>
                                         <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -144,20 +202,30 @@ const Course = ({ courses }) => {
                                     </div>
                                 ))}
 
-                                <div className="mt-4">
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                                >
-                                    Add Course
-                                </button>
+                                <div className="mt-4 flex gap-2">
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="bg-gray-400 text-white px-4 py-2 rounded"
+                                    >
+                                        {isEditing ? "Update Course" : "Add Course"}
+                                    </button>
+                                    
+                                    {isEditing && (
+                                        <button
+                                            type="button"
+                                            onClick={resetForm}
+                                            className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
+                                        >
+                                            Cancel
+                                        </button>
+                                    )}
                                 </div>
                             </form>
                         </div>
 
                         {/* Courses Table Section */}
-                        <div className="bg-white p-6 shadow rounded w-2/3">
+                        <div className="bg-white p-6 shadow rounded w-3/4">
                             {/* Header & College Filter */}
                             <div className="flex justify-between items-center mb-4">
                                 <div className="relative">
@@ -288,13 +356,16 @@ const Course = ({ courses }) => {
                                     ) : (
                                         <tr>
                                             <td colSpan="7" className="px-4 py-6 text-center text-gray-500">
-                                                {!selectedCollege ? (
-                                                    "Please select a college to view courses."
-                                                ) : (
-                                                    searchTerm || selectedCourseFilter ?
+                                            {!selectedCollege ? (
+                                                "Please select a college to view courses."
+                                            ) : (
+                                                filteredCourses.length === 0 ?
+                                                    (searchTerm || selectedSemester || selectedYear ? 
                                                         "No courses found matching your search criteria." :
                                                         "No courses found for this college."
-                                                )}
+                                                    ) :
+                                                    null
+                                            )}
                                             </td>
                                         </tr>
                                     )}

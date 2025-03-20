@@ -91,7 +91,7 @@ const sortedMoas = [...filteredMoas].sort((a, b) => {
                                 <label className="block text-sm font-medium text-gray-700">Upload PDF:</label>
                                 <input
                                     type="file"
-                                    accept="application/pdf"
+                                    accept="pdf/*"
                                     onChange={(e) => setData("file", e.target.files[0])}
                                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                     required
