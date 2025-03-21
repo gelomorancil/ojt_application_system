@@ -44,8 +44,6 @@ export default function View({ company, contact_list, moa_list, course_list }) {
         reset();
     };
 
-
-
     // const handleEdit = (item) => {
     //     console.log("Editing Contact Data:", item);
 
