@@ -8,7 +8,8 @@ import MoaForm from './Partials/MoaForm';
 import MoaList from './Partials/MoaList';
 import Tabs from './Partials/Tabs';
 
-export default function View({ company, contact_list, moa_list }) {
+export default function View({ company, contact_list, moa_list, course_list }) {
+
     const [activeTab, setActiveTab] = useState('contacts');
     const [editingContact, setEditingContact] = useState(null);
     const [editingMoa, setEditingMoa] = useState(null);
@@ -16,12 +17,13 @@ export default function View({ company, contact_list, moa_list }) {
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({
         name: "",
         position: "",
-        Course: "",
+        Course_id: [],
         email: "",
         contact_number: "",
         Capacity: "",
         mode: "",
         Comp_ID: company.id,
+
     });
 
     const handleSubmit = (e) => {
@@ -42,28 +44,48 @@ export default function View({ company, contact_list, moa_list }) {
         reset();
     };
 
-    const handleEdit = (item) => {
-        if (activeTab === "contacts") {
-            setEditingContact(item);
-            setData({
-                name: item?.name || "",
-                position: item?.position || "",
-                Course: item?.Course || "",
-                email: item?.email || "",
-                contact_number: item?.contact_number || "",
-                Capacity: item?.Capacity || "",
-                mode: item?.mode || "",
-                Comp_ID: company.id,
-            });
-        } else if (activeTab === "moa") {
-            setEditingMoa(item);
-            setData({
-                title: item?.title || "",
-                Comp_ID: company.id,
-            });
-        }
-    };
 
+
+    // const handleEdit = (item) => {
+    //     console.log("Editing Contact Data:", item);
+
+    //     if (activeTab === "contacts") {
+    //         setEditingContact(item);
+    //         setData({
+    //             name: item?.name || "",
+    //             position: item?.position || "",
+    //             Course_id: item?.Course ? item.Course.map(course => course.id) : [], // Ensure IDs are set
+    //             email: item?.email || "",
+    //             contact_number: item?.contact_number || "",
+    //             Capacity: item?.Capacity || "",
+    //             mode: item?.mode || "",
+    //             Comp_ID: company.id,
+
+    //         });
+    //         console.log("Extracted Course IDs:", item?.courses ? item.courses.map(course => course.id) : []); // Debugging
+    //     } else if (activeTab === "moa") {
+    //         setEditingMoa(item);
+    //         setData({
+    //             title: item?.title || "",
+    //             Comp_ID: company.id,
+    //         });
+    //     }
+    // };
+
+    const handleEdit = (contact) => {
+        // console.log(contact);
+        setEditingContact(contact);
+        setData({
+            name: contact?.name || "",
+            position: contact?.position || "",
+            Course_id: contact?.Course_id || [],
+            email: contact?.email || "",
+            contact_number: contact?.contact_number || "",
+            Capacity: contact?.Capacity || "",
+            mode: contact?.mode || "",
+            Comp_ID: company.id,
+        });
+    };
     const resetForm = () => {
         reset();
         setEditingContact(null);
@@ -82,10 +104,6 @@ export default function View({ company, contact_list, moa_list }) {
         }
     };
 
-
-
-
-
     return (
         <AuthenticatedLayout>
             <div className="py-12">
@@ -101,6 +119,7 @@ export default function View({ company, contact_list, moa_list }) {
                                 editingContact={editingContact}
                                 resetForm={resetForm}
                                 errors={errors}
+                                course_list={course_list}
                             />
                         )}
                     {activeTab === 'moa' && (

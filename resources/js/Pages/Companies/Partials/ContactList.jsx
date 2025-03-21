@@ -1,4 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from '@inertiajs/react';
+import { FiEdit } from 'react-icons/fi';
+import { MdDelete } from 'react-icons/md';
+
+
 
 export default function ContactList({ contacts = [], handleDelete, contact_list, handleEdit }) {
     return (
@@ -24,7 +29,11 @@ export default function ContactList({ contacts = [], handleDelete, contact_list,
                                 <td className="align-top px-4 py-4">{index + 1}</td>
                                 <td className="align-top px-4 py-4">{contact.name}</td>
                                 <td className="align-top px-4 py-4">{contact.position}</td>
-                                <td className="align-top px-4 py-4 max-w-[200px]">{contact.Course || "N/A"}</td>
+                                <td className="align-top px-4 py-4 max-w-[200px]">
+                                        {contact.course_names && contact.course_names.length > 0
+                                            ? contact.course_names.join(', ') // Join names with commas
+                                            : 'N/A'}
+                                </td>
                                 <td className="align-top px-4 py-4">{contact.email}</td>
                                 <td className="align-top px-4 py-4">{contact.contact_number}</td>
                                 <td className="align-top px-4 py-4">{contact.Capacity || "N/A"}</td>

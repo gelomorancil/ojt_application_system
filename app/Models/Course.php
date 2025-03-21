@@ -22,6 +22,11 @@ class Course extends Model
 
     // public function ojtHours()
     // {
-    //     return $this->hasMany(OjtHours::class, 'Course_ID', 'id');
+        // return $this->hasMany(OjtHours::class, 'Course_ID', 'id');
     // }
+    public function companies()
+{
+    return $this->belongsToMany(Company::class, 'tbl_comp_course', 'Course', 'Comp_id');
+}
+
 }

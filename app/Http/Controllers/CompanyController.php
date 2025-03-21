@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\Moa;
-use App\Models\ContactPerson;
 use Inertia\Inertia;
+use App\Models\Course;
 use App\Models\CompCourse;
 use App\Models\MoaProcess;
 use Illuminate\Support\Facades\DB;
@@ -16,13 +16,28 @@ class CompanyController extends Controller
     // INDEX METHOD
     public function index()
     {
+        $company_list = Company::select('id', 'Comp_name', 'Address')
+            ->with('CompCourse') // Ensure the relationship is loaded
+            ->get()
+            ->map(function ($company) {
+                // Extract course IDs from CompCourse records
+                $courseIds = collect($company->CompCourse)->pluck('Course_id')->map(function ($courseId) {
+                    // Decode only if it's a string (to prevent errors)
+                    return is_string($courseId) ? json_decode($courseId, true) : $courseId;
+                })->flatten()->unique()->toArray();
 
-        $company_list = Company::all();
+                // Fetch course names
+                $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
+                $company->course_names = implode(', ', $courses); // Store as a comma-separated string
+
+                return $company;
+            });
 
         return Inertia::render('Companies/Index', [
             'company_list' => $company_list,
         ]);
     }
+
 
     // STORE METHOD
     public function store(Request $request)
@@ -30,13 +45,11 @@ class CompanyController extends Controller
         $request->validate([
             'Comp_name' => 'required',
             'Address' => 'required',
-            'Course' => 'required',
         ]);
 
         Company::create([
             'Comp_name' => $request->Comp_name,
             'Address' => $request->Address,
-            'Course' => $request->Course,
         ]);
 
         return redirect()->route('companies.index');
@@ -58,13 +71,11 @@ class CompanyController extends Controller
         $validatedData = $request->validate([
             'Comp_name' => 'required',
             'Address' => 'required',
-            'Course' => 'required',
         ]);
 
         $company = Company::findOrFail($id);
         $company->update([
             'Comp_name' => $validatedData['Comp_name'],
-            'Course' => $validatedData['Course'],
             'Address' => $validatedData['Address'],
         ]);
 
@@ -87,11 +98,30 @@ class CompanyController extends Controller
     public function details($id)
     {
         $company = Company::findOrFail($id);
-        $contact_list = CompCourse::where('Comp_ID', $id)->get();
         $moa_list = Moa::where('Comp_ID', $id)->get(); // Fetch MOA list for this company
+        $course_list = Course::all();
+
+        $contact_list = CompCourse::where('Comp_ID', $id)->get()->map(function ($contact) {
+            // Ensure Course_id is properly formatted
+            $courseIds = is_string($contact->Course_id) ? json_decode($contact->Course_id, true) : $contact->Course_id;
+
+            // If Course_id is still not an array, make it an empty array
+            if (!is_array($courseIds)) {
+                $courseIds = [];
+            }
+
+            // Fetch course names based on IDs
+            $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
+
+            // Attach course names to the contact object
+            $contact->course_names = $courses;
+            return $contact;
+        });
+
 
         return Inertia::render('Companies/View', [
             'company' => $company,
+            'course_list' => $course_list,
             'contact_list' => $contact_list,
             'moa_list' => $moa_list // Pass MOA list to the frontend
         ]);
