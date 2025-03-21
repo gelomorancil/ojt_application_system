@@ -4,25 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Student;
+use App\Models\StudentDetails;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class StudentController extends Controller {
-    
+
     public function index(): Response
     {
-        $students = Student::select('tbl_student.*')
-            ->leftJoin('tbl_course', 'tbl_student.Course_ID', '=', 'tbl_course.id')
-            ->select(
-                'tbl_student.id',
-                'tbl_student.Student_Num',
-                'tbl_student.Fname',
-                'tbl_student.Lname',
-                'tbl_course.College as College_Name',
-                'tbl_course.Course as Course_Name'
-            )
-            ->get();
+        $students = Student::select(
+            'tbl_student.id',
+            'tbl_student.Student_Num',
+            'tbl_student.Fname',
+            'tbl_student.Lname',
+            'tbl_student.Year',
+            'tbl_course.College as College_Name',
+            'tbl_course.Course as Course_Name',
+            'tbl_ojt_hrs.Hrs as Ojt_Hours',
+            'tbl_ojt_hrs.Sem as Semester',
+            // 'tbl_ojt_hrs.Year as School_Year' // Comment this out if not needed
+        )
+        ->leftJoin('tbl_course', 'tbl_student.Course_ID', '=', 'tbl_course.id')
+        ->leftJoin('tbl_ojt_hrs', 'tbl_student.Course_ID', '=', 'tbl_ojt_hrs.Course_ID')
+        ->get();
 
         $courses = Course::select('id', 'College', 'Course')->get();
         $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
@@ -36,16 +41,16 @@ class StudentController extends Controller {
 
     // Show create student form
     public function create()
-    {
-        $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON']; // College Enum
-        return inertia('Students/CreateStudent', [
-            'colleges' => $colleges
-        ]);
-    }
+        {
+            $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON']; // College Enum
+            return inertia('Students/CreateStudent', [
+                'colleges' => $colleges
+            ]);
+        }
 
-    // Store a new student
-    public function store(Request $request)
-    {
+        // Store a new student
+        public function store(Request $request)
+        {
         // Define allowed colleges
         $allowedColleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
 
@@ -57,8 +62,8 @@ class StudentController extends Controller {
             }],
             'Course' => ['required', function ($attribute, $value, $fail) use ($request) {
                 $exists = Course::where('College', $request->College)
-                                ->where('Course', $value)
-                                ->exists();
+                    ->where('Course', $value)
+                    ->exists();
                 if (!$exists) {
                     $fail("The course '$value' does not exist for the selected college.");
                 }
@@ -66,12 +71,17 @@ class StudentController extends Controller {
             'Fname' => 'required|string|max:255',
             'Lname' => 'required|string|max:255',
             'Student_Num' => 'required|string|max:20|unique:tbl_student,Student_Num',
+            'Year' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value && !in_array($value, ['2024-2025', '2025-2026'])) {
+                    $fail('The school year must be either 2024-2025 or 2025-2026.');
+                }
+            }],
         ]);
 
         // Find Course ID for the given College & Course
         $course = Course::where('College', $validated['College'])
-                        ->where('Course', $validated['Course'])
-                        ->first();
+            ->where('Course', $validated['Course'])
+            ->first();
 
         if (!$course) {
             return redirect()->back()->withErrors(['Course' => 'The selected course does not exist.']);
@@ -83,29 +93,32 @@ class StudentController extends Controller {
             'Fname' => $validated['Fname'],
             'Lname' => $validated['Lname'],
             'Student_Num' => $validated['Student_Num'],
+            'Year' => $request->Year ?? '2024-2025', // Default value if not provided
         ]);
 
         return redirect()->route('student')->with('success', 'Student added successfully!');
     }
 
-    // Show a single student (if needed)
-    public function show($id): Response
+    public function show($id)
     {
-        $student = Student::findOrFail($id);
-        return Inertia::render('StudentDetail', ['student' => $student]);
-    }
+        $student = Student::select(
+                'tbl_student.id',
+                'tbl_student.Student_Num',
+                'tbl_student.Fname',
+                'tbl_student.Lname',
+                'tbl_student.Year',
+                'tbl_course.College as College_Name',
+                'tbl_course.Course as Course_Name',
+                'tbl_ojt_hrs.Hrs as Ojt_Hours',
+                'tbl_ojt_hrs.Sem as Semester'
+            )
+            ->leftJoin('tbl_course', 'tbl_student.Course_ID', '=', 'tbl_course.id')
+            ->leftJoin('tbl_ojt_hrs', 'tbl_student.Course_ID', '=', 'tbl_ojt_hrs.Course_ID')
+            ->where('tbl_student.id', $id)
+            ->firstOrFail();
 
-    // Edit student details (fetch and pass data to Edit_Student.jsx)
-    public function edit($id): Response
-    {
-        $student = Student::findOrFail($id);
-        $courses = Course::select('id', 'College', 'Course')->get();
-        $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
-
-        return Inertia::render('Student/Partials/Edit_Student', [
+        return Inertia::render('Student/StudentDetails', [
             'student' => $student,
-            'courses' => $courses,
-            'colleges' => $colleges
         ]);
     }
 
@@ -120,11 +133,17 @@ class StudentController extends Controller {
             'Fname' => 'required|string|max:255',
             'Lname' => 'required|string|max:255',
             'Student_Num' => 'required|string|max:20|unique:tbl_student,Student_Num,' . $id,
+            'Year' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value && !in_array($value, ['2024-2025', '2025-2026'])) {
+                    $fail('The school year must be either 2024-2025 or 2025-2026.');
+                }
+            }],
         ]);
 
+        // Find the appropriate course based on College and Course name
         $course = Course::where('College', $validated['College'])
-                        ->where('Course', $validated['Course'])
-                        ->first();
+            ->where('Course', $validated['Course'])
+            ->first();
 
         if (!$course) {
             return redirect()->back()->withErrors(['Course' => 'Invalid course selection.']);
@@ -135,6 +154,7 @@ class StudentController extends Controller {
             'Fname' => $validated['Fname'],
             'Lname' => $validated['Lname'],
             'Student_Num' => $validated['Student_Num'],
+            'Year' => $validated['Year'] ?? $student->Year, // Move this here after validation
         ]);
 
         return redirect()->route('student')->with('success', 'Student updated successfully!');
