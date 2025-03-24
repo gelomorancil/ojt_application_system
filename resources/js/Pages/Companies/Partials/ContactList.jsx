@@ -63,7 +63,6 @@ export default function ContactList({ contacts = [], handleDelete = () => { }, c
                                             ? contact.course_names.join(', ') // Join names with commas
                                             : 'N/A'}
                                     </td>
-
                                     <td className="align-top px-4 py-4">{contact.email}</td>
                                     <td className="align-top px-4 py-4">{contact.contact_number}</td>
                                     <td className="align-top px-4 py-4">{contact.Capacity || 'N/A'}</td>
