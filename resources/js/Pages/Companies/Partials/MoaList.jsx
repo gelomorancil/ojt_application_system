@@ -27,18 +27,18 @@ export default function MoaList({ moa_list = [], handleDelete }) {
                                 <td className="px-4 py-4">{moa.End}</td>
                                 <td className="px-4 py-4 flex space-x-4">
                                     {/* Preview Button */}
-<button
-    onClick={() => {
-        if (moa.File) {
-            setPreviewFile(`/storage/${moa.File}`);
-        } else {
-            alert("File not found!");
-        }
-    }}
-    className="text-blue-500 hover:text-blue-700"
->
-    <Eye size={20} />
-</button>
+                                        <button
+                                            onClick={() => {
+                                                if (moa.File) {
+                                                    setPreviewFile(`/storage/${moa.File}`);
+                                                } else {
+                                                    alert("File not found!");
+                                                }
+                                            }}
+                                            className="text-blue-500 hover:text-blue-700"
+                                        >
+                                            <Eye size={20} />
+                                        </button>
 
 
                                     {/* Delete Button */}
