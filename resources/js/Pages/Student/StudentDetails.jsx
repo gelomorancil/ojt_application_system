@@ -2,7 +2,7 @@ import React from "react";
 import { Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { usePage } from "@inertiajs/react";
-import { Plus } from "lucide-react";
+import axios from "axios";
 import { useState, useEffect } from "react";
 
 function StudentDetails() {
@@ -11,6 +11,9 @@ function StudentDetails() {
     const [extraCompanies, setExtraCompanies] = useState(() => {
         return JSON.parse(localStorage.getItem(`extraCompanies_${student.Student_Num}`)) || [];
     });
+    const [selectedCompany, setSelectedCompany] = useState("");
+    const [selectedSemester, setSelectedSemester] = useState("");
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
 
     // Function to handle adding a new box
     const addCompanyBox = () => {
@@ -33,6 +36,21 @@ function StudentDetails() {
         localStorage.setItem(`extraCompanies_${student.Student_Num}`, JSON.stringify(updatedCompanies));
     };
 
+    const CompanyDropdown = () => {
+        const [companies, setCompanies] = useState([]);
+        const [selectedCompany, setSelectedCompany] = useState("");
+    
+        useEffect(() => {
+            axios.get("/api/companies")
+                .then(response => {
+                    setCompanies(response.data);
+                })
+                .catch(error => {
+                    console.error("Error fetching companies:", error);
+                });
+        }, []);    
+
+    };
 
     return (
         <AuthenticatedLayout>
@@ -110,6 +128,36 @@ function StudentDetails() {
                     <div className="bg-white p-6 shadow rounded-lg !mt-3">
                         <h2 className="text-lg font-semibold">Intern Applied Company</h2>
                         <p className="text-gray-600">Add company-related information here.</p>
+
+                        {/* Layout Container */}
+                        <div className="flex gap-6 mt-4">
+                            {/* Company Dropdown (Left Side) */}
+                            <div className="w-1/2">
+                                <label className="block text-gray-700 font-medium">Company:</label>
+                                <select className="mt-2 p-2 border rounded w-full bg-gray-100 cursor-not-allowed" disabled>
+                                    <option value="">Select a Company</option>
+                                </select>
+                            </div>
+
+                            {/* Semester & School Year (Stacked on Right) */}
+                            <div className="w-1/2 flex flex-col gap-4">
+                                {/* Semester Dropdown */}
+                                <div>
+                                    <label className="block text-gray-700 font-medium">Semester:</label>
+                                    <select className="mt-2 p-2 border rounded w-full bg-gray-100 cursor-not-allowed" disabled>
+                                        <option value="">Select Semester</option>
+                                    </select>
+                                </div>
+
+                                {/* School Year Dropdown */}
+                                <div>
+                                    <label className="block text-gray-700 font-medium">School Year:</label>
+                                    <select className="mt-2 p-2 border rounded w-full bg-gray-100 cursor-not-allowed" disabled>
+                                        <option value="">Select School Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
