@@ -19,7 +19,7 @@ export default function View({ company, contact_list, course_list }) {
     });
     
     const handleSubmit = (e) => {
-        console.log(data)
+        // console.log(data)
         e.preventDefault();
         if (editingContact) {
             put(route('contact.update', editingContact.id), { onSuccess: () => resetForm() });
