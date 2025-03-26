@@ -36,6 +36,7 @@ export default function ContactForm({
                 
                 <Select
                     isMulti
+                    placeholder="Course"
                     options={course_list.map(course => ({
                         value: course.id,
                         label: course.Course
