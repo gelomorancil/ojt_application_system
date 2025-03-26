@@ -12,6 +12,9 @@ const Course = ({ courses, course = null }) => {
     const [selectedYear, setSelectedYear] = useState(""); // Filter by school year
     const [isEditing, setIsEditing] = useState(false); // Track if we're editing or adding
     const [editingCourseId, setEditingCourseId] = useState(null);
+
+    const currentYear = new Date().getFullYear();
+    const schoolYears = [`${currentYear - 1}-${currentYear}`, `${currentYear}-${currentYear + 1}`, `${currentYear + 1}-${currentYear + 2}`];
     
     // Initialize form with data from the course if editing
     const { data, setData, post, put, processing, errors, reset } = useForm({
@@ -174,7 +177,7 @@ const Course = ({ courses, course = null }) => {
                                     { label: "Course", name: "Course", type: "text" },
                                     { label: "OJT Hours", name: "Hrs", type: "number", min: 0, step: 10 },
                                     { label: "Semester", name: "Sem", type: "select", options: ["First", "Second", "Summer"] },
-                                    { label: "School Year", name: "Year", type: "select", options: ["2024-2025", "2025-2026"] },
+                                    { label: "School Year", name: "Year", type: "select", options: schoolYears },
                                 ].map(({ label, name, type, options, ...rest }) => (
                                     <div className="mb-4" key={name}>
                                         <label className="block text-sm font-medium text-gray-700">{label}</label>

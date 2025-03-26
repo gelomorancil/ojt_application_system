@@ -30,14 +30,47 @@ function StudentDetails({ company_list, details_list }) {
         setExtraCompanies([{ id: Date.now(), saved: false }, ...extraCompanies]);
     };
 
-    // Function to save a company box (so it persists)
-    const handleSave = (id) => {
-        const updatedCompanies = extraCompanies.map(company =>
-            company.id === id ? { ...company, saved: true } : company
-        );
-        setExtraCompanies(updatedCompanies);
-        localStorage.setItem(`extraCompanies_${student.Student_Num}`, JSON.stringify(updatedCompanies));
-    };
+    const handleSave = async (id = null) => {
+        // Prepare form data
+        const formData = {
+            student_id: student.Student_Num, // Ensure student ID is included
+            company: selectedCompany,
+            semester: selectedSemester,
+            schoolYear: selectedSchoolYears,
+        };
+    
+        console.log("Saving Data:", formData);
+    
+        try {
+            const response = await fetch("/api/save-student-company", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+    
+            const data = await response.json();
+    
+            if (response.ok) {
+                alert("Data saved successfully!");
+    
+                // If an `id` is provided, update extra companies as saved
+                if (id !== null) {
+                    const updatedCompanies = extraCompanies.map(company =>
+                        company.id === id ? { ...company, saved: true } : company
+                    );
+                    setExtraCompanies(updatedCompanies);
+                    localStorage.setItem(`extraCompanies_${student.Student_Num}`, JSON.stringify(updatedCompanies));
+                }
+            } else {
+                alert("Error saving data: " + data.message);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to save data.");
+        }
+    };       
 
     // Function to delete a company box
     const handleDelete = (id) => {
@@ -100,45 +133,37 @@ function StudentDetails({ company_list, details_list }) {
                             </button>
                         </div>
 
-                        {extraCompanies.map((company) => (
-                            <div key={company.id} className="bg-white p-6 shadow rounded-lg !mt-3">
-                                <h2 className="text-lg font-semibold">Intern Applied Company</h2>
-                                <p className="text-gray-600">Add new company information here.</p>
-                                <div className="w-1/2">
-                                    <label className="block text-gray-700 font-medium">Company:</label>
-                                    <Select
-                                        placeholder="Company"
-                                        options={company_list.map(company => ({
-                                            value: company.id,
-                                            label: company.Comp_name
-                                        }))}
-                                        onChange={(e) => setData('Comp_ID', e.value)}
-                                        className="w-full"
-                                    />
-                                </div>
-
-                                <div className="flex justify-end mt-4 space-x-2">
-                                    {!company.saved && (
-                                        <button
-                                            onClick={() => handleSave(company.id)}
-                                            className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-red-500"
-                                        >
-                                            Save
-                                        </button>
-                                    )}
+                    {/* Dynamically Added Company Boxes (NEW ONES FIRST) */}
+                    {extraCompanies.map((company) => (
+                        <div key={company.id} className="bg-white p-6 shadow rounded-lg !mt-3">
+                            <h2 className="text-lg font-semibold">Intern Applied Company</h2>
+                            <p className="text-gray-600">Add new company information here.</p>
+                            <div className="flex justify-end mt-4 space-x-2">
+                                {/* Save Button (Only shows if not saved yet) */}
+                                {!company.saved && (
                                     <button
-                                        onClick={() => handleDelete(company.id)}
+                                        onClick={() => handleSave(company.id)}
                                         className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-red-500"
                                     >
-                                        Delete
+                                        Save
                                     </button>
-                                </div>
-                            </div>
-                        ))}
+                                )}
 
-                        <div className="bg-white p-6 shadow rounded-lg !mt-3">
-                            <h2 className="text-lg font-semibold">Intern Applied Company</h2>
-                            <p className="text-gray-600">Add company-related information here.</p>
+                                {/* Delete Button (Always available) */}
+                                <button
+                                    onClick={() => handleDelete(company.id)}
+                                    className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-red-500"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+
+                   {/* Default Company Box */}
+                    <div className="bg-white p-6 shadow rounded-lg !mt-3">
+                        <h2 className="text-lg font-semibold">Intern Applied Company</h2>
+                        <p className="text-gray-600">Add company-related information here.</p>
 
                             <div className="w-1/2">
                                 <label className="block text-gray-700 font-medium">Company:</label>
@@ -151,6 +176,13 @@ function StudentDetails({ company_list, details_list }) {
                                     onChange={(e) => setData('Comp_ID', e.value)}
                                     className="w-full"
                                 />
+                                <select 
+                                    className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                    value={selectedCompany}
+                                    onChange={(e) => setSelectedCompany(e.target.value)} 
+                                >
+                                    <option value="">Select a Company</option>
+                                </select>
                             </div>
 
                             <div className="w-1/2 flex flex-col gap-4">
@@ -172,7 +204,7 @@ function StudentDetails({ company_list, details_list }) {
                                     <select
                                         className="mt-2 p-2 border rounded w-full bg-gray-100"
                                         value={selectedSchoolYear}
-                                        onChange={(e) => setSelectedSchoolYear(e.target.value)}
+                                        onChange={(e) => setSelectedSchoolYear(e.target.value)} // ✅ Update state on change
                                     >
                                         <option value="">Select School Year</option>
                                         {schoolYears.map((year, index) => (
@@ -182,7 +214,30 @@ function StudentDetails({ company_list, details_list }) {
                                         ))}
                                     </select>
                                 </div>
+
+                                {/* Status Dropdown */}
+                                <div>
+                                    <label className="block text-gray-700 font-medium">Status:</label>
+                                    <select
+                                        className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                    >
+                                        <option value="">Select Status</option>
+                                        <option value="Denies">Denied</option>
+                                        <option value="On going">On going</option>
+                                        <option value="Completed">Completed</option>
+                                    </select>
+                                </div>
                             </div>
+                        </div>
+
+                        {/*Save Button*/}
+                        <div className="flex justify-end mt-4">
+                            <button
+                                className="px-4 py-2 bg-gray-400 text-white text-m rounded-lg hover:bg-gray-500"
+                                onClick={handleSave}
+                            >
+                                Save
+                            </button>
                         </div>
                     </div>
                 </div>
