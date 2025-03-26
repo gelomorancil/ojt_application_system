@@ -24,6 +24,9 @@ export default function Student({ students = [], courses = [], colleges = [], av
     const [showCourseFilter, setShowCourseFilter] = useState(false);
     const [selectedCollege, setSelectedCollege] = useState("");
 
+    const currentYear = new Date().getFullYear();
+    const schoolYears = [`${currentYear - 1}-${currentYear}`, `${currentYear}-${currentYear + 1}`, `${currentYear + 1}-${currentYear + 2}`];
+
     const editStudent = (studentId) => {
         const studentToEdit = students.find(student => student.id === studentId);
         if (studentToEdit) {
@@ -294,7 +297,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                 { label: "Last Name", name: "Lname", type: "text" },
                                 { label: "College", name: "College", type: "select", options: colleges },
                                 { label: "Course", name: "Course", type: "select", options: filteredCourses.map(c => c.Course) },
-                                { label: "School Year", name: "Year", type: "select", options: ["2024-2025", "2025-2026"] },
+                                { label: "School Year", name: "Year", type: "select", options: schoolYears },
                             ].map(({ label, name, type, options, disabled }, index) => (
                                 <div className="mb-4" key={`${name}-${index}`}>
                                     <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -306,14 +309,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                         >
                                             <option value="">Select {label}</option>
                                         
-                                            {/* School Year Dropdown (Fixed Options) */}
-                                            {name === "Year"
-                                                ? ["2024-2025", "2025-2026"].map((option, optIndex) => (
-                                                    <option key={`${name}-option-${optIndex}`} value={option}>
-                                                        {option}
-                                                    </option>
-                                                ))
-                                                : // Course Dropdown (Filtered Options)
+                                            { 
                                                 name === "Course"
                                                 ? filteredCourses.map((course, index) => (
                                                     <option key={`course-${index}`} value={course.Course}>
