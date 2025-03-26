@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\Company;
 use App\Models\Student;
 use App\Models\StudentDetails;
 use Illuminate\Http\Request;
@@ -31,11 +32,13 @@ class StudentController extends Controller {
 
         $courses = Course::select('id', 'College', 'Course')->get();
         $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
+        
 
         return Inertia::render('Student/Student', [
             'students' => $students,
             'courses' => $courses,
-            'colleges' => $colleges
+            'colleges' => $colleges,
+            // 'company_list' => $company_list,
         ]);
     }
 
@@ -117,8 +120,13 @@ class StudentController extends Controller {
             ->where('tbl_student.id', $id)
             ->firstOrFail();
 
+            $company_list = Company::all();
+            // $details_list = OjtHours::all();
+
         return Inertia::render('Student/StudentDetails', [
             'student' => $student,
+            'company_list' => $company_list,
+            // 'details_list' => $details_list,
         ]);
     }
 
