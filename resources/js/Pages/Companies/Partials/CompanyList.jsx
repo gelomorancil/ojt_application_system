@@ -3,6 +3,7 @@ import React from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { MdDelete } from 'react-icons/md';
 
+
 export default function CompanyList({ company_list, handleEdit, handleDelete }) {
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg h-[650px]">

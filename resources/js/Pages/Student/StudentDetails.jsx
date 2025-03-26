@@ -1,22 +1,32 @@
-import React from "react";
-import { Head } from "@inertiajs/react";
+import React, { useState, useEffect } from "react";
+import { Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { usePage } from "@inertiajs/react";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import Select from "react-select";
 
-function StudentDetails() {
+function StudentDetails({ company_list, details_list }) {
+    console.log(details_list);
+    const { data, setData, post, put, processing, errors, reset } = useForm({
+        Comp_ID: "",
+        Sem: "",
+        AY: "",
+    });
+
     const { student } = usePage().props;
-    // Get saved company boxes from localStorage
+    
+    const currentYear = new Date().getFullYear();
+    const schoolYears = Array.from({ length: 3 }, (_, i) => `${currentYear - 1 + i}-${currentYear + i}`);
+
     const [extraCompanies, setExtraCompanies] = useState(() => {
         return JSON.parse(localStorage.getItem(`extraCompanies_${student.Student_Num}`)) || [];
     });
-    const [selectedCompany, setSelectedCompany] = useState("");
+
     const [selectedSemester, setSelectedSemester] = useState("");
     const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
 
-    const currentYear = new Date().getFullYear();
-    const schoolYears = Array.from({ length: 3 }, (_, i) => `${currentYear - 1 + i}-${currentYear + i}`);
+    // const currentYear = new Date().getFullYear();
+    // const schoolYears = Array.from({ length: 3 }, (_, i) => `${currentYear - 1 + i}-${currentYear + i}`);
 
     // Function to handle adding a new box
     const addCompanyBox = () => {
@@ -72,149 +82,152 @@ function StudentDetails() {
         localStorage.setItem(`extraCompanies_${student.Student_Num}`, JSON.stringify(updatedCompanies));
     };
 
+    const CompanyDropdown = () => {
+        const [companies, setCompanies] = useState([]);
+        const [selectedCompany, setSelectedCompany] = useState("");
+
+        useEffect(() => {
+            axios.get("/api/companies")
+                .then(response => {
+                    setCompanies(response.data);
+                })
+                .catch(error => {
+                    console.error("Error fetching companies:", error);
+                });
+        }, []);
+
+        return null; // Added return to prevent issues
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Student Details" />
 
             <div className="max-w-7xl mx-auto p-6">
-            <div className="grid grid-cols-3 gap-6">
-                {/* Left Side (Student Details & Company Details) */}
-                <div className="col-span-2 space-y-6">
-                    {/* Student Details Box */}
-                    <div className="bg-white p-6 shadow rounded-lg">
-                        <div className="flex justify-between items-start">
-                            <div className="flex gap-4 items-center">
-                                {/* Enlarged Student Photo */}
-                                <div className="w-32 h-32 bg-gray-300 rounded-lg flex items-center justify-center">
-                                    <span className="text-gray-500 text-sm">Photo</span>
+                <div className="grid grid-cols-3 gap-6">
+                    <div className="col-span-2 space-y-6">
+                        {/* Student Information */}
+                        <div className="bg-white p-6 shadow rounded-lg">
+                            <div className="flex justify-between items-start">
+                                <div className="flex gap-4 items-center">
+                                    <div className="w-32 h-32 bg-gray-300 rounded-lg flex items-center justify-center">
+                                        <span className="text-gray-500 text-sm">Photo</span>
+                                    </div>
+                                    <div>
+                                        <h1 className="text-2xl font-bold">
+                                            {student?.Fname} {student?.Lname}
+                                        </h1>
+                                        <p><strong>Student Number:</strong> {student?.Student_Num ?? "N/A"}</p>
+                                        <p><strong>College:</strong> {student?.College_Name ?? "Not Provided"}</p>
+                                        <p><strong>Course:</strong> {student?.Course_Name ?? "Not Provided"}</p>
+                                        <p><strong>OJT Hours:</strong> {student?.Ojt_Hours ?? "Not Provided"}</p>
+                                    </div>
                                 </div>
-
-                                {/* Student Details */}
-                                <div>
-                                    <h1 className="text-2xl font-bold">{student?.Fname} {student?.Lname}</h1>
-                                    <p><strong>Student Number:</strong> {student?.Student_Num ?? "N/A"}</p>
-                                    <p><strong>College:</strong> {student?.College_Name ?? "Not Provided"}</p>
-                                    <p><strong>Course:</strong> {student?.Course_Name ?? "Not Provided"}</p>
-                                    <p><strong>OJT Hours:</strong> {student?.Ojt_Hours ?? "Not Provided"}</p>
+                                <div className="text-right">
+                                    <p><strong>Semester:</strong> {student?.Semester ?? "Not Available"}</p>
+                                    <p><strong>School Year:</strong> {student?.Year ?? "Not Available"}</p>
                                 </div>
-                            </div>
-
-                            {/* Right Side: Semester and School Year */}
-                            <div className="text-right">
-                                <p><strong>Semester:</strong> {student?.Semester ?? "Not Available"}</p>
-                                <p><strong>School Year:</strong> {student?.Year ?? "Not Available"}</p>
                             </div>
                         </div>
-                    </div>
 
-                    {/* PLUS BUTTON ABOVE DEFAULT BOX */}
-                    <div className="flex justify-center !mt-3">
-                        <button
-                            onClick={addCompanyBox}
-                            className="w-20 h-8 bg-gray-400 text-white flex items-center justify-center rounded-lg hover:bg-gray-500"
-                        >
-                            +
-                        </button>
-                    </div>
+                        {/* Add Company Button */}
+                        <div className="flex justify-center !mt-3">
+                            <button
+                                onClick={addCompanyBox}
+                                className="w-20 h-8 bg-gray-400 text-white flex items-center justify-center rounded-lg hover:bg-gray-500"
+                            >
+                                +
+                            </button>
+                        </div>
 
-                    {/* Dynamically Added Company Boxes (NEW ONES FIRST) */}
-                    {extraCompanies.map((company) => (
-                        <div key={company.id} className="bg-white p-6 shadow rounded-lg !mt-3">
+                        {/* Dynamically Added Company Boxes */}
+                        {extraCompanies.map((company) => (
+                            <div key={company.id} className="bg-white p-6 shadow rounded-lg !mt-3">
+                                <h2 className="text-lg font-semibold">Intern Applied Company</h2>
+                                <p className="text-gray-600">Add new company information here.</p>
+
+                                {/* Layout Container */}
+                                <div className="flex gap-6 mt-4">
+                                    {/* Company Dropdown */}
+                                    <div className="w-1/2">
+                                        <label className="block text-gray-700 font-medium">Company:</label>
+                                        <select 
+                                            className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                            value={selectedCompany}
+                                            onChange={(e) => setSelectedCompany(e.target.value)}
+                                        >
+                                            <option value="">Select a Company</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Semester & School Year Selection */}
+                                    <div className="w-1/2 flex flex-col gap-4">
+                                        {/* Semester Dropdown */}
+                                        <div>
+                                            <label className="block text-gray-700 font-medium">Semester:</label>
+                                            <select
+                                                className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                                value={selectedSemester}
+                                                onChange={(e) => setSelectedSemester(e.target.value)}
+                                            >
+                                                <option value="">Select Semester</option>
+                                                <option value="1st">First</option>
+                                                <option value="2nd">Second</option>
+                                                <option value="Summer">Summer</option>
+                                            </select>
+                                        </div>
+
+                                        {/* School Year Dropdown */}
+                                        <div>
+                                            <label className="block text-gray-700 font-medium">School Year:</label>
+                                            <select
+                                                className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                                value={selectedSchoolYear}
+                                                onChange={(e) => setSelectedSchoolYear(e.target.value)}
+                                            >
+                                                <option value="">Select School Year</option>
+                                                {schoolYears.map((year, index) => (
+                                                    <option key={index} value={year}>{year}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Delete Button */}
+                                <div className="flex justify-end mt-4 space-x-2">
+                                    {!company.saved && (
+                                        <button
+                                            onClick={() => handleSave(company.id)}
+                                            className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+                                        >
+                                            Delete
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Company Selection & Status */}
+                        <div className="bg-white p-6 shadow rounded-lg !mt-3">
                             <h2 className="text-lg font-semibold">Intern Applied Company</h2>
-                            <p className="text-gray-600">Add new company information here.</p>
+                            <p className="text-gray-600">Add company-related information here.</p>
 
-                            {/* Layout Container */}
-                            <div className="flex gap-6 mt-4">
-                                {/* Company Dropdown (Left Side) */}
-                                <div className="w-1/2">
-                                    <label className="block text-gray-700 font-medium">Company:</label>
-                                    <select 
-                                        className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                        value={selectedCompany}
-                                        onChange={(e) => setSelectedCompany(e.target.value)} 
-                                    >
-                                        <option value="">Select a Company</option>
-                                    </select>
-                                </div>
-
-                                {/* Semester & School Year (Stacked on Right) */}
-                                <div className="w-1/2 flex flex-col gap-4">
-                                    {/* Semester Dropdown */}
-                                    <div>
-                                        <label className="block text-gray-700 font-medium">Semester:</label>
-                                        <select
-                                            className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                            value={selectedSemester}
-                                            onChange={(e) => setSelectedSemester(e.target.value)}
-                                        >
-                                            <option value="">Select Semester</option>
-                                            <option value="1st">First</option>
-                                            <option value="2nd">Second</option>
-                                            <option value="Summer">Summer</option>
-                                        </select>
-                                    </div>
-
-                                    {/* School Year Dropdown */}
-                                    <div>
-                                        <label className="block text-gray-700 font-medium">School Year:</label>
-                                        <select
-                                            className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                            value={selectedSchoolYear}
-                                            onChange={(e) => setSelectedSchoolYear(e.target.value)}
-                                        >
-                                            <option value="">Select School Year</option>
-                                            {schoolYears.map((year, index) => (
-                                                <option key={index} value={year}>
-                                                    {year}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-end mt-4 space-x-2">
-                                {/* Save Button (Only shows if not saved yet) */}
-                                {!company.saved && (
-                                    <button
-                                        onClick={() => handleSave(company.id)}
-                                        className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
-                                    >
-                                        Save
-                                    </button>
-                                )}
-
-                                {/* Delete Button (Always available) */}
-                                <button
-                                    onClick={() => handleDelete(company.id)}
-                                    className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-red-500"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-
-                   {/* Default Company Box */}
-                    <div className="bg-white p-6 shadow rounded-lg !mt-3">
-                        <h2 className="text-lg font-semibold">Intern Applied Company</h2>
-                        <p className="text-gray-600">Add company-related information here.</p>
-
-                        {/* Layout Container */}
-                        <div className="flex gap-6 mt-4">
-                            {/* Company Dropdown (Left Side) */}
+                            {/* Company Dropdown */}
                             <div className="w-1/2">
                                 <label className="block text-gray-700 font-medium">Company:</label>
-                                <select 
-                                    className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                    value={selectedCompany}
-                                    onChange={(e) => setSelectedCompany(e.target.value)} 
-                                >
-                                    <option value="">Select a Company</option>
-                                </select>
+                                <Select
+                                    placeholder="Company"
+                                    options={company_list.map(company => ({
+                                        value: company.id,
+                                        label: company.Comp_name
+                                    }))}
+                                    onChange={(e) => setData('Comp_ID', e.value)}
+                                    className="w-full"
+                                />
                             </div>
 
-                            {/* Semester & School Year (Stacked on Right) */}
+                            {/* Semester, School Year, and Status Selection */}
                             <div className="w-1/2 flex flex-col gap-4">
                                 {/* Semester Dropdown */}
                                 <div>
@@ -237,13 +250,11 @@ function StudentDetails() {
                                     <select
                                         className="mt-2 p-2 border rounded w-full bg-gray-100"
                                         value={selectedSchoolYear}
-                                        onChange={(e) => setSelectedSchoolYear(e.target.value)} // ✅ Update state on change
+                                        onChange={(e) => setSelectedSchoolYear(e.target.value)}
                                     >
                                         <option value="">Select School Year</option>
                                         {schoolYears.map((year, index) => (
-                                            <option key={index} value={year}>
-                                                {year}
-                                            </option>
+                                            <option key={index} value={year}>{year}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -251,9 +262,7 @@ function StudentDetails() {
                                 {/* Status Dropdown */}
                                 <div>
                                     <label className="block text-gray-700 font-medium">Status:</label>
-                                    <select
-                                        className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                    >
+                                    <select className="mt-2 p-2 border rounded w-full bg-gray-100">
                                         <option value="">Select Status</option>
                                         <option value="Denies">Denied</option>
                                         <option value="On going">On going</option>
@@ -263,7 +272,7 @@ function StudentDetails() {
                             </div>
                         </div>
 
-                        {/*Save Button*/}
+                        {/* Save Button */}
                         <div className="flex justify-end mt-4">
                             <button
                                 className="px-4 py-2 bg-gray-400 text-white text-m rounded-lg hover:bg-gray-500"
@@ -274,15 +283,7 @@ function StudentDetails() {
                         </div>
                     </div>
                 </div>
-
-                {/* Right Side (Uploaded Files) */}
-                <div className="bg-white p-6 shadow rounded-lg">
-                    <h2 className="text-lg font-semibold mb-4">Uploaded Files</h2>
-                    <p className="text-gray-500">No files uploaded yet.</p>
-                </div>
             </div>
-        </div>
-
         </AuthenticatedLayout>
     );
 }
