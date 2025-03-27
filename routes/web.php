@@ -9,6 +9,8 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompCourseController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MoaProcessController;
+use App\Http\Controllers\StudentUploadingController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -121,6 +123,15 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/moa-process/{id}', [MoaProcessController::class, 'destroy'])->name('moaProcess.destroy');
     Route::get('/company/{id}', [MoaProcessController::class, 'showCompany'])->name('company.show');
+
+//Student Uploading Routing
+Route::middleware('auth')->group(function () {
+    Route::get('/studentuploading', [StudentUploadingController::class, 'index'])->name('studentuploading.index');
+});
+
+Route::get('/get-courses', [CourseController::class, 'getCoursesByCollege']);
+
+Route::post('/upload-students', [UploadController::class, 'upload'])->name('upload.students');
 
 });
 

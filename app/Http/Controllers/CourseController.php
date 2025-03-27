@@ -117,4 +117,10 @@ class CourseController extends Controller
 
         return redirect()->route('course.index')->with('success', 'Course and OJT details deleted successfully!');
     }
+
+    public function getCoursesByCollege(Request $request)
+    {
+        $courses = Course::where('College', $request->college)->get();
+        return response()->json($courses);
+    }
 }
