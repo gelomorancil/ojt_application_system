@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { usePage } from "@inertiajs/react";
@@ -6,40 +6,77 @@ import axios from "axios";
 import Select from "react-select";
 
 function StudentDetails({ company_list, details_list }) {
-    console.log(details_list);
+    const { student } = usePage().props;
     const { data, setData, post, put, processing, errors, reset } = useForm({
         Comp_ID: "",
         Sem: "",
         AY: "",
     });
 
-    const { student } = usePage().props;
-    
     const currentYear = new Date().getFullYear();
-    const schoolYears = Array.from({ length: 3 }, (_, i) => `${currentYear - 1 + i}-${currentYear + i}`);
+    // const schoolYears = Array.from({ length: 3 }, (_, i) => ${currentYear - 1 + i}-${currentYear + i});
 
-    const [extraCompanies, setExtraCompanies] = useState(() => {
-        return JSON.parse(localStorage.getItem(`extraCompanies_${student.Student_Num}`)) || [];
-    });
+    // Use useCallback to memoize the initial state creation
+    const getInitialExtraCompanies = useCallback(() => {
+        // const storedCompanies = localStorage.getItem(extraCompanies_${student.Student_Num});
+        return storedCompanies ? JSON.parse(storedCompanies) : [];
+    }, [student.Student_Num]);
 
-    const [selectedSemester, setSelectedSemester] = useState("");
-    const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
+    const [extraCompanies, setExtraCompanies] = useState(getInitialExtraCompanies);
+    const [companies, setCompanies] = useState([]);
+    const [selectedCompany, setSelectedCompany] = useState(null);
 
-    // Function to handle adding a new box
-    const addCompanyBox = () => {
-        setExtraCompanies([{ id: Date.now(), saved: false }, ...extraCompanies]);
-    };
+    // State for each dynamically added box
+    const [dynamicCompanyStates, setDynamicCompanyStates] = useState(
+        extraCompanies.map(() => ({
+            selectedCompany: "",
+            selectedSemester: "",
+            selectedSchoolYear: "",
+        }))
+    );
 
-    const handleSave = async (id = null) => {
-        // Prepare form data
+    // Fetch companies on component mount
+    useEffect(() => {
+        axios.get("/api/companies")
+            .then(response => {
+                setCompanies(response.data);
+            })
+            .catch(error => {
+                console.error("Error fetching companies:", error);
+            });
+    }, []);
+
+    // Update localStorage whenever extraCompanies changes
+    useEffect(() => {
+        // localStorage.setItem(extraCompanies_${student.Student_Num}, JSON.stringify(extraCompanies));
+    }, [extraCompanies, student.Student_Num]);
+
+    // Memoized function to add company box
+    const addCompanyBox = useCallback(() => {
+        const newCompany = { id: Date.now(), saved: false };
+        setExtraCompanies(prev => [newCompany, ...prev]);
+        
+        // Add a new state for the dynamically added box
+        setDynamicCompanyStates(prev => [
+            {
+                selectedCompany: "",
+                selectedSemester: "",
+                selectedSchoolYear: "",
+            },
+            ...prev
+        ]);
+    }, []);
+
+    const handleSaveDynamicBox = useCallback(async (index, id) => {
+        const currentState = dynamicCompanyStates[index];
+        
         const formData = {
-            student_id: student.Student_Num, // Ensure student ID is included
-            company: selectedCompany,
-            semester: selectedSemester,
-            schoolYear: selectedSchoolYears,
+            student_id: student.Student_Num,
+            company: currentState.selectedCompany, // Note: changed from 'Comp_ID'
+            semester: currentState.selectedSemester,
+            schoolYear: currentState.selectedSchoolYear,
+            status: currentState.status
         };
-    
-        console.log("Saving Data:", formData);
     
         try {
             const response = await fetch("/api/save-student-company", {
@@ -52,49 +89,76 @@ function StudentDetails({ company_list, details_list }) {
     
             const data = await response.json();
     
-            if (response.ok) {
+            if (data.success) {
                 alert("Data saved successfully!");
     
-                // If an `id` is provided, update extra companies as saved
-                if (id !== null) {
-                    const updatedCompanies = extraCompanies.map(company =>
+                // Mark the company as saved
+                setExtraCompanies(prev => 
+                    prev.map(company => 
                         company.id === id ? { ...company, saved: true } : company
-                    );
-                    setExtraCompanies(updatedCompanies);
-                    localStorage.setItem(`extraCompanies_${student.Student_Num}`, JSON.stringify(updatedCompanies));
-                }
+                    )
+                );
             } else {
-                alert("Error saving data: " + data.message);
+                alert("Error saving data: " + (data.message || "Unknown error"));
             }
         } catch (error) {
             console.error("Error:", error);
             alert("Failed to save data.");
         }
-    };       
+    }, [student.Student_Num, dynamicCompanyStates]);
 
-    // Function to delete a company box
-    const handleDelete = (id) => {
-        const updatedCompanies = extraCompanies.filter(company => company.id !== id);
-        setExtraCompanies(updatedCompanies);
-        localStorage.setItem(`extraCompanies_${student.Student_Num}`, JSON.stringify(updatedCompanies));
-    };
-
-    const CompanyDropdown = () => {
-        const [companies, setCompanies] = useState([]);
-        const [selectedCompany, setSelectedCompany] = useState("");
-
-        useEffect(() => {
-            axios.get("/api/companies")
-                .then(response => {
-                    setCompanies(response.data);
-                })
-                .catch(error => {
-                    console.error("Error fetching companies:", error);
+    const handleSaveCompany = async () => {
+        const formData = {
+            student_id: student.Student_Num, // Using the student's ID from the current student
+            Comp_ID: selectedCompany, // The selected company ID from the dropdown
+            Sem: data.Sem, // Semester from the form state
+            AY: data.AY, // Academic Year from the form state
+            Status: data.Status // Status from the form state
+        };
+    
+        try {
+            const response = await axios.post("/api/save-student-company", formData);
+            
+            if (response.data.success) {
+                // Show success message
+                alert("Company information saved successfully!");
+                
+                // Optional: Reset form or update local state
+                setData({
+                    Comp_ID: "",
+                    Sem: "",
+                    AY: "",
+                    Status: ""
                 });
-        }, []);
-
-        return null; // Added return to prevent issues
+                setSelectedCompany(null);
+            } else {
+                // Handle any errors from the server
+                alert("Failed to save company information");
+            }
+        } catch (error) {
+            console.error("Error saving company data:", error);
+            alert("An error occurred while saving the data");
+        }
     };
+
+    // Memoized function to update dynamic company state
+    const updateDynamicCompanyState = useCallback((index, field, value) => {
+        setDynamicCompanyStates(prev => 
+            prev.map((state, i) => 
+                i === index ? { ...state, [field]: value } : state
+            )
+        );
+    }, []);
+
+    // Memoized function to handle delete
+    const handleDelete = useCallback((id) => {
+        // Remove from extraCompanies
+        setExtraCompanies(prev => prev.filter(company => company.id !== id));
+        
+        // Remove corresponding state
+        const indexToRemove = extraCompanies.findIndex(company => company.id === id);
+        setDynamicCompanyStates(prev => prev.filter((_, index) => index !== indexToRemove));
+    }, [extraCompanies]);
 
     return (
         <AuthenticatedLayout>
@@ -102,8 +166,10 @@ function StudentDetails({ company_list, details_list }) {
 
             <div className="max-w-7xl mx-auto p-6">
                 <div className="grid grid-cols-3 gap-6">
+                    {/* Student Information Section (Left, Takes 2 Columns) */}
                     <div className="col-span-2 space-y-6">
                         <div className="bg-white p-6 shadow rounded-lg">
+                            {/* Student info rendering */}
                             <div className="flex justify-between items-start">
                                 <div className="flex gap-4 items-center">
                                     <div className="w-32 h-32 bg-gray-300 rounded-lg flex items-center justify-center">
@@ -124,6 +190,7 @@ function StudentDetails({ company_list, details_list }) {
                             </div>
                         </div>
 
+                        {/* Add New Company Button */}
                         <div className="flex justify-center !mt-3">
                             <button
                                 onClick={addCompanyBox}
@@ -133,115 +200,184 @@ function StudentDetails({ company_list, details_list }) {
                             </button>
                         </div>
 
-                    {/* Dynamically Added Company Boxes (NEW ONES FIRST) */}
-                    {extraCompanies.map((company) => (
-                        <div key={company.id} className="bg-white p-6 shadow rounded-lg !mt-3">
-                            <h2 className="text-lg font-semibold">Intern Applied Company</h2>
-                            <p className="text-gray-600">Add new company information here.</p>
-                            <div className="flex justify-end mt-4 space-x-2">
-                                {/* Save Button (Only shows if not saved yet) */}
-                                {!company.saved && (
-                                    <button
-                                        onClick={() => handleSave(company.id)}
-                                        className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-red-500"
-                                    >
-                                        Save
-                                    </button>
-                                )}
+                        {/* Dynamically Added Company Boxes */}
+                        {extraCompanies.map((company, index) => (
+                            <div key={company.id} className="bg-white p-6 shadow rounded-lg mt-3">
+                                <h2 className="text-lg font-semibold">Intern Applied Company</h2>
+                                <p className="text-gray-600">Add new company information here.</p>
 
-                                {/* Delete Button (Always available) */}
-                                <button
-                                    onClick={() => handleDelete(company.id)}
-                                    className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-red-500"
+                                {/* Layout Container */}
+                                <div className="flex flex-wrap gap-6 mt-4">
+                                    {/* Company Dropdown (Left Side) */}
+                                    <div className="w-1/2">
+                                        <label className="block text-gray-700 font-medium">Company:</label>
+                                        <Select
+                                            placeholder="Company"
+                                            options={company_list.map(company => ({
+                                                value: company.id,
+                                                label: company.Comp_name
+                                            }))}
+                                            onChange={(e) => setSelectedCompany(e.value)}
+                                            className="w-full"
+                                        />
+                                    </div>
+
+                                    {/* Semester & School Year (Right Side) */}
+                                    <div className="w-full md:w-1/2 flex flex-col gap-4">
+                                        {/* Semester Selection */}
+                                        <div>
+                                            <label className="block text-gray-700 font-medium">Semester:</label>
+                                            <select
+                                                className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                                value={dynamicCompanyStates[index]?.selectedSemester || ""}
+                                                onChange={(e) => updateDynamicCompanyState(index, "selectedSemester", e.target.value)}
+                                            >
+                                                <option value="">Select Semester</option>
+                                                <option value="1st">First</option>
+                                                <option value="2nd">Second</option>
+                                                <option value="Summer">Summer</option>
+                                            </select>
+                                        </div>
+
+                                        {/* School Year Selection */}
+                                        <div>
+                                            <label className="block text-gray-700 font-medium">School Year:</label>
+                                            <select
+                                                className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                                value={dynamicCompanyStates[index]?.selectedSchoolYear || ""}
+                                                onChange={(e) => updateDynamicCompanyState(index, "selectedSchoolYear", e.target.value)}
+                                            >
+                                                <option value="">Select School Year</option>
+                                                {schoolYears.map((year, yearIndex) => (
+                                                    <option key={yearIndex} value={year}>{year}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        {/* Status Dropdown */}
+                                        <div>
+                                            <label className="block text-gray-700 font-medium">Status:</label>
+                                            <select
+                                                className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                                value={dynamicCompanyStates[index]?.status || ""}
+                                                onChange={(e) => updateDynamicCompanyState(index, "status", e.target.value)}
+                                            >
+                                                <option value="">Select Status</option>
+                                                <option value="Denied">Denied</option>
+                                                <option value="On going">On going</option>
+                                                <option value="Completed">Completed</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Save and Delete Buttons */}
+                                <div className="flex justify-end mt-4 space-x-2">
+                                    {!company.saved && (
+                                        <>
+                                            <button 
+                                                onClick={handleSaveCompany} 
+                                                className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(company.id)}
+                                                className="px-4 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500"
+                                            >
+                                                Delete
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Default Company Box */}
+                        <div className="bg-white p-6 shadow rounded-lg mt-3">
+                            <h2 className="text-lg font-semibold">Intern Applied Company</h2>
+                            <p className="text-gray-600">Add company-related information here.</p>
+
+                            {/* Layout Container */}
+                            <div className="flex flex-wrap gap-6 mt-4">
+                                {/* Company Dropdown (Left Side) */}
+                                <div className="w-1/2">
+                                    <label className="block text-gray-700 font-medium">Company:</label>
+                                    <Select
+                                        placeholder="Company"
+                                        options={company_list.map(company => ({
+                                            value: company.id,
+                                            label: company.Comp_name
+                                        }))}
+                                        onChange={(e) => setSelectedCompany(e.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                {/* Semester & School Year (Right Side) */}
+                                <div className="w-full md:w-1/2 flex flex-col gap-4">
+                                    <div>
+                                        <label className="block text-gray-700 font-medium">Semester:</label>
+                                        <select
+                                            className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                            value={data.Sem}
+                                            onChange={(e) => setData("Sem", e.target.value)}
+                                        >
+                                            <option value="">Select Semester</option>
+                                            <option value="1st">First</option>
+                                            <option value="2nd">Second</option>
+                                            <option value="Summer">Summer</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-medium">School Year:</label>
+                                        <select
+                                            className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                            value={data.AY}
+                                            onChange={(e) => setData("AY", e.target.value)}
+                                        >
+                                            <option value="">Select School Year</option>
+                                            {schoolYears.map((year, index) => (
+                                                <option key={index} value={year}>{year}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-gray-700 font-medium">Status:</label>
+                                        <select
+                                            className="mt-2 p-2 border rounded w-full bg-gray-100"
+                                            value={data.Status}
+                                            onChange={(e) => setData("Status", e.target.value)}
+                                        >
+                                            <option value="">Select Status</option>
+                                            <option value="Denied">Denied</option>
+                                            <option value="On going">On going</option>
+                                            <option value="Completed">Completed</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Save Button */}
+                            <div className="flex justify-end mt-4">
+                                <button 
+                                    onClick={handleSaveCompany} 
+                                    className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
                                 >
-                                    Delete
+                                    Save
                                 </button>
                             </div>
                         </div>
-                    ))}
-
-                   {/* Default Company Box */}
-                    <div className="bg-white p-6 shadow rounded-lg !mt-3">
-                        <h2 className="text-lg font-semibold">Intern Applied Company</h2>
-                        <p className="text-gray-600">Add company-related information here.</p>
-
-                            <div className="w-1/2">
-                                <label className="block text-gray-700 font-medium">Company:</label>
-                                <Select
-                                    placeholder="Company"
-                                    options={company_list.map(company => ({
-                                        value: company.id,
-                                        label: company.Comp_name
-                                    }))}
-                                    onChange={(e) => setData('Comp_ID', e.value)}
-                                    className="w-full"
-                                />
-                                <select 
-                                    className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                    value={selectedCompany}
-                                    onChange={(e) => setSelectedCompany(e.target.value)} 
-                                >
-                                    <option value="">Select a Company</option>
-                                </select>
-                            </div>
-
-                            <div className="w-1/2 flex flex-col gap-4">
-                                <div>
-                                    <label className="block text-gray-700 font-medium">Semester:</label>
-                                    <select 
-                                        className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                        value={selectedSemester}
-                                        onChange={(e) => setSelectedSemester(e.target.value)}
-                                    >
-                                        <option value="">Select Semester</option>
-                                        <option value="1st">First</option>
-                                        <option value="2nd">Second</option>
-                                        <option value="Summer">Summer</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-gray-700 font-medium">School Year:</label>
-                                    <select
-                                        className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                        value={selectedSchoolYear}
-                                        onChange={(e) => setSelectedSchoolYear(e.target.value)} // ✅ Update state on change
-                                    >
-                                        <option value="">Select School Year</option>
-                                        {schoolYears.map((year, index) => (
-                                            <option key={index} value={year}>
-                                                {year}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Status Dropdown */}
-                                <div>
-                                    <label className="block text-gray-700 font-medium">Status:</label>
-                                    <select
-                                        className="mt-2 p-2 border rounded w-full bg-gray-100"
-                                    >
-                                        <option value="">Select Status</option>
-                                        <option value="Denies">Denied</option>
-                                        <option value="On going">On going</option>
-                                        <option value="Completed">Completed</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/*Save Button*/}
-                        <div className="flex justify-end mt-4">
-                            <button
-                                className="px-4 py-2 bg-gray-400 text-white text-m rounded-lg hover:bg-gray-500"
-                                onClick={handleSave}
-                            >
-                                Save
-                            </button>
+                    </div>
+                    {/* Right Section: Upload Files */}
+                        <div className="col-span-1 bg-white p-6 shadow rounded-lg">
+                            <h2 className="text-lg font-semibold">Upload Files</h2>
+                            <p className="text-gray-500">Upload your OJT-related documents here.</p>
                         </div>
                     </div>
                 </div>
-            </div>
         </AuthenticatedLayout>
     );
 }
