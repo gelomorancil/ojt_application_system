@@ -12,22 +12,23 @@ use App\Models\MoaProcess;
 class DashboardController extends Controller
 {
 
-public function index()
-{
-    $totalCompanies = Company::count();
-    $totalStudents = Student::count();
-    $totalCourses = Course::count();
-    $moaExpiry = MoaProcess::select('Expiry')->get(); // Get Expiry from MoaProcess
-    // dd($moaExpiry);
+    public function index()
+    {
+        $totalCompanies = Company::count();
+        $totalStudents = Student::count();
+        $totalCourses = Course::count();
 
-    return Inertia::render('Dashboard', [
-        'dashboardData' => [
-            'totalCompanies' => $totalCompanies,
-            'totalStudents' => $totalStudents,
-            'totalCourses' => $totalCourses,
-            'moaExpiry' => $moaExpiry, // Send MoaProcess expiry count
-        ]
-    ]);
-}
+        // Count only MOA Processes where expiry is not null
+        $expiryCount = MoaProcess::whereNotNull('Expiry')->count();
+
+        return Inertia::render('Dashboard', [
+            'dashboardData' => [
+                'totalCompanies' => $totalCompanies,
+                'totalStudents' => $totalStudents,
+                'totalCourses' => $totalCourses,
+                'expiryCount' => $expiryCount, // Only count where expiry is set
+            ]
+        ]);
+    }
 
 }

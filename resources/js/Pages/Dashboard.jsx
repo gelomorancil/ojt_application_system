@@ -2,18 +2,11 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
 export default function Dashboard({ dashboardData }) {
-    console.log("🚀 Dashboard Data:", dashboardData); // Debugging in Browser Console
-
-    if (!dashboardData) {
-        return <p className="text-red-500 text-center">Loading...</p>;
-    }
-
-    // Destructure data properly
     const {
         totalCompanies = 0,
         totalStudents = 0,
         totalCourses = 0,
-        moaExpiry = [], // Ensure it's always an array
+        expiryCount = 0,
     } = dashboardData;
 
     return (
@@ -37,8 +30,8 @@ export default function Dashboard({ dashboardData }) {
                             <p className="text-3xl font-bold">{totalCourses}</p>
                         </div>
                         <div className="bg-white p-6 rounded-lg shadow">
-                            <h3 className="text-lg font-semibold">Expired Moa</h3>
-                            <p className="text-3xl font-bold text-red-500">{moaExpiry.length}</p>
+                            <h3 className="text-lg font-semibold">MOA Expiry Set</h3>
+                            <p className="text-3xl font-bold text-blue-500">{expiryCount}</p>
                         </div>
                     </div>
                 </div>
