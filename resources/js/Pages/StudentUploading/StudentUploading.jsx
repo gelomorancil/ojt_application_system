@@ -10,89 +10,105 @@ export default function StudentUploading() {
     const [courses, setCourses] = useState([]);
     const [schoolYear, setSchoolYear] = useState("");
     const [semester, setSemester] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
-const colleges = [
-    { name: "CAS", code: "CAS" },
-    { name: "CBA", code: "CBA" },
-    { name: "CECS", code: "CECS" },
-    { name: "CE", code: "CE" }
-];
+    const colleges = [
+        { name: "CAS", code: "CAS" },
+        { name: "CBA", code: "CBA" },
+        { name: "CECS", code: "CECS" },
+        { name: "CE", code: "CE" }
+    ];
 
-useEffect(() => {
-    if (college) {
-        axios.get(`/get-courses?college=${college}`).then((response) => {
-            // Use Map to ensure only unique courses based on the "Course" field
-            const uniqueCourses = Array.from(
-                new Map(response.data.map(course => [course.Course, course])).values()
-            );
+    useEffect(() => {
+        if (college) {
+            axios.get(`/get-courses?college=${college}`).then((response) => {
+                const uniqueCourses = Array.from(
+                    new Map(response.data.map(course => [course.Course, course])).values()
+                );
 
-            setCourses(uniqueCourses);
-            setCourse(""); // Reset course selection when college changes
-        });
-    } else {
-        setCourses([]);
-        setCourse("");
-    }
-}, [college]);
+                setCourses(uniqueCourses);
+                setCourse(""); // Reset course selection when college changes
+            }).catch(error => {
+                console.error("Error fetching courses:", error);
+                setErrorMessage("Failed to fetch courses. Please try again.");
+            });
+        } else {
+            setCourses([]);
+            setCourse("");
+        }
+    }, [college]);
 
-// School year logic
-const currentYear = new Date().getFullYear();
-const schoolYearOptions = [
-    `${currentYear - 1}-${currentYear}`,
-    `${currentYear}-${currentYear + 1}`,
-    `${currentYear + 1}-${currentYear + 2}`,
-];
+    // School year logic
+    const currentYear = new Date().getFullYear();
+    const schoolYearOptions = [
+        `${currentYear - 1}-${currentYear}`,
+        `${currentYear}-${currentYear + 1}`,
+        `${currentYear + 1}-${currentYear + 2}`,
+    ];
 
-// Handle file change
-  const handleFileChange = (e) => {
-      setFile(e.target.files[0]); // Store file in state
-  };
+    // Handle file change
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        setFile(selectedFile);
+        setErrorMessage(""); // Clear any previous error messages
+    };
 
-  // Fetch courses when a college is selected
-  useEffect(() => {
-    if (college) {
-      axios.get(`/get-courses?college=${college}`).then((response) => {
-        setCourses(response.data);
-        setCourse(""); // Reset course selection when college changes
-      });
-    } else {
-      setCourses([]);
-      setCourse("");
-    }
-  }, [college]);
+    // Handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setErrorMessage(""); // Reset error message
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+        // Ensure all fields are filled
+        if (!file || !college || !course || !schoolYear || !semester) {
+            setErrorMessage("Please fill in all fields and select a file.");
+            return;
+        }
 
-    // Ensure a file is selected
-    if (!selectedFile) {
-        console.error('No file selected');
-        return;
-    }
+        // Create FormData object
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('college', college);
+        formData.append('course', course);
+        formData.append('schoolYear', schoolYear);
+        formData.append('semester', semester);
 
-    // Create FormData object
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('college', college);
-    formData.append('course', course);
-    formData.append('schoolYear', schoolYear);
-    formData.append('semester', semester);
+        try {
+            // Send request to Laravel backend
+            const response = await axios.post('/upload-students', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
 
-    try {
-        // Send request to Laravel backend
-        const response = await axios.post('/upload-students', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
+            console.log('Success:', response.data);
+            alert('Upload successful!'); // Show success message
+            
+            // Optional: Reset form after successful upload
+            setFile(null);
+            setCollege("");
+            setCourse("");
+            setSchoolYear("");
+            setSemester("");
 
-        console.log('Success:', response.data);
-        alert('Upload successful!'); // Show success message
-
-    } catch (error) {
-        console.error('Upload failed:', error.response?.data || error.message);
-        alert('Upload failed. Check console for details.');
-    }
-};
+        } catch (error) {
+            console.error('Upload failed:', error);
+            
+            // More detailed error handling
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                const errorMsg = error.response.data.message || 
+                                 error.response.data.error || 
+                                 'Upload failed. Please check the file and try again.';
+                setErrorMessage(errorMsg);
+                console.error('Server responded with:', error.response.data);
+            } else if (error.request) {
+                // The request was made but no response was received
+                setErrorMessage('No response received from the server. Please check your network connection.');
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                setErrorMessage('Error setting up the upload. Please try again.');
+            }
+        }
+    };
 
     return (
         <AuthenticatedLayout>
@@ -101,104 +117,111 @@ const schoolYearOptions = [
             <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg">
                 <h2 className="text-xl font-semibold mb-4">Student Uploading</h2>
 
+                {/* Error Message Display */}
+                {errorMessage && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <span className="block sm:inline">{errorMessage}</span>
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-4">
-                {/* College Dropdown */}
-                <div>
+                    {/* Rest of the form remains the same as in previous example */}
                     {/* College Dropdown */}
-                    <label className="block font-medium">College</label>
-                    <select
-                    value={college}
-                    onChange={(e) => setCollege(e.target.value)}
-                    className="w-full p-2 border rounded"
-                    required
-                    >
-                    <option value="">Select a college</option>
-                    {colleges.map((col) => (
-                        <option key={col.code} value={col.code}>
-                        {col.name}
-                        </option>
-                    ))}
-                    </select>
-
-                    {/* Course Dropdown (Filtered Based on Selected College) */}
-                    <label className="block font-medium">Course</label>
-                    <select
-                    value={course}
-                    onChange={(e) => setCourse(e.target.value)}
-                    className="w-full p-2 border rounded"
-                    required
-                    disabled={!college}
-                    >
-                    <option value="">Select a course</option>
-                    {courses.map((c) => (
-                        <option key={c.id} value={c.Course}>
-                        {c.Course}
-                        </option>
-                    ))}
-                    </select>
-                </div>
-
-                {/* School Year Dropdown */}
-                <div>
-                    <label className="block font-medium">School Year</label>
-                    <select
-                    value={schoolYear}
-                    onChange={(e) => setSchoolYear(e.target.value)}
-                    className="w-full p-2 border rounded"
-                    required
-                    >
-                    <option value="">Select school year</option>
-                    {schoolYearOptions.map((year) => (
-                        <option key={year} value={year}>
-                        {year}
-                        </option>
-                    ))}
-                    </select>
-                </div>
-
-                {/* Semester Dropdown */}
-                <div>
-                    <label className="block font-medium">Semester</label>
-                    <select
-                        value={semester}
-                        onChange={(e) => setSemester(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        required
+                    <div>
+                        <label className="block font-medium">College</label>
+                        <select
+                            value={college}
+                            onChange={(e) => setCollege(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            required
                         >
-                        <option value="">Select semester</option>
-                        <option value="1st">First</option>
-                        <option value="2nd">Second</option>
-                        <option value="Summer">Summer</option>
-                    </select>
-                </div>
+                            <option value="">Select a college</option>
+                            {colleges.map((col) => (
+                                <option key={col.code} value={col.code}>
+                                    {col.name}
+                                </option>
+                            ))}
+                        </select>
 
-                {/* File Upload */}
-                <div>
-                    <label className="block font-medium">Upload File</label>
-                    <input
-                    type="file"
-                    onChange={handleFileChange}
-                    className="w-full p-2 border rounded"
-                    accept=".xlsx,.xls,.csv"
-                    required
-                    />
-                </div>
+                        {/* Course Dropdown */}
+                        <label className="block font-medium">Course</label>
+                        <select
+                            value={course}
+                            onChange={(e) => setCourse(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            required
+                            disabled={!college}
+                        >
+                            <option value="">Select a course</option>
+                            {courses.map((c) => (
+                                <option key={c.id} value={c.Course}>
+                                    {c.Course}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                {/* Submit Button */}
-                <button
-                    type="submit"
-                    className="w-full bg-gray-400 text-white p-2 rounded hover:bg-gray-500"
-                >
-                    Upload
-                </button>
+                    {/* School Year Dropdown */}
+                    <div>
+                        <label className="block font-medium">School Year</label>
+                        <select
+                            value={schoolYear}
+                            onChange={(e) => setSchoolYear(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            required
+                        >
+                            <option value="">Select school year</option>
+                            {schoolYearOptions.map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Semester Dropdown */}
+                    <div>
+                        <label className="block font-medium">Semester</label>
+                        <select
+                            value={semester}
+                            onChange={(e) => setSemester(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            required
+                        >
+                            <option value="">Select semester</option>
+                            <option value="1st">First</option>
+                            <option value="2nd">Second</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                    </div>
+
+                    {/* File Upload */}
+                    <div>
+                        <label className="block font-medium">Upload File</label>
+                        <input
+                            type="file"
+                            onChange={handleFileChange}
+                            className="w-full p-2 border rounded"
+                            accept=".xlsx,.xls,.csv"
+                            required
+                        />
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        className="w-full bg-gray-400 text-white p-2 rounded hover:bg-gray-500"
+                    >
+                        Upload
+                    </button>
                 </form>
 
                 {/* File Preview */}
                 {file && (
-                <div className="mt-4 p-3 bg-gray-100 border rounded">
-                    <p className="font-medium">Selected File:</p>
-                    <p className="text-gray-700">{file.name}</p>
-                </div>
+                    <div className="mt-4 p-3 bg-gray-100 border rounded">
+                        <p className="font-medium">Selected File:</p>
+                        <p className="text-gray-700">{file.name}</p>
+                    </div>
                 )}
             </div>
         </AuthenticatedLayout>
