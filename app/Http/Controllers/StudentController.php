@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\OjtHours;
 use App\Models\Company;
 use App\Models\Student;
 use App\Models\StudentDetails;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\StudentImport;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -178,5 +181,39 @@ class StudentController extends Controller {
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error deleting student'], 400); // return error response
         }
+    }
+
+    public function uploadStudents(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+            'college' => 'required',
+            'course' => 'required',
+            'schoolYear' => 'required',
+            'semester' => 'required'
+        ]);
+
+        $file = $request->file('file');
+        $data = Excel::toArray([], $file)[0]; // Convert Excel data to an array
+
+        $ojtHours = OjtHours::where('college', $request->college)
+            ->where('course', $request->course)
+            ->value('Hrs'); // Fetch OJT hours
+
+        foreach ($data as $index => $row) {
+            if ($index === 0) continue; // Skip header row
+
+            Student::create([
+                'student_number' => $row[0], // Assuming 1st column is Student ID
+                'name' => $row[1] . ', ' . $row[2], // Assuming 2nd is First Name, 3rd is Last Name
+                'college' => $request->college,
+                'course' => $request->course,
+                'school_year' => $request->schoolYear,
+                'semester' => $request->semester,
+                'ojt_hours' => $ojtHours
+            ]);
+        }
+
+        return response()->json(['message' => 'Students uploaded successfully']);
     }
 }
