@@ -14,12 +14,12 @@ function StudentDetails({ company_list, details_list }) {
     });
 
     const currentYear = new Date().getFullYear();
-    // const schoolYears = Array.from({ length: 3 }, (_, i) => ${currentYear - 1 + i}-${currentYear + i});
+    // const schoolYears = Array.from({ length: 3 }, (_, i) => `${currentYear - 1 + i}-${currentYear + i}`);
 
     // Use useCallback to memoize the initial state creation
     const getInitialExtraCompanies = useCallback(() => {
-        // const storedCompanies = localStorage.getItem(extraCompanies_${student.Student_Num});
-        return storedCompanies ? JSON.parse(storedCompanies) : [];
+        // const storedCompanies = localStorage.getItem(`extraCompanies_${student.Student_Num}`);
+        // return storedCompanies ? JSON.parse(storedCompanies) : [];
     }, [student.Student_Num]);
 
     const [extraCompanies, setExtraCompanies] = useState(getInitialExtraCompanies);
