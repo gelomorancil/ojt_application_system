@@ -176,19 +176,6 @@ export default function Student({ students = [], courses = [], colleges = [], av
         setSelectedCourseFilter('');
     }, [selectedCollege]);
 
-    useEffect(() => {
-        // Fetch OJT hours from the database
-        axios.get("/api/ojt-hours") // Adjust API endpoint as needed
-            .then(response => {
-                const hoursData = response.data.reduce((acc, item) => {
-                    acc[item.Course_Name] = item.Hours; // Map Course_Name to Hours
-                    return acc;
-                }, {});
-                setOjtHours(hoursData);
-            })
-            .catch(error => console.error("Error fetching OJT hours:", error));
-    }, []);
-
     // Update hours when course changes
     useEffect(() => {
         if (data.Course) {

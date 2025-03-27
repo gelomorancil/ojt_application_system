@@ -35,17 +35,6 @@ function StudentDetails({ company_list, details_list }) {
         }))
     );
 
-    // Fetch companies on component mount
-    useEffect(() => {
-        axios.get("/api/companies")
-            .then(response => {
-                setCompanies(response.data);
-            })
-            .catch(error => {
-                console.error("Error fetching companies:", error);
-            });
-    }, []);
-
     // Update localStorage whenever extraCompanies changes
     useEffect(() => {
         // localStorage.setItem(extraCompanies_${student.Student_Num}, JSON.stringify(extraCompanies));
@@ -66,80 +55,6 @@ function StudentDetails({ company_list, details_list }) {
             ...prev
         ]);
     }, []);
-
-    const handleSaveDynamicBox = useCallback(async (index, id) => {
-        const currentState = dynamicCompanyStates[index];
-        
-        const formData = {
-            student_id: student.Student_Num,
-            company: currentState.selectedCompany, // Note: changed from 'Comp_ID'
-            semester: currentState.selectedSemester,
-            schoolYear: currentState.selectedSchoolYear,
-            status: currentState.status
-        };
-    
-        try {
-            const response = await fetch("/api/save-student-company", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
-            });
-    
-            const data = await response.json();
-    
-            if (data.success) {
-                alert("Data saved successfully!");
-    
-                // Mark the company as saved
-                setExtraCompanies(prev => 
-                    prev.map(company => 
-                        company.id === id ? { ...company, saved: true } : company
-                    )
-                );
-            } else {
-                alert("Error saving data: " + (data.message || "Unknown error"));
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to save data.");
-        }
-    }, [student.Student_Num, dynamicCompanyStates]);
-
-    const handleSaveCompany = async () => {
-        const formData = {
-            student_id: student.Student_Num, // Using the student's ID from the current student
-            Comp_ID: selectedCompany, // The selected company ID from the dropdown
-            Sem: data.Sem, // Semester from the form state
-            AY: data.AY, // Academic Year from the form state
-            Status: data.Status // Status from the form state
-        };
-    
-        try {
-            const response = await axios.post("/api/save-student-company", formData);
-            
-            if (response.data.success) {
-                // Show success message
-                alert("Company information saved successfully!");
-                
-                // Optional: Reset form or update local state
-                setData({
-                    Comp_ID: "",
-                    Sem: "",
-                    AY: "",
-                    Status: ""
-                });
-                setSelectedCompany(null);
-            } else {
-                // Handle any errors from the server
-                alert("Failed to save company information");
-            }
-        } catch (error) {
-            console.error("Error saving company data:", error);
-            alert("An error occurred while saving the data");
-        }
-    };
 
     // Memoized function to update dynamic company state
     const updateDynamicCompanyState = useCallback((index, field, value) => {
@@ -276,7 +191,6 @@ function StudentDetails({ company_list, details_list }) {
                                     {!company.saved && (
                                         <>
                                             <button 
-                                                onClick={handleSaveCompany} 
                                                 className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
                                             >
                                                 Save
@@ -363,7 +277,7 @@ function StudentDetails({ company_list, details_list }) {
                             {/* Save Button */}
                             <div className="flex justify-end mt-4">
                                 <button 
-                                    onClick={handleSaveCompany} 
+                                    
                                     className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
                                 >
                                     Save
