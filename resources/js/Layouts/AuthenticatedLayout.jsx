@@ -63,10 +63,6 @@ export default function AuthenticatedLayout({ header, children }) {
                         {/* <FaUserGraduate className="w-5 h-5" /> */}
                         <span>Student Management</span>
                     </NavLink>
-                    {/* <NavLink href={route('moa')} active={route().current('moa')} className="nav-item text-black hover:text-gray-700">
-                        <FaFileContract className="w-5 h-5" />
-                        <span>MOA</span>
-                    </NavLink> */}
                     <NavLink
                         href={route("course.index")}
                         active={route().current("course.index")}
