@@ -1,7 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useState, useEffect } from "react";
 import { Head } from "@inertiajs/react";
-import axios from "axios";
 
 export default function StudentUploading() {
     const [file, setFile] = useState(null);
@@ -54,60 +53,24 @@ export default function StudentUploading() {
     };
 
     // Handle form submission
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        setErrorMessage(""); // Reset error message
-
-        // Ensure all fields are filled
-        if (!file || !college || !course || !schoolYear || !semester) {
-            setErrorMessage("Please fill in all fields and select a file.");
-            return;
-        }
-
-        // Create FormData object
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('college', college);
-        formData.append('course', course);
-        formData.append('schoolYear', schoolYear);
-        formData.append('semester', semester);
-
-        try {
-            // Send request to Laravel backend
-            const response = await axios.post('/upload-students', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-
-            console.log('Success:', response.data);
-            alert('Upload successful!'); // Show success message
-            
-            // Optional: Reset form after successful upload
-            setFile(null);
-            setCollege("");
-            setCourse("");
-            setSchoolYear("");
-            setSemester("");
-
-        } catch (error) {
-            console.error('Upload failed:', error);
-            
-            // More detailed error handling
-            if (error.response) {
-                // The request was made and the server responded with a status code
-                // that falls out of the range of 2xx
-                const errorMsg = error.response.data.message || 
-                                 error.response.data.error || 
-                                 'Upload failed. Please check the file and try again.';
-                setErrorMessage(errorMsg);
-                console.error('Server responded with:', error.response.data);
-            } else if (error.request) {
-                // The request was made but no response was received
-                setErrorMessage('No response received from the server. Please check your network connection.');
-            } else {
-                // Something happened in setting up the request that triggered an Error
-                setErrorMessage('Error setting up the upload. Please try again.');
+        
+        // Use Inertia's post method to submit the form
+        post('/upload-students', {
+            forceFormData: true, // Important for file uploads
+            onSuccess: () => {
+                // Optional: Reset form after successful upload
+                setFile(null);
+                setData({
+                    college: "",
+                    course: "",
+                    schoolYear: "",
+                    semester: "",
+                    file: null
+                });
             }
-        }
+        });
     };
 
     return (

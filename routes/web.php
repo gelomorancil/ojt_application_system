@@ -9,7 +9,6 @@ use App\Http\Controllers\CompCourseController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MoaProcessController;
 use App\Http\Controllers\StudentUploadingController;
-use App\Http\Controllers\UploadController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -124,10 +123,9 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/studentuploading', [StudentUploadingController::class, 'index'])->name('studentuploading.index');
 });
+Route::post('/upload-students', [StudentUploadingController::class, 'upload']);
 
 Route::get('/get-courses', [CourseController::class, 'getCoursesByCollege']);
-
-Route::post('/upload-students', [UploadController::class, 'upload'])->name('upload.students');
 
 });
 
