@@ -18,8 +18,8 @@ function StudentDetails({ company_list, details_list }) {
 
     // Use useCallback to memoize the initial state creation
     const getInitialExtraCompanies = useCallback(() => {
-        const storedCompanies = localStorage.getItem(`extraCompanies_${student.Student_Num}`);
-        return storedCompanies ? JSON.parse(storedCompanies) : [];
+    const storedCompanies = localStorage.getItem(`extraCompanies_${student.Student_Num}`);
+    return storedCompanies ? JSON.parse(storedCompanies) : [];
     }, [student.Student_Num]);
 
     const [extraCompanies, setExtraCompanies] = useState(getInitialExtraCompanies);
@@ -37,7 +37,7 @@ function StudentDetails({ company_list, details_list }) {
 
     // Update localStorage whenever extraCompanies changes
     useEffect(() => {
-        localStorage.setItem(`extraCompanies_${student.Student_Num}`, JSON.stringify(extraCompanies));
+        // localStorage.setItem(extraCompanies_${student.Student_Num}, JSON.stringify(extraCompanies));
     }, [extraCompanies, student.Student_Num]);
 
     // Memoized function to add company box

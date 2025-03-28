@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentCompanyController;
 use App\Http\Controllers\MoaController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CompanyController;
@@ -51,6 +52,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/student/{id}', [StudentController::class, 'update'])->name('student.update');
     Route::delete('/student/{id}', [StudentController::class, 'destroy'])->name('student.destroy');
 });
+
+// Student Management
+Route::post('/save-student-company', [StudentCompanyController::class, 'saveStudentCompany']);
 
 // Moa Routing
 Route::middleware('auth')->group(function () {
