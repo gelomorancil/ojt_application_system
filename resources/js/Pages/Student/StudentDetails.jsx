@@ -11,7 +11,24 @@ function StudentDetails({ company_list, details_list }) {
         Comp_ID: "",
         Sem: "",
         AY: "",
+        Status: "",
     });
+    const [successMessage, setSuccessMessage] = useState('');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        post(route('student-companies.store'), {
+            onSuccess: () => {
+                setSuccessMessage('Student applied company saved successfully.');
+                reset();
+            },
+            onError: () => {
+                setSuccessMessage('');
+            },
+        });
+    };
+
 
     const currentYear = new Date().getFullYear();
     const schoolYears = Array.from({ length: 3 }, (_, i) => `${currentYear - 1 + i}-${currentYear + i}`);
@@ -32,6 +49,7 @@ function StudentDetails({ company_list, details_list }) {
             selectedCompany: "",
             selectedSemester: "",
             selectedSchoolYear: "",
+            selectedStatus: "",
         }))
     );
 
@@ -51,6 +69,7 @@ function StudentDetails({ company_list, details_list }) {
                 selectedCompany: "",
                 selectedSemester: "",
                 selectedSchoolYear: "",
+                selectedStatus: "",
             },
             ...prev
         ]);
@@ -106,22 +125,25 @@ function StudentDetails({ company_list, details_list }) {
                         </div>
 
                         {/* Add New Company Button */}
+                        
                         <div className="flex justify-center !mt-3">
                             <button
                                 onClick={addCompanyBox}
-                                className="w-20 h-8 bg-gray-400 text-white flex items-center justify-center rounded-lg hover:bg-gray-500"
+                                className="px-4 h-8 bg-gray-400 text-white flex items-center justify-center rounded-lg hover:bg-gray-500"
                             >
-                                +
+                                Add Company Profile
                             </button>
                         </div>
 
                         {/* Dynamically Added Company Boxes */}
+                        
                         {extraCompanies.map((company, index) => (
                             <div key={company.id} className="bg-white p-6 shadow rounded-lg mt-3">
                                 <h2 className="text-lg font-semibold">Intern Applied Company</h2>
                                 <p className="text-gray-600">Add new company information here.</p>
 
                                 {/* Layout Container */}
+                                
                                 <div className="flex flex-wrap gap-6 mt-4">
                                     {/* Company Dropdown (Left Side) */}
                                     <div className="w-1/2">
