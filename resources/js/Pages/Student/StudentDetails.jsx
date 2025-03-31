@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { usePage } from "@inertiajs/react";
-import axios from "axios";
 import Select from "react-select";
 
 function StudentDetails({ company_list, details_list }) {
