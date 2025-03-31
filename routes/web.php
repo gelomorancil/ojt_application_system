@@ -127,7 +127,10 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/studentuploading', [StudentUploadingController::class, 'index'])->name('studentuploading.index');
 });
-Route::post('/upload-students', [StudentUploadingController::class, 'upload']);
+
+Route::get('/upload-students', [StudentUploadingController::class, 'index']);
+Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->name('upload.students');
+Route::get('/students-list', [StudentUploadingController::class, 'getStudentsList']);
 
 Route::get('/get-courses', [CourseController::class, 'getCoursesByCollege']);
 
