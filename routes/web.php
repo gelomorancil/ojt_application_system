@@ -53,8 +53,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/student/{id}', [StudentController::class, 'destroy'])->name('student.destroy');
 });
 
-// Student Management
-Route::post('/save-student-company', [StudentCompanyController::class, 'saveStudentCompany']);
+//Student Management
+Route::middleware(['auth'])->group(function () {
+    Route::get('/student-companies', [StudentCompanyController::class, 'index'])->name('student_comp.index');
+    Route::post('/student-companies', [StudentCompanyController::class, 'store'])->name('student_comp.store');
+    Route::put('/student-companies/{studentCompany}', [StudentCompanyController::class, 'update'])->name('student_comp.update');
+    Route::delete('/student-companies/{studentCompany}', [StudentCompanyController::class, 'destroy'])->name('student_comp.destroy');
+});
 
 // Moa Routing
 Route::middleware('auth')->group(function () {

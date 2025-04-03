@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\OjtHours;
 use App\Models\Company;
 use App\Models\Student;
+use App\Models\StudentCompany;
 use App\Models\StudentDetails;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -125,10 +126,14 @@ class StudentController extends Controller {
 
             $company_list = Company::all();
             // $details_list = OjtHours::all();
+            $student_company = StudentCompany::where('Student_ID', $id)
+        ->with('company') // Load related company details
+        ->get();
 
         return Inertia::render('Student/StudentDetails', [
             'student' => $student,
             'company_list' => $company_list,
+            'student_company' => $student_company,
             // 'details_list' => $details_list,
         ]);
     }

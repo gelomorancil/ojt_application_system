@@ -4,91 +4,71 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\StudentCompany;
-use Inertia\Inertia;
+use App\Models\Company;
+use App\Models\Student;
 
 class StudentCompanyController extends Controller
 {
-    // // INDEX METHOD
-    // public function index()
-    // {
-    //     $studentCompanies = StudentCompany::all();
+    public function index()
+    {
+        $companies = Company::all();
+        $students = Student::all();
+        return inertia('StudentDetails', [
+            'company_list' => $companies,
+            'details_list' => $students
+        ]);
+    }
 
-    //     return Inertia::render('StudentCompanies/Index', [
-    //         'studentCompanies' => $studentCompanies,
-    //     ]);
-    // }
-
-    // STORE METHOD
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'Student_ID' => 'required|exists:tbl_student,Student_Num',
-            'Comp_ID' => 'required|exists:tbl_company,id',
-            'Sem' => 'required|in:1st,2nd,Summer',
+        $request->validate([
+            'Comp_ID' => 'required',
+            'Student_ID' => 'required',
+            'Sem' => 'required',
             'AY' => 'required',
-            'Status' => 'required|in:Denied,On going,Completed'
+            'Status' => 'required',
         ]);
 
-        StudentCompany::create([
-            'Student_ID' => $validatedData['Student_ID'],
-            'Comp_ID' => $validatedData['Comp_ID'],
-            'Sem' => $validatedData['Sem'],
-            'AY' => $validatedData['AY'],
-            'Status' => $validatedData['Status']
-        ]);
+        StudentCompany::create($request->all());
 
-        return redirect()->route('student-companies.index')->with('success', 'Student company saved successfully.');
+        return redirect()->back()->with('success', 'Student applied company saved successfully.');
     }
 
-    // EDIT METHOD
-    public function edit($id)
+    public function update(Request $request, StudentCompany $studentCompany)
     {
-        $studentCompany = StudentCompany::findOrFail($id);
-
-        return Inertia::render('StudentCompanies/Edit', [
-            'studentCompany' => $studentCompany,
-        ]);
-    }
-
-    // UPDATE METHOD
-    public function update(Request $request, $id)
-    {
-        $validatedData = $request->validate([
-            'Student_ID' => 'required|exists:tbl_student,Student_Num',
-            'Comp_ID' => 'required|exists:tbl_company,id',
-            'Sem' => 'required|in:1st,2nd,Summer',
+        $request->validate([
+            'Comp_ID' => 'required|exists:tbl_companies,id', // Ensure the correct table name
+            'Student_ID' => 'required|exists:tbl_students,Student_ID', // Ensure the correct table name
+            'Sem' => 'required',
             'AY' => 'required',
-            'Status' => 'required|in:Denied,On going,Completed'
-        ]);
+            'Status' => 'required',
+        ]);        
 
-        $studentCompany = StudentCompany::findOrFail($id);
+        $studentCompany->update($request->all());
 
-        $studentCompany->update([
-            'Student_ID' => $validatedData['Student_ID'],
-            'Comp_ID' => $validatedData['Comp_ID'],
-            'Sem' => $validatedData['Sem'],
-            'AY' => $validatedData['AY'],
-            'Status' => $validatedData['Status']
-        ]);
-
-        return redirect()->route('student-companies.index')->with('success', 'Student company updated successfully.');
+        return redirect()->back()->with('success', 'Student company record updated successfully.');
     }
 
-    // DELETE METHOD
-    public function destroy($id)
+    public function destroy(StudentCompany $studentCompany)
     {
-        StudentCompany::destroy($id);
+        $studentCompany->delete();
 
-        return redirect()->route('student-companies.index')->with('success', 'Student company deleted successfully.');
+        return redirect()->back()->with('success', 'Student company record deleted.');
     }
 
-    // DETAILS METHOD
-    public function details($id)
-    {
-        $studentCompany = StudentCompany::findOrFail($id);
+    public function show($studentId)
+{
+    $studentCompany = StudentCompany::with('company')
+        ->where('Student_ID', $studentId)
+        ->first();
 
-        return Inertia::render('StudentCompanies/View', [
-            'studentCompany' => $studentCompany,
-        ]);
-    }
+    return inertia('Student/StudentDetails', [
+        'student' => Student::find($studentId),
+        'companyData' => $studentCompany ? [
+            'Comp_name' => $studentCompany->company->Comp_name ?? 'Not Available',
+            'Status' => $studentCompany->Status ?? 'Not Available'
+        ] : null,
+    ]);
+}
+
 }
