@@ -28,4 +28,9 @@ class StudentCompany extends Model
     {
         return $this->belongsTo(Student::class, 'Student_ID');
     }
+
+    public function course()
+    {
+        return$this->belongsTo(Course::class, 'Course_ID');
+    }
 }

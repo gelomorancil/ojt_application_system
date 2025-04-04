@@ -86,7 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/companies/{id}', [CompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/delete/{id}', [CompanyController::class, 'destroy'])->name('companies.destroy');
     Route::get('/companies/{id}/profile', [CompanyController::class, 'profile'])->name('companies.profile');
-
+    Route::get('/companies/{companyId}/interns', [StudentCompanyController::class, 'getInternsByCompany']);
 
     // COMPANY PROFILE
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);

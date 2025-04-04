@@ -5,7 +5,7 @@ import ContactList from './Partials/ContactList';
 import ContactForm from './Partials/ContactForm';
 import { useState } from 'react';
 
-export default function View({ company, contact_list, course_list }) {
+export default function View({ company, contact_list, course_list, intern_list }) {
     const [editingContact, setEditingContact] = useState(null);
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({
         name: "",
@@ -66,7 +66,7 @@ export default function View({ company, contact_list, course_list }) {
                         course_list={course_list}/>
                     </div>
                     <div className="col-span-2">
-                        <ContactList contacts={company.contacts} contact_list={contact_list} handleEdit={handleEdit} handleDelete={handleDelete}/>
+                        <ContactList contacts={company.contacts} contact_list={contact_list} intern_list={intern_list} handleEdit={handleEdit} handleDelete={handleDelete}/>
                     </div>
                 </div>
             </div>
