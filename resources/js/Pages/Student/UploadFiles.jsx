@@ -25,9 +25,20 @@ function UploadFiles() {
     };
 
     return (
-        <div className="col-span-1 bg-white p-6 shadow rounded-lg">
+        <div className="col-span-1 bg-white p-6 shadow rounded-lg mt-6">
             <h2 className="text-lg font-semibold">Upload Files</h2>
-            <p className="text-gray-500">Upload OJT-related documents here.</p>
+            <p className="text-gray-500">Pre-Deployment Files</p>
+            <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                className="mt-4 border p-2 w-full"
+            />
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+            {selectedFile && (
+                <p className="text-green-500 text-sm mt-2">Selected: {selectedFile.name}</p>
+            )}
+            <p className="text-gray-500">Deployment Files</p>
             <input
                 type="file"
                 accept="application/pdf"
