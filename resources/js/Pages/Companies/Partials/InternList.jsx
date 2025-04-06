@@ -25,10 +25,10 @@ export default function InternList({ intern_list = [] }) {
                             <td className="px-4 py-3">{intern.student?.Fname || 'N/A'}</td>
                             <td className="px-4 py-3">{intern.student?.Lname || 'N/A'}</td>
                             <td className="px-4 py-3">{intern.student?.Student_Num || 'N/A'}</td>
-                            <td className="px-4 py-3">{intern.course?.Course || 'N/A'}</td>
-                            <td className="px-4 py-3">{intern.student_comp?.Sem || 'N/A'}</td>
+                            <td className="px-4 py-3">{intern.student?.course?.Course || 'N/A'}</td>
+                            <td className="px-4 py-3">{intern.Sem || 'N/A'}</td>
                             <td className="px-4 py-3">{intern.student?.Year || 'N/A'}</td>
-                            <td className="px-4 py-3">{intern.status || 'N/A'}</td>
+                            <td className="px-4 py-3">{intern.Status || 'N/A'}</td>
                         </tr>
                     ))
                 ) : (

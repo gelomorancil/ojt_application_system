@@ -10,6 +10,7 @@ use App\Http\Controllers\CompCourseController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MoaProcessController;
 use App\Http\Controllers\StudentUploadingController;
+use App\Http\Controllers\StudentFileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -139,6 +140,17 @@ Route::get('/students-list', [StudentUploadingController::class, 'getStudentsLis
 
 Route::get('/get-courses', [CourseController::class, 'getCoursesByCollege']);
 
+});
+
+Route::prefix('student-files')->group(function () {
+    Route::get('/', [StudentFileController::class, 'index']); // List all files (optional use)
+    Route::post('/', [StudentFileController::class, 'store']); // Upload new file(s)
+
+    // Get files by student number
+    Route::get('/student/{Student_Num}', [StudentFileController::class, 'showByStudent']);
+
+    // Delete a specific file by ID
+    Route::delete('/{id}', [StudentFileController::class, 'destroy']);
 });
 
 require __DIR__.'/auth.php';

@@ -100,38 +100,39 @@ class CompanyController extends Controller
 
     // DETAILS METHOD
     public function details($id)
-{
-    $company = Company::findOrFail($id);
-    $course_list = Course::all();
-
-    // Fetch contact list and associated course names
-    $contact_list = CompCourse::where('Comp_ID', $id)->get()->map(function ($contact) {
-        // Ensure Course_id is properly formatted
-        $courseIds = is_string($contact->Course_id) ? json_decode($contact->Course_id, true) : $contact->Course_id;
-
-        // If Course_id is still not an array, make it an empty array
-        if (!is_array($courseIds)) {
-            $courseIds = [];
-        }
-
-        // Fetch course names based on IDs
-        $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
-
-        // Attach course names to the contact object
-        $contact->course_names = $courses;
-        return $contact;
-    });
-
-    // Fetch intern list based on Comp_ID
-    $intern_list = StudentCompany::with(['student', 'course'])->where('Comp_ID', $id)->get();
-    // dd($intern_list);
-    return Inertia::render('Companies/View', [
-        'company' => $company,
-        'course_list' => $course_list,
-        'contact_list' => $contact_list ?? [], // Ensure it's at least an empty array
-        'intern_list' => $intern_list ?? [], // Pass intern list to the view
-    ]);
-}
+    {
+        $company = Company::findOrFail($id);
+        $course_list = Course::all();
+    
+        // Fetch contact list and associated course names
+        $contact_list = CompCourse::where('Comp_ID', $id)->get()->map(function ($contact) {
+            // Ensure Course_id is properly formatted
+            $courseIds = is_string($contact->Course_id) ? json_decode($contact->Course_id, true) : $contact->Course_id;
+    
+            // If Course_id is still not an array, make it an empty array
+            if (!is_array($courseIds)) {
+                $courseIds = [];
+            }
+    
+            // Fetch course names based on IDs
+            $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
+    
+            // Attach course names to the contact object
+            $contact->course_names = $courses;
+            return $contact;
+        });
+    
+        // Fetch intern list based on Comp_ID
+        // $intern_list = StudentCompany::with(['student', 'course'])->where('Comp_ID', $id)->get();
+        $intern_list = StudentCompany::with(['student.course'])->where('Comp_ID', $id)->get();
+        // dd($intern_list);
+        return Inertia::render('Companies/View', [
+            'company' => $company,
+            'course_list' => $course_list,
+            'contact_list' => $contact_list ?? [],
+            'intern_list' => $intern_list ?? [],
+        ]);
+    }
 
     // PROFILE METHOD
     public function profile($id)
