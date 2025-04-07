@@ -5,107 +5,215 @@ use App\Models\Student;
 use App\Models\Course;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Validators\Failure;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\BeforeSheet;
+use Maatwebsite\Excel\Events\AfterSheet;
 
-class StudentsImport implements ToModel, WithHeadingRow, WithValidation
+class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEvents
 {
     use SkipsFailures;
-
+    
     private $collegeId;
     private $courseId;
     private $schoolYear;
     private $semester;
-
+    private $courseName;
+    
     public function __construct($college, $course, $schoolYear, $semester)
     {
+        // Validate inputs
+        if (!in_array($semester, ['First', 'Second', 'Summer'])) {
+            throw new \Exception("Invalid semester selected: $semester");
+        }
+
         // Find the Course_ID based on the course name
-        $courseDetails = Course::where('Course', $course)
+        $courseDetails = DB::table('tbl_course')
+            ->where('Course', $course)
             ->where('College', $college)
             ->first();
-
+        
         if (!$courseDetails) {
             throw new \Exception("Course not found: $course in $college");
         }
-
+        
         $this->collegeId = $courseDetails->College;
         $this->courseId = $courseDetails->id;
+        $this->courseName = $course;
         $this->schoolYear = $schoolYear;
         $this->semester = $semester;
+
+        // Check if OJT hours exist for this course, year, and semester
+        $ojtHours = DB::table('tbl_ojt_hrs')
+            ->where('Course_ID', $this->courseId)
+            ->where('Year', $this->schoolYear)
+            ->where('Sem', $this->semester)
+            ->first();
+
+        if (!$ojtHours) {
+            throw new \Exception("No OJT hours are registered for '{$this->courseName}' for school year '{$this->schoolYear}' and '{$this->semester}' semester. Please register this course with OJT hours first.");
+        }
 
         Log::info('StudentsImport Initialized', [
             'college' => $this->collegeId,
             'course_id' => $this->courseId,
+            'course_name' => $this->courseName,
             'school_year' => $this->schoolYear,
-            'semester' => $this->semester
+            'semester' => $this->semester,
+            'ojt_hours' => $ojtHours->Hrs ?? 'Not found'
         ]);
     }
-
+    
+    /**
+     * Configure the heading row
+     */
+    public function headingRow(): int
+    {
+        return 1;
+    }
+    
+    /**
+     * Register events to track import process
+     */
+    public function registerEvents(): array
+    {
+        return [
+            BeforeSheet::class => function(BeforeSheet $event) {
+                Log::info('Starting to process Excel sheet', [
+                    'sheet_name' => $event->getSheet()->getTitle()
+                ]);
+                
+                // Log column headers
+                $worksheet = $event->getSheet()->getDelegate();
+                $highestColumn = $worksheet->getHighestColumn();
+                
+                $headerRow = [];
+                $row = 1; // Assuming header is row 1
+                for ($col = 'A'; $col <= $highestColumn; $col++) {
+                    $cellValue = $worksheet->getCell($col . $row)->getValue();
+                    $headerRow[$col] = $cellValue;
+                }
+                
+                Log::info("Headers found in Excel", $headerRow);
+            },
+            AfterSheet::class => function(AfterSheet $event) {
+                Log::info('Finished processing Excel sheet');
+            },
+        ];
+    }
+    
     public function model(array $row)
     {
-        // Log each row being processed
-        Log::info('Processing Row', [
-            'first_name' => $row['first_name'] ?? 'N/A',
-            'last_name' => $row['last_name'] ?? 'N/A',
-            'id_number' => $row['id_number'] ?? 'N/A'
-        ]);
+        // Log the original row data at the start
+        Log::info('Processing row data', $row);
+        
+        // Convert all keys to lowercase for consistent access
+        $lowercaseRow = array_change_key_case($row, CASE_LOWER);
+        
+        // Extract student information from Excel
+        // Map to table column names based on the tbl_student structure
+        $firstName = $lowercaseRow['fname'] ?? $lowercaseRow['first_name'] ?? $lowercaseRow['firstname'] ?? null;
+        $lastName = $lowercaseRow['lname'] ?? $lowercaseRow['last_name'] ?? $lowercaseRow['lastname'] ?? null;
+        $studentNum = $lowercaseRow['student_num'] ?? $lowercaseRow['studentnum'] ?? $lowercaseRow['student_number'] ?? null;
 
+        Log::info('Extracted student data', [
+            'fname' => $firstName, 
+            'lname' => $lastName,
+            'student_num' => $studentNum,
+
+        ]);
+        
         // Check if required fields are present
-        if (!isset($row['Fname']) || !isset($row['Lname']) || !isset($row['Student_Num'])) {
+        if (!$studentNum || !$firstName || !$lastName) {
             Log::warning('Row skipped due to missing required fields', [
-                'row_data' => $row
+                'row_data' => $lowercaseRow
             ]);
             return null;
         }
+        
+        try {
+            // Create a normalized row with column names matching tbl_student
+            $normalizedRow = [
+                'fname' => $firstName,
+                'lname' => $lastName,
+                'student_num' => $studentNum,
 
-        // Create student model with database column names
-        $student = new Student([
-            'Fname' => $row['Fname'],
-            'Lname' => $row['Lname'],
-            'Student_Num' => $row['Student_Num'],
+            ];
+            
+            // Insert the student data using the insert method
+            $studentId = $this->insert($normalizedRow);
+            
+            Log::info('Student successfully inserted', [
+                'student_id' => $studentId,
+                'student_num' => $studentNum,
+                'full_name' => $firstName . ' ' . $lastName
+            ]);
+            
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Failed to insert student', [
+                'error' => $e->getMessage(),
+                'row_data' => $lowercaseRow
+            ]);
+            return null;
+        }
+    }
+    
+    public function insert(array $row)
+    {
+        // Validate the semester, matching the database enum entries
+        $validSemesters = ['First', 'Second', 'Summer'];
+        if (!in_array($this->semester, $validSemesters)) {
+            throw new \Exception("Invalid semester: {$this->semester}");
+        }
+        
+        // Get the info for OJT hours based on the selected Course ID, Semester, and School Year
+        $ojtInfo = DB::table('tbl_ojt_hrs')
+            ->where('Course_ID', $this->courseId)
+            ->where('Sem', $this->semester) 
+            ->where('Year', $this->schoolYear)
+            ->first();
+
+        // If no OJT hours are found, throw an exception
+        if (!$ojtInfo) {
+            throw new \Exception("No OJT hours are registered for '{$this->courseName}' for school year '{$this->schoolYear}' and '{$this->semester}' semester. Please register this course with OJT hours first.");
+        }
+
+        // Prepare student data for insertion
+        $studentData = [
+            'fname' => $row['fname'],
+            'lname' => $row['lname'],
+            'Student_Num' => $row['student_num'],
             'Course_ID' => $this->courseId,
             'Year' => $this->schoolYear,
-            // You might want to add more fields if needed
-        ]);
-
-        // Log successful student creation
-        Log::info('Student Model Created', [
-            'student_num' => $student->Student_Num,
-            'full_name' => $student->Fname . ' ' . $student->Lname
-        ]);
-
-        return $student;
-    }
-
-    public function rules(): array
-    {
-        return [
-            'first name' => 'required|string|max:255',
-            'last name' => 'required|string|max:255',
-            'id number' => 'required|string|unique:tbl_student,Student_Num',
+            'created_at' => now(),
+            'updated_at' => now()
         ];
+        
+        try {
+            // Insert the record into tbl_student
+            $studentId = DB::table('tbl_student')->insertGetId($studentData);
+            return $studentId;
+        } catch (\Exception $e) {
+            Log::error('Insert failed: ', [$e->getMessage()]);
+            throw $e;
+        }
     }
-
-    public function customValidationMessages()
-    {
-        return [
-            'id number.unique' => 'Student with this ID number already exists.',
-            'first name.required' => 'First name is required.',
-            'last name.required' => 'Last name is required.',
-        ];
-    }
-
+    
+    /**
+     * Handle validation failures
+     */
     public function onFailure(Failure ...$failures)
     {
-        // Log or handle validation failures
         foreach ($failures as $failure) {
             Log::error('Excel Import Failure', [
                 'row' => $failure->row(),
                 'attribute' => $failure->attribute(),
-                'errors' => $failure->errors(),
-                'values' => $failure->values()
+                'errors' => $failure->errors()
             ]);
         }
     }

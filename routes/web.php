@@ -132,7 +132,16 @@ Route::get('/upload-students', [StudentUploadingController::class, 'index']);
 Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->name('upload.students');
 Route::get('/students-list', [StudentUploadingController::class, 'getStudentsList']);
 
-Route::get('/get-courses', [CourseController::class, 'getCoursesByCollege']);
+// Main page route
+Route::get('/student-uploading', [StudentUploadingController::class, 'index'])->name('student.uploading');
+
+// API routes for data fetching
+Route::get('/api/get-courses', [StudentUploadingController::class, 'getCourses']);
+Route::get('/api/get-school-years', [StudentUploadingController::class, 'getSchoolYears']);
+Route::get('/api/get-semesters', [StudentUploadingController::class, 'getSemesters']);
+
+// Route for form submission
+Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->name('upload.students');
 
 });
 
