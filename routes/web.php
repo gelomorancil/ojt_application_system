@@ -143,13 +143,9 @@ Route::get('/get-courses', [CourseController::class, 'getCoursesByCollege']);
 });
 
 Route::prefix('student-files')->group(function () {
-    Route::get('/', [StudentFileController::class, 'index']); // List all files (optional use)
-    Route::post('/', [StudentFileController::class, 'store']); // Upload new file(s)
-
-    // Get files by student number
+    Route::get('/', [StudentFileController::class, 'index']);
+    Route::post('/', [StudentFileController::class, 'store']);
     Route::get('/student/{Student_Num}', [StudentFileController::class, 'showByStudent']);
-
-    // Delete a specific file by ID
     Route::delete('/{id}', [StudentFileController::class, 'destroy']);
 });
 
