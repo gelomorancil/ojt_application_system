@@ -81,7 +81,7 @@ export default function UploadFiles() {
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap w-full">
                             <label className="cursor-pointer bg-white border border-gray-300 px-2 py-1 rounded text-xs text-gray-700 hover:bg-gray-100">
-                                📂 Choose PDF Files
+                                Choose PDF Files
                                 <input
                                     type="file"
                                     multiple
