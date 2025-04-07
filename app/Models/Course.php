@@ -16,14 +16,10 @@ class Course extends Model
 
     protected $fillable = ['College', 'Course'];
 
-    public function ojtHours() {
-        return $this->hasOne(OjtHours::class, 'Course_ID', 'id');
+    public function ojtHours()
+    {
+        return $this->hasMany(OjtHours::class, 'Course_ID', 'id');
     }
-
-    // public function ojtHours()
-    // {
-        // return $this->hasMany(OjtHours::class, 'Course_ID', 'id');
-    // }
     public function companies()
 {
     return $this->belongsToMany(Company::class, 'tbl_comp_course', 'Course', 'Comp_id');

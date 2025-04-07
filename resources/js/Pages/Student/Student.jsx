@@ -216,12 +216,12 @@ export default function Student({ students = [], courses = [], colleges = [], av
     const filteredStudents = useMemo(() => {
         // Only show students when a college is selected
         if (!selectedCollege) return [];
-
+    
         // Filter students by selected college
         let result = students.filter(student =>
             student.College_Name === selectedCollege
         );
-
+    
         // Apply search filter
         if (searchTerm) {
             const lowerSearchTerm = searchTerm.toLowerCase();
@@ -231,16 +231,27 @@ export default function Student({ students = [], courses = [], colleges = [], av
                 student.Lname.toLowerCase().includes(lowerSearchTerm)
             );
         }
-
+    
         // Apply course filter
         if (selectedCourseFilter) {
             result = result.filter(student =>
                 student.Course_Name === selectedCourseFilter
             );
         }
-
-        return result;
-    }, [students, selectedCollege, searchTerm, selectedCourseFilter]);     
+        
+        // Deduplicate students by Student_Num
+        const uniqueStudents = [];
+        const seenStudentNums = new Set();
+        
+        result.forEach(student => {
+            if (!seenStudentNums.has(student.Student_Num)) {
+                seenStudentNums.add(student.Student_Num);
+                uniqueStudents.push(student);
+            }
+        });
+        
+        return uniqueStudents;
+    }, [students, selectedCollege, searchTerm, selectedCourseFilter]);
 
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to delete this student?')) {

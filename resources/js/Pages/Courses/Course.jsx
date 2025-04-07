@@ -12,54 +12,78 @@ const Course = ({ courses, course = null }) => {
     const [selectedYear, setSelectedYear] = useState(""); // Filter by school year
     const [isEditing, setIsEditing] = useState(false); // Track if we're editing or adding
     const [editingCourseId, setEditingCourseId] = useState(null);
+    const [editingOjtHoursId, setEditingOjtHoursId] = useState(null);
 
     const currentYear = new Date().getFullYear();
     const schoolYears = [`${currentYear - 1}-${currentYear}`, `${currentYear}-${currentYear + 1}`, `${currentYear + 1}-${currentYear + 2}`];
     
     // Initialize form with data from the course if editing
     const { data, setData, post, put, processing, errors, reset } = useForm({
-        College: course?.College || "",
-        Course: course?.Course || "",
-        Hrs: course?.ojt_hours?.Hrs || "",
-        Sem: course?.ojt_hours?.Sem || "",
-        Year: course?.ojt_hours?.Year || "",
+        College: "",
+        Course: "",
+        Hrs: "",
+        Sem: "",
+        Year: "",
     });
 
     // Set editing mode if a course is provided for editing
     useEffect(() => {
         if (course) {
             setIsEditing(true);
-            setData({
-                College: course.College || "",
-                Course: course.Course || "",
-                Hrs: course.ojt_hours?.Hrs || "",
-                Sem: course.ojt_hours?.Sem || "",
-                Year: course.ojt_hours?.Year || "",
-            });
+            // Initialize with the first OJT hours record
+            if (course.ojt_hours && course.ojt_hours.length > 0) {
+                const firstOjtHours = course.ojt_hours[0];
+                setData({
+                    College: course.College || "",
+                    Course: course.Course || "",
+                    Hrs: firstOjtHours.Hrs || "",
+                    Sem: firstOjtHours.Sem || "",
+                    Year: firstOjtHours.Year || "",
+                });
+                setEditingOjtHoursId(firstOjtHours.id);
+            } else {
+                setData({
+                    College: course.College || "",
+                    Course: course.Course || "",
+                    Hrs: "",
+                    Sem: "",
+                    Year: "",
+                });
+            }
         }
     }, [course]);
 
-    const editCourse = (courseId) => {
+    const editCourse = (courseId, ojtHoursId = null) => {
         // Find the course to edit
         const courseToEdit = courses.find(c => c.id === courseId);
         
         if (courseToEdit) {
+            // Find the specific OJT hours record if provided
+            let ojtHoursRecord = null;
+            if (ojtHoursId && courseToEdit.ojt_hours) {
+                ojtHoursRecord = courseToEdit.ojt_hours.find(h => h.id === ojtHoursId);
+            } else if (courseToEdit.ojt_hours && courseToEdit.ojt_hours.length > 0) {
+                // Use the first OJT hours record if none specified
+                ojtHoursRecord = courseToEdit.ojt_hours[0];
+            }
+            
             // Populate the form with the course data
             setData({
                 College: courseToEdit.College || "",
                 Course: courseToEdit.Course || "",
-                Hrs: courseToEdit.ojt_hours?.Hrs || "",
-                Sem: courseToEdit.ojt_hours?.Sem || "",
-                Year: courseToEdit.ojt_hours?.Year || "",
+                Hrs: ojtHoursRecord?.Hrs || "",
+                Sem: ojtHoursRecord?.Sem || "",
+                Year: ojtHoursRecord?.Year || "",
             });
             
             // Set editing mode and remember course ID for update
             setIsEditing(true);
             setEditingCourseId(courseId);
+            setEditingOjtHoursId(ojtHoursRecord?.id);
         }
     };
 
-    // Then modify your handleSubmit function
+    // handleSubmit function
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -77,33 +101,50 @@ const Course = ({ courses, course = null }) => {
                 },
             });
         } else {
-            // Check for duplicates when adding a new course
-            const isDuplicate = (Array.isArray(courses?.data) ? courses.data : []).some((course) => {
-                // Ensure data exists before checking
-                if (!course.Course || !course.ojt_hours?.Year) return false;
-                
-                // Normalize strings for comparison
-                const courseName = course.Course.trim().toLowerCase();
-                const inputCourse = data.Course.trim().toLowerCase();
-                
-                const courseYear = String(course.ojt_hours.Year).trim();
-                const inputYear = String(data.Year).trim();
-                
-                // Debugging: Log values being compared
-                console.log(`Checking: ${courseName} (${courseYear}) vs ${inputCourse} (${inputYear})`);
-                
-                return courseName === inputCourse && courseYear === inputYear;
-            });
+            // Check if course name already exists (regardless of year/semester)
+            const existingCourse = (Array.isArray(courses) ? courses : []).find(
+                (c) => c.Course.trim().toLowerCase() === data.Course.trim().toLowerCase()
+            );
             
-            // Debugging: Check if a duplicate was found
-            console.log("Duplicate found?", isDuplicate);
-            
-            if (isDuplicate) {
-                alert("This course already exists for the selected school year!");
-                return;
+            if (existingCourse) {
+                // If exists, ask to update instead of creating new
+                if (confirm(`The course "${data.Course}" already exists. Would you like to add a new semester/year to the existing course?`)) {
+                    // Set form to edit mode with existing course data
+                    setIsEditing(true);
+                    setEditingCourseId(existingCourse.id);
+                    setEditingOjtHoursId(null); // Creating a new OJT hours record
+                    
+                    // Update the form with existing course data but new semester/year values
+                    setData({
+                        College: existingCourse.College,
+                        Course: existingCourse.Course,
+                        Hrs: data.Hrs, // Preserve entered hours
+                        Sem: data.Sem, // Preserve entered semester
+                        Year: data.Year, // Preserve entered year
+                    });
+                    
+                    // Submit the update
+                    setTimeout(() => {
+                        put(route("course.update", existingCourse.id), {
+                            onSuccess: () => {
+                                console.log("Course updated successfully!");
+                                alert("Course updated successfully!");
+                                resetForm();
+                            },
+                            onError: (errors) => {
+                                console.error("Update error:", errors);
+                                alert("Failed to update course. Please check input fields.");
+                            },
+                        });
+                    }, 100);
+                    
+                    return;
+                } else {
+                    return; // User chose not to update, cancel operation
+                }
             }
             
-            // Add new course
+            // Add new course if no duplicate was found
             post(route("course.store"), {
                 onSuccess: () => {
                     console.log("Course added successfully!");
@@ -123,6 +164,7 @@ const Course = ({ courses, course = null }) => {
         reset();
         setIsEditing(false);
         setEditingCourseId(null);
+        setEditingOjtHoursId(null);
     };
     
     const deleteCourse = (id) => {
@@ -140,24 +182,51 @@ const Course = ({ courses, course = null }) => {
             // Then filter by search term (course name)
             if (searchTerm && !course.Course.toLowerCase().includes(searchTerm.toLowerCase())) return false;
 
-            // Filter by semester if selected
-            if (selectedSemester && course.ojt_hours?.Sem !== selectedSemester) return false;
-
-            // Filter by year if selected
-            if (selectedYear && course.ojt_hours?.Year !== selectedYear) return false;
+            // For semester and year filters, we need to check the ojt_hours array
+            if (selectedSemester || selectedYear) {
+                // Check if any of the ojt_hours records match our filters
+                return course.ojt_hours.some(hours => {
+                    // Filter by semester if selected
+                    if (selectedSemester && hours.Sem !== selectedSemester) return false;
+                    
+                    // Filter by year if selected
+                    if (selectedYear && hours.Year !== selectedYear) return false;
+                    
+                    return true;
+                });
+            }
 
             return true;
         })
         : []; // Empty array if no college is selected
 
-    // Get unique semesters and years for filter options
-    const uniqueSemesters = [...new Set(courses
-        .filter(course => course.College === selectedCollege && course.ojt_hours?.Sem)
-        .map(course => course.ojt_hours.Sem))];
+    // Get unique semesters and years for filter options from all courses
+    const getAllSemesters = () => {
+        const semesters = new Set();
+        courses.forEach(course => {
+            if (course.College === selectedCollege && course.ojt_hours) {
+                course.ojt_hours.forEach(hours => {
+                    if (hours.Sem) semesters.add(hours.Sem);
+                });
+            }
+        });
+        return [...semesters];
+    };
 
-    const uniqueYears = [...new Set(courses
-        .filter(course => course.College === selectedCollege && course.ojt_hours?.Year)
-        .map(course => course.ojt_hours.Year))];
+    const getAllYears = () => {
+        const years = new Set();
+        courses.forEach(course => {
+            if (course.College === selectedCollege && course.ojt_hours) {
+                course.ojt_hours.forEach(hours => {
+                    if (hours.Year) years.add(hours.Year);
+                });
+            }
+        });
+        return [...years];
+    };
+
+    const uniqueSemesters = getAllSemesters();
+    const uniqueYears = getAllYears();
 
     return (
         <AuthenticatedLayout>
@@ -331,7 +400,6 @@ const Course = ({ courses, course = null }) => {
                             <table className="min-w-full border">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-4 py-2"></th>
                                         <th className="px-4 py-2">College</th>
                                         <th className="px-4 py-2">Course</th>
                                         <th className="px-4 py-2">OJT Hours</th>
@@ -342,23 +410,54 @@ const Course = ({ courses, course = null }) => {
                                 </thead>
                                 <tbody>
                                     {filteredCourses.length > 0 ? (
-                                        filteredCourses.map((course, index) => (
-                                            <tr key={course.id} className="border-t">
-                                                <td className="px-4 py-2 text-center">{index + 1}</td>
-                                                <td className="px-4 py-2">{course.College}</td>
-                                                <td className="px-4 py-2">{course.Course}</td>
-                                                <td className="px-4 py-2">{course.ojt_hours?.Hrs || "N/A"}</td>
-                                                <td className="px-4 py-2">{course.ojt_hours?.Sem || "N/A"}</td>
-                                                <td className="px-4 py-2">{course.ojt_hours?.Year || "N/A"}</td>
-                                                <td className="px-4 py-2">
-                                                    <button onClick={() => editCourse(course.id)} className="text-blue-600 mr-4">Edit</button>
-                                                    <button onClick={() => deleteCourse(course.id)} className="text-red-600">Delete</button>
-                                                </td>
-                                            </tr>
-                                        ))
+                                        filteredCourses.flatMap((course) => 
+                                            // For each course, create a row for each OJT hours record
+                                            course.ojt_hours.length > 0 ? 
+                                                course.ojt_hours.map((hours, hourIndex) => (
+                                                    <tr key={`${course.id}-${hours.id}`} className="border-t">
+                                                        {/* Only show college and course name in the first row of each course */}
+                                                        <td className="px-4 py-2">
+                                                            {course.College}
+                                                        </td>
+                                                        <td className="px-4 py-2">
+                                                            {course.Course}
+                                                        </td>
+                                                        <td className="px-4 py-2">{hours.Hrs || "N/A"}</td>
+                                                        <td className="px-4 py-2">{hours.Sem || "N/A"}</td>
+                                                        <td className="px-4 py-2">{hours.Year || "N/A"}</td>
+                                                        <td className="px-4 py-2">
+                                                            <button 
+                                                                onClick={() => editCourse(course.id, hours.id)} 
+                                                                className="text-blue-600 mr-4"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => deleteCourse(course.id)} 
+                                                                className="text-red-600"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                )) : (
+                                                    // For courses with no OJT hours, show a single row
+                                                    <tr key={course.id} className="border-t">
+                                                        <td className="px-4 py-2">{course.College}</td>
+                                                        <td className="px-4 py-2">{course.Course}</td>
+                                                        <td className="px-4 py-2">N/A</td>
+                                                        <td className="px-4 py-2">N/A</td>
+                                                        <td className="px-4 py-2">N/A</td>
+                                                        <td className="px-4 py-2">
+                                                            <button onClick={() => editCourse(course.id)} className="text-blue-600 mr-4">Edit</button>
+                                                            <button onClick={() => deleteCourse(course.id)} className="text-red-600">Delete</button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                        )
                                     ) : (
                                         <tr>
-                                            <td colSpan="7" className="px-4 py-6 text-center text-gray-500">
+                                            <td colSpan="6" className="px-4 py-6 text-center text-gray-500">
                                             {!selectedCollege ? (
                                                 "Please select a college to view courses."
                                             ) : (
