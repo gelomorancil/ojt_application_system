@@ -3,8 +3,12 @@ import React from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { MdDelete } from 'react-icons/md';
 
-
 export default function CompanyList({ company_list, handleEdit, handleDelete }) {
+    // Sort companies alphabetically by name
+    const sortedCompanies = [...company_list].sort((a, b) => 
+        a.Comp_name.localeCompare(b.Comp_name)
+    );
+
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg h-[650px]">
             <h3 className="mb-4 text-lg font-semibold">List of Companies</h3>
@@ -19,7 +23,7 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                    {company_list.map((items, index) => (
+                    {sortedCompanies.map((items, index) => (
                         <tr key={items.id}>
                             <td className="align-top px-4 py-4">{index + 1}</td>
                             <td className="align-top px-4 py-4">

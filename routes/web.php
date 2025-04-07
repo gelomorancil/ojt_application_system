@@ -10,6 +10,7 @@ use App\Http\Controllers\CompCourseController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MoaProcessController;
 use App\Http\Controllers\StudentUploadingController;
+use App\Http\Controllers\StudentFileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -53,8 +54,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/student/{id}', [StudentController::class, 'destroy'])->name('student.destroy');
 });
 
-// Student Management
-Route::post('/save-student-company', [StudentCompanyController::class, 'saveStudentCompany']);
+//Student Management
+Route::middleware(['auth'])->group(function () {
+    Route::get('/student-companies', [StudentCompanyController::class, 'index'])->name('student_comp.index');
+    Route::post('/student-companies', [StudentCompanyController::class, 'store'])->name('student_comp.store');
+    Route::put('/student-companies/{studentCompany}', [StudentCompanyController::class, 'update'])->name('student_comp.update');
+    Route::delete('/student-companies/{studentCompany}', [StudentCompanyController::class, 'destroy'])->name('student_comp.destroy');
+});
 
 // Moa Routing
 Route::middleware('auth')->group(function () {
@@ -81,7 +87,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/companies/{id}', [CompanyController::class, 'update'])->name('companies.update');
     Route::delete('/companies/delete/{id}', [CompanyController::class, 'destroy'])->name('companies.destroy');
     Route::get('/companies/{id}/profile', [CompanyController::class, 'profile'])->name('companies.profile');
-
+    Route::get('/companies/{companyId}/interns', [StudentCompanyController::class, 'getInternsByCompany']);
 
     // COMPANY PROFILE
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
@@ -143,6 +149,13 @@ Route::get('/api/get-semesters', [StudentUploadingController::class, 'getSemeste
 // Route for form submission
 Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->name('upload.students');
 
+});
+
+Route::prefix('student-files')->group(function () {
+    Route::get('/', [StudentFileController::class, 'index']);
+    Route::post('/', [StudentFileController::class, 'store']);
+    Route::get('/student/{Student_Num}', [StudentFileController::class, 'showByStudent']);
+    Route::delete('/{id}', [StudentFileController::class, 'destroy']);
 });
 
 require __DIR__.'/auth.php';

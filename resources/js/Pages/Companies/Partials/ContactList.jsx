@@ -1,10 +1,21 @@
 import { Link } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { MdDelete } from 'react-icons/md';
+import InternList from './InternList';
 
-export default function ContactList({ contacts = [], handleDelete = () => { }, contact_list = [], handleEdit = () => { } }) {
+export default function ContactList({ contacts = [], handleDelete = () => { }, contact_list = [], intern_list = [], handleEdit = () => { }, companyId }) {
     const [activeTab, setActiveTab] = useState('contacts');
+    const [internList, setInternList] = useState([]);
+
+    useEffect(() => {
+        if (activeTab === 'interns' && companyId) {
+            fetch(route('companies.interns', companyId))
+                .then(response => response.json())
+                .then(data => setInternList(data))
+                .catch(error => console.error('Error fetching interns:', error));
+        }
+    }, [activeTab, companyId]);
 
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full min-w-full">
@@ -19,8 +30,7 @@ export default function ContactList({ contacts = [], handleDelete = () => { }, c
                         List of Contacts
                     </button>
                     <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'interns' ? 'border-b-2 border-black' : 'text-gray-500'
-                            }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'interns' ? 'border-b-2 border-black' : 'text-gray-500'}`}
                         onClick={() => setActiveTab('interns')}
                     >
                         List of Interns
@@ -34,6 +44,11 @@ export default function ContactList({ contacts = [], handleDelete = () => { }, c
                     </button>
                 </nav>
             </div>
+
+             {/* Interns Tab */}
+             {activeTab === 'interns' && (
+                <InternList intern_list={intern_list} />
+            )}
 
             {/* Contacts Table */}
             {activeTab === 'contacts' && (
@@ -86,11 +101,6 @@ export default function ContactList({ contacts = [], handleDelete = () => { }, c
                         )}
                     </tbody>
                 </table>
-            )}
-
-            {/* Placeholder content for MOA and Interns */}
-            {activeTab !== 'contacts' && (
-                <div className="mt-4 text-gray-500 text-center">No data available for {activeTab}.</div>
             )}
         </div>
     );
