@@ -12,8 +12,13 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                uslsgreen: '#087830',
+                uslscream: '#cec5ad',
+                uslspink: '#efedee',
+            },
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Nunito', ...defaultTheme.fontFamily.sans],
             },
         },
     },

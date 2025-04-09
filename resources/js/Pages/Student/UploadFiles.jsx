@@ -1,125 +1,122 @@
 import React, { useState } from "react";
+import { useForm } from "@inertiajs/react";
 
-const categories = ['Pre-Deployment', 'Deployment', 'DTR', 'Final Requirement'];
+const categories = ['Pre-Deployment', 'Deployment', 'DTR', 'Final Requirements'];
 
-export default function UploadFiles() {
+export default function UploadFiles({ id }) {
     const [filesByCategory, setFilesByCategory] = useState({});
     const [errors, setErrors] = useState({});
-    const [studentNum] = useState("2021-00001");
+
+    const { post, processing, reset } = useForm();
 
     const handleFileChange = (e, category) => {
         const selectedFiles = Array.from(e.target.files);
-        const validFiles = selectedFiles.filter(file => file.type === "application/pdf");
+        const validFiles = selectedFiles.filter(
+            (file) => file.type === "application/pdf" || file.type.startsWith("image/")
+        );
 
         if (validFiles.length !== selectedFiles.length) {
-            setErrors(prev => ({ ...prev, [category]: "Only PDF files are allowed." }));
+            setErrors((prev) => ({
+                ...prev,
+                [category]: "Only PDF and image files are allowed.",
+            }));
         } else {
-            setErrors(prev => ({ ...prev, [category]: "" }));
+            setErrors((prev) => ({ ...prev, [category]: "" }));
         }
 
-        const existingFiles = filesByCategory[category]?.map(f => f.file.name) || [];
-        const newFiles = validFiles.filter(f => !existingFiles.includes(f.name));
-
-        setFilesByCategory(prev => ({
-            ...prev,
-            [category]: [...(prev[category] || []), ...newFiles.map(file => ({
-                file,
-                uploadedAt: new Date().toLocaleString(),
-            }))]
+        const newFiles = validFiles.map((file) => ({
+            file,
+            uploadedAt: new Date().toLocaleString(),
         }));
-    };
 
-    const handleRemoveFile = (category, fileName) => {
-        setFilesByCategory(prev => ({
+        setFilesByCategory((prev) => ({
             ...prev,
-            [category]: prev[category].filter(f => f.file.name !== fileName)
+            [category]: [...(prev[category] || []), ...newFiles],
         }));
     };
 
     const handleUpload = (category) => {
-        const selectedFiles = filesByCategory[category] || [];
-
-        selectedFiles.forEach((fileWrapper) => {
+        console.log(category);
+        const files = filesByCategory[category] || [];
+    
+        files.forEach((f) => {
             const formData = new FormData();
-            formData.append("file", fileWrapper.file);
-            formData.append("Student_Num", studentNum);
+            formData.append("Student_Num", id);
             formData.append("category", category);
-
-            fetch("/student-files", {
-                method: "POST",
-                body: formData,
-            })
-                .then((res) => {
-                    if (res.ok) {
-                        setFilesByCategory(prev => ({
-                            ...prev,
-                            [category]: prev[category].filter(f => f.file.name !== fileWrapper.file.name)
-                        }));
-                    } else {
-                        return res.json().then(data => {
-                            throw new Error(data.message || "Upload failed.");
-                        });
-                    }
-                })
-                .catch((error) => {
-                    setErrors(prev => ({
+            formData.append("file_name", f.file);
+    
+            post(route("student-files.store"), formData, {
+                preserveScroll: true,
+                forceFormData: true,
+                onSuccess: () => {
+                    setFilesByCategory((prev) => ({
                         ...prev,
-                        [category]: error.message,
+                        [category]: prev[category].filter((x) => x.file.name !== f.file.name),
                     }));
-                });
+                },
+                onError: () => {
+                    setErrors((prev) => ({
+                        ...prev,
+                        [category]: "Upload failed.",
+                    }));
+                },
+                onFinish: () => reset(),
+            });
         });
     };
+    
 
     return (
-        <div className="bg-white p-3 shadow rounded-md max-w-full mx-auto mt-4 space-y-3">
-            <h2 className="text-base font-semibold text-gray-800">Upload Files</h2>
+        <div className="max-w-full mx-auto space-y-4">
+            {categories.map((category) => (
+                <div key={category} className="bg-white border border-uslscream rounded-md p-4 shadow-sm space-y-2">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-uslsgreen text-m">{category}</h3>
 
-            {categories.map(category => (
-                <div key={category} className="border rounded p-2 bg-gray-50 space-y-1">
-                    <p className="text-sm font-medium text-gray-700">{category}</p>
-
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap w-full">
-                            <label className="cursor-pointer bg-white border border-gray-300 px-2 py-1 rounded text-xs text-gray-700 hover:bg-gray-100">
-                                Choose PDF Files
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="application/pdf"
-                                    onChange={(e) => handleFileChange(e, category)}
-                                    className="hidden"
-                                />
-                            </label>
-
-                            {filesByCategory[category] && filesByCategory[category].length > 0 && (
-                                <ul className="text-xs text-gray-700 flex flex-col sm:flex-row gap-2 sm:items-center">
-                                    {filesByCategory[category].map((f, i) => (
-                                        <li key={i} className="flex items-center gap-1">
-                                            📄 {f.file.name}
-                                            <button
-                                                onClick={() => handleRemoveFile(category, f.file.name)}
-                                                className="text-red-500 hover:text-red-700 text-xs"
-                                            >
-                                                ❌
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-
-                        <button
-                            onClick={() => handleUpload(category)}
-                            disabled={!filesByCategory[category] || filesByCategory[category].length === 0}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs disabled:bg-gray-300"
-                        >
-                            ⬆️ Upload
-                        </button>
+                        <label className="text-m text-gray-700 cursor-pointer hover:underline">
+                            + Add File
+                            <input
+                                type="file"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => handleFileChange(e, category)}
+                            />
+                        </label>
                     </div>
 
-                    {errors[category] && (
-                        <p className="text-red-500 text-xs">{errors[category]}</p>
+                    {/* File List */}
+                    {filesByCategory[category] && filesByCategory[category].length > 0 && (
+                        <ul className="space-y-1 text-m text-gray-700">
+                            {filesByCategory[category].map((f, index) => (
+                                <li key={index} className="flex justify-between items-center border-b border-gray-200 py-1">
+                                    <div className="flex-1 truncate">📄 {f.file.name}</div>
+                                    <div className="text-gray-500 ml-2 whitespace-nowrap">
+                                        {f.uploadedAt}
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
                     )}
+
+                    {/* Error */}
+                    {errors[category] && (
+                        <p className="text-red-500 text-m">{errors[category]}</p>
+                    )}
+
+                    {/* Upload Button */}
+                    <div className="text-right">
+                        <button
+                        type="file"
+                        multiple
+                            onClick={() => handleUpload(category)}
+                            disabled={
+                                !filesByCategory[category] || filesByCategory[category].length === 0 || processing
+                            }
+                            className="bg-uslsgreen text-white text-m px-3 py-1 rounded hover:bg-green-800 disabled:bg-gray-400"
+                        >
+                            Upload
+                        </button>
+                    </div>
                 </div>
             ))}
         </div>

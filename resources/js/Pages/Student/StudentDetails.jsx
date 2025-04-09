@@ -5,7 +5,7 @@ import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
 
 function StudentDetails({ company_list, student_company }) {
-    console.log(student_company);
+    // console.log(student_company);
     const { student } = usePage().props;
     const [extraCompanies, setExtraCompanies] = useState([]);
 
@@ -75,7 +75,7 @@ function StudentDetails({ company_list, student_company }) {
                             <CompanyForm key={company.id} company_list={company_list} onDelete={() => handleDelete(company.id)} student={student} />
                         ))}
                     </div>
-                    <UploadFiles />
+                    <UploadFiles id={student.Student_Num}/>
                 </div>
             </div>
         </AuthenticatedLayout>
