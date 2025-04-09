@@ -31,62 +31,6 @@ class StudentUploadingController extends Controller
     }
 
     /**
-     * Get courses based on college
-     */
-    public function getCourses(Request $request): JsonResponse
-    {
-        $college = $request->query('college');
-        
-        if (!$college) {
-            return response()->json([], 400);
-        }
-        
-        $courses = DB::table('tbl_course')
-            ->where('College', $college)
-            ->select('id', 'Course')
-            ->distinct()
-            ->get();
-            
-        return response()->json($courses);
-    }
-    
-    /**
-     * Get semesters based on college and course
-     * This will now get only semesters that have OJT hours registered for the selected course
-     */
-    public function getSemesters(Request $request): JsonResponse
-    {
-        $college = $request->query('college');
-        $course = $request->query('course');
-        
-        if (!$college || !$course) {
-            return response()->json([], 400);
-        }
-        
-        // Get the course ID first
-        $courseId = DB::table('tbl_course')
-            ->where('College', $college)
-            ->where('Course', $course)
-            ->value('id');
-            
-        if (!$courseId) {
-            return response()->json([], 404);
-        }
-        
-        // Get semesters that are registered for this specific course
-        $semesters = DB::table('tbl_ojt_hrs')
-            ->where('Course_ID', $courseId)
-            ->select('Sem')
-            ->distinct()
-            ->orderBy('Sem')
-            ->pluck('Sem')
-            ->toArray();
-        
-        // Return only the semesters found in the database for this course
-        return response()->json($semesters);
-    }
-
-    /**
      * Upload students from Excel file
      */
     public function upload(Request $request)
@@ -161,5 +105,57 @@ class StudentUploadingController extends Controller
             ]);
             return redirect()->back()->with('error', 'Upload failed: ' . $e->getMessage());
         }
+    }
+
+    public function getCourses(Request $request)
+    {
+        $college = $request->input('college');
+        
+        // Get all colleges again to ensure they're available
+        $colleges = DB::table('tbl_course')
+            ->select('College')
+            ->distinct()
+            ->pluck('College');
+        
+        $courses = Course::where('College', $college)->get();
+        
+        // Return ALL needed data in the response
+        return Inertia::render('StudentUploading/StudentUploading', [
+            'colleges' => $colleges,
+            'courses' => $courses
+        ]);
+    }
+
+    public function getSemesters(Request $request)
+    {
+        $college = $request->input('college');
+        $course = $request->input('course');
+        
+        // Get all colleges again
+        $colleges = DB::table('tbl_course')
+            ->select('College')
+            ->distinct()
+            ->pluck('College');
+        
+        // Get courses for this college
+        $courses = Course::where('College', $college)->get();
+        
+        $semesters = DB::table('tbl_ojt_hrs')
+                        ->join('tbl_course', function($join) use ($college, $course) {
+                            $join->on('tbl_ojt_hrs.Course_ID', '=', 'tbl_course.id')
+                                ->where('tbl_course.College', '=', $college)
+                                ->where('tbl_course.Course', '=', $course);
+                        })
+                        ->pluck('tbl_ojt_hrs.Sem')
+                        ->unique()
+                        ->values()
+                        ->toArray();
+        
+        // Return ALL needed data
+        return Inertia::render('StudentUploading/StudentUploading', [
+            'colleges' => $colleges,
+            'courses' => $courses,
+            'semesters' => $semesters
+        ]);
     }
 }

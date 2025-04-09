@@ -527,7 +527,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                         <h3 className="text-sm font-medium text-gray-700 mb-2">Course</h3>
                                         <div className="space-y-1 max-h-32 overflow-y-auto">
                                         <div 
-                                            className={`px-2 py-1 rounded cursor-pointer ${selectedCourseFilter === '' ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                                            className={`px-2 py-1 rounded cursor-pointer ${selectedCourseFilter === '' ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}
                                             onClick={() => setSelectedCourseFilter('')}
                                         >
                                             All Courses
@@ -535,7 +535,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                         {collegeFilteredCourses.map(course => (
                                             <div
                                             key={course.id}
-                                            className={`px-2 py-1 rounded cursor-pointer ${selectedCourseFilter === course.Course ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                                            className={`px-2 py-1 rounded cursor-pointer ${selectedCourseFilter === course.Course ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}
                                             onClick={() => setSelectedCourseFilter(course.Course)}
                                             >
                                             {course.Course}
@@ -549,7 +549,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                         <h3 className="text-sm font-medium text-gray-700 mb-2">Year</h3>
                                         <div className="space-y-1">
                                         <div 
-                                            className={`px-2 py-1 rounded cursor-pointer ${selectedYearFilter === '' ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                                            className={`px-2 py-1 rounded cursor-pointer ${selectedYearFilter === '' ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}
                                             onClick={() => setSelectedYearFilter('')}
                                         >
                                             All Years
@@ -557,7 +557,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                         {uniqueYears.map((year, index) => (
                                             <div
                                             key={`year-${index}`}
-                                            className={`px-2 py-1 rounded cursor-pointer ${selectedYearFilter === year ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                                            className={`px-2 py-1 rounded cursor-pointer ${selectedYearFilter === year ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}
                                             onClick={() => setSelectedYearFilter(year)}
                                             >
                                             {year}
@@ -578,7 +578,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                         Clear
                                         </button>
                                         <button
-                                        className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                                        className="text-sm bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500"
                                         onClick={() => setShowCombinedFilter(false)}
                                         >
                                         Apply

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useState, useEffect } from "react";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, useForm, router } from "@inertiajs/react";
 
 export default function StudentUploading({ colleges, flash }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -61,18 +61,26 @@ export default function StudentUploading({ colleges, flash }) {
       setIsLoading(true);
       setCoursesFetched(false);
       
-      fetch(`/api/get-courses?college=${encodeURIComponent(data.college)}`)
-        .then(res => res.json())
-        .then(data => {
-          // Remove duplicate courses by using a Set
-          const uniqueCourses = Array.from(
-            new Set(data.map(c => c.Course))
-          ).map(courseName => {
-            // Find the first occurrence of this course name
-            return data.find(c => c.Course === courseName);
-          });
+      router.visit(`/get-courses`, {
+        method: 'get',
+        data: { college: data.college }, 
+        preserveState: true,
+        onSuccess: (page) => {
+          // Check if courses exist in the response
+          if (page.props && page.props.courses) {
+            const coursesData = page.props.courses || [];
+            const uniqueCourses = Array.from(
+              new Set(coursesData.map(c => c.Course))
+            ).map(courseName => {
+              return coursesData.find(c => c.Course === courseName);
+            });
+            
+            setCourses(uniqueCourses);
+          } else {
+            console.error("No courses data received from server");
+            setCourses([]);
+          }
           
-          setCourses(uniqueCourses);
           setCoursesFetched(true);
           
           // Reset course selection
@@ -86,15 +94,16 @@ export default function StudentUploading({ colleges, flash }) {
           // Clear semesters when course changes
           setAvailableSemesters([]);
           setSemestersFetched(false);
-        })
-        .catch(error => {
+        },
+        onError: (error) => {
           console.error("Error fetching courses:", error);
           setCoursesFetched(true);
           setCourses([]);
-        })
-        .finally(() => {
+        },
+        onFinish: () => {
           setIsLoading(false);
-        });
+        }
+      });
     } else {
       setCourses([]);
       setCoursesFetched(false);
@@ -108,16 +117,24 @@ export default function StudentUploading({ colleges, flash }) {
       setSemestersFetched(false);
     }
   }, [data.college]);
-
+  
   // Fetch available semesters for the selected course
   useEffect(() => {
     if (data.college && data.course) {
       setIsLoading(true);
       setSemestersFetched(false);
       
-      fetch(`/api/get-semesters?college=${encodeURIComponent(data.college)}&course=${encodeURIComponent(data.course)}`)
-        .then(res => res.json())
-        .then(semestersData => {
+      // Using Inertia's router.visit instead of fetch API
+      router.visit(`/get-semesters`, {
+        method: 'get',
+        data: { 
+          college: data.college,
+          course: data.course 
+        },
+        preserveState: true,
+        only: ['semesters'],
+        onSuccess: (page) => {
+          const semestersData = page.props.semesters || [];
           setAvailableSemesters(semestersData);
           setSemestersFetched(true);
           
@@ -127,15 +144,16 @@ export default function StudentUploading({ colleges, flash }) {
             semester: "",
             schoolYear: ""
           }));
-        })
-        .catch(error => {
-          console.error("Error fetching semesters:", error);
+        },
+        onError: () => {
+          console.error("Error fetching semesters");
           setSemestersFetched(true);
           setAvailableSemesters([]);
-        })
-        .finally(() => {
+        },
+        onFinish: () => {
           setIsLoading(false);
-        });
+        }
+      });
     } else {
       setAvailableSemesters([]);
       setSemestersFetched(false);
@@ -223,7 +241,7 @@ export default function StudentUploading({ colleges, flash }) {
               disabled={isLoading}
             >
               <option value="">Select a college</option>
-              {colleges.map((col) => (
+              {colleges && colleges.length > 0 && colleges.map((col) => (
                 <option key={col} value={col}>
                   {col}
                 </option>
