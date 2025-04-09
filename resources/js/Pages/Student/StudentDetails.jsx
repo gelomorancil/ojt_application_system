@@ -39,7 +39,7 @@ function StudentDetails({ company_list, student_company }) {
                             </div>
                             <div className="text-right">
                                 <p><strong>Semester:</strong> {student?.Semester ?? "Not Available"}</p>
-                                <p><strong>School Year:</strong> {student?.Year ?? "Not Available"}</p>
+                                <p><strong>Year:</strong> {student?.Year ?? "Not Available"}</p>
                                 <p><strong>Company:</strong> {student_company[0]?.company?.Comp_name ?? "Not Available"}</p>
                                 <p><strong>Status:</strong> {student_company[0]?.Status ?? "Not Available"}</p>
                             </div>

@@ -7,6 +7,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
     const [isEditing, setIsEditing] = useState(false);
     const [editingStudentId, setEditingStudentId] = useState(null);
     const [year, setYear] = useState(selectedYear || "");
+    const [selectedStudents, setSelectedStudents] = useState([]);
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         College: "",
@@ -23,9 +24,28 @@ export default function Student({ students = [], courses = [], colleges = [], av
     const [selectedCourseFilter, setSelectedCourseFilter] = useState("");
     const [showCourseFilter, setShowCourseFilter] = useState(false);
     const [selectedCollege, setSelectedCollege] = useState("");
+    // New state for year filter
+    const [selectedYearFilter, setSelectedYearFilter] = useState("");
+    const [showYearFilter, setShowYearFilter] = useState(false);
 
     const currentYear = new Date().getFullYear();
     const schoolYears = [`${currentYear - 1}-${currentYear}`, `${currentYear}-${currentYear + 1}`, `${currentYear + 1}-${currentYear + 2}`];
+    
+    // Get unique years from the students array for filtering
+    const uniqueYears = useMemo(() => {
+        const yearsSet = new Set();
+        
+        students.forEach(student => {
+            if (student.Year || student.School_Year) {
+                yearsSet.add(student.Year || student.School_Year);
+            }
+        });
+        
+        // Add the school years to the set as well
+        schoolYears.forEach(year => yearsSet.add(year));
+        
+        return Array.from(yearsSet).sort();
+    }, [students, schoolYears]);
 
     const editStudent = (studentId) => {
         const studentToEdit = students.find(student => student.id === studentId);
@@ -39,7 +59,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                 Student_Num: studentToEdit.Student_Num || "",
                 Hrs: studentToEdit.Hrs || "",
                 Sem: studentToEdit.Sem || "",
-                Year: studentToEdit.Year || "",
+                Year: studentToEdit.Year || studentToEdit.School_Year || "",
             });
             
             // Then set the course in a separate update to ensure college filtering has occurred
@@ -212,7 +232,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
         }
     };    
 
-    // Filter students based on selected college, search, and course filter
+    // Filter students based on selected college, search, course filter, and year filter
     const filteredStudents = useMemo(() => {
         // Only show students when a college is selected
         if (!selectedCollege) return [];
@@ -239,6 +259,13 @@ export default function Student({ students = [], courses = [], colleges = [], av
             );
         }
         
+        // Apply year filter
+        if (selectedYearFilter) {
+            result = result.filter(student =>
+                (student.Year || student.School_Year) === selectedYearFilter
+            );
+        }
+        
         // Deduplicate students by Student_Num
         const uniqueStudents = [];
         const seenStudentNums = new Set();
@@ -251,7 +278,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
         });
         
         return uniqueStudents;
-    }, [students, selectedCollege, searchTerm, selectedCourseFilter]);
+    }, [students, selectedCollege, searchTerm, selectedCourseFilter, selectedYearFilter]);
 
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to delete this student?')) {
@@ -267,12 +294,78 @@ export default function Student({ students = [], courses = [], colleges = [], av
         }
     };
 
+    const toggleStudentSelection = (studentId) => {
+        setSelectedStudents(prev => 
+            prev.includes(studentId) 
+                ? prev.filter(id => id !== studentId) 
+                : [...prev, studentId]
+        );
+    };
+    
+    const toggleAllStudents = () => {
+        if (selectedStudents.length === sortedStudents.length) {
+            setSelectedStudents([]);
+        } else {
+            setSelectedStudents(sortedStudents.map(student => student.id));
+        }
+    };
+    
+    const handleBatchDelete = async () => {
+        if (selectedStudents.length === 0) {
+            alert("Please select at least one student to delete.");
+            return;
+        }
+        
+        if (confirm(`Are you sure you want to delete ${selectedStudents.length} selected student(s)?`)) {
+            try {
+                const response = await axios.post('/student/batch-delete', { 
+                    studentIds: selectedStudents 
+                });
+                
+                if (response.data.success) {
+                    alert(response.data.message);
+                    window.location.reload();
+                } else {
+                    alert(response.data.message || "Some students could not be deleted due to active transactions.");
+                }
+            } catch (error) {
+                console.error('Error batch deleting students:', error.response || error);
+                alert(error.response?.data?.message || 'Error deleting students.');
+            }
+        }
+    };
+
     // Toggle course filter dropdown
     const toggleCourseFilter = () => {
         if (selectedCollege) {
             setShowCourseFilter(!showCourseFilter);
+            // Close year filter if open
+            if (showYearFilter) setShowYearFilter(false);
         }
     };
+
+    // Toggle year filter dropdown
+    const toggleYearFilter = () => {
+        if (selectedCollege) {
+            setShowYearFilter(!showYearFilter);
+            // Close course filter if open
+            if (showCourseFilter) setShowCourseFilter(false);
+        }
+    };
+
+    const [showCombinedFilter, setShowCombinedFilter] = useState(false);
+
+    const toggleCombinedFilter = () => {
+    if (selectedCollege) {
+        setShowCombinedFilter(!showCombinedFilter);
+    }
+    };
+
+    const sortedStudents = useMemo(() => {
+        return [...filteredStudents].sort((a, b) => 
+            a.Lname.localeCompare(b.Lname)
+        );
+    }, [filteredStudents]);
 
     return (
         <AuthenticatedLayout
@@ -359,106 +452,177 @@ export default function Student({ students = [], courses = [], colleges = [], av
 
                         {/* Table Section */}
                         <div className="bg-white p-6 shadow rounded w-3/4">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold">Student List</h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold">Student List</h2>
 
-                                <div className="flex items-center space-x-4">
-                                    {/* College Selection for Table */}
-                                    <div>
-                                        <select
-                                            className="border rounded-lg px-4 py-2"
-                                            value={selectedCollege}
-                                            onChange={(e) => setSelectedCollege(e.target.value)}
-                                        >
-                                            <option value="">Select College</option>
-                                            {colleges.map((college) => (
-                                                <option key={college} value={college}>
-                                                    {college}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                            <div className="flex items-center space-x-4">
+                            {/* College Selection */}
+                            <div>
+                                <select
+                                className="border rounded-lg px-4 py-2"
+                                value={selectedCollege}
+                                onChange={(e) => setSelectedCollege(e.target.value)}
+                                >
+                                <option value="">Select College</option>
+                                {colleges.map((college) => (
+                                    <option key={college} value={college}>
+                                    {college}
+                                    </option>
+                                ))}
+                                </select>
+                            </div>
 
-                                    {/* Search Bar */}
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            placeholder="Search by ID, First or Last Name..."
-                                            className="border rounded-lg px-4 py-2 w-64"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            disabled={!selectedCollege}
-                                        />
-                                        <svg
-                                            className={`absolute right-3 top-2.5 h-5 w-5 ${selectedCollege ? 'text-gray-400' : 'text-gray-300'}`}
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                        </svg>
-                                    </div>
+                            {/* Search Bar */}
+                            <div className="relative">
+                                <input
+                                type="text"
+                                placeholder="Search by ID, First or Last Name..."
+                                className="border rounded-lg px-4 py-2 w-64"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                disabled={!selectedCollege}
+                                />
+                                <svg
+                                className={`absolute right-3 top-2.5 h-5 w-5 ${selectedCollege ? 'text-gray-400' : 'text-gray-300'}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
 
-                                    {/* Course Filter */}
-                                    <div className="relative">
-                                        <button
-                                            onClick={toggleCourseFilter}
-                                            className={`flex items-center border rounded-lg px-3 py-2 ${!selectedCollege ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-50'}`}
-                                            disabled={!selectedCollege}
+                            {/* Combined Course & Year Filter */}
+                            <div className="relative">
+                                <button
+                                onClick={toggleCombinedFilter}
+                                className={`flex items-center border rounded-lg px-3 py-2 ${!selectedCollege ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-50'}`}
+                                disabled={!selectedCollege}
+                                >
+                                <svg
+                                    className={`h-5 w-5 mr-1 ${selectedCollege ? 'text-gray-600' : 'text-gray-400'}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                                </svg>
+                                Filters
+                                {(selectedCourseFilter || selectedYearFilter) && (
+                                    <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
+                                    {selectedCourseFilter && selectedYearFilter 
+                                        ? `${selectedCourseFilter}, ${selectedYearFilter}` 
+                                        : selectedCourseFilter || selectedYearFilter}
+                                    </span>
+                                )}
+                                </button>
+
+                                {showCombinedFilter && selectedCollege && (
+                                <div className="absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                    <div className="p-3">
+                                    {/* Course Filter Section */}
+                                    <div className="mb-3">
+                                        <h3 className="text-sm font-medium text-gray-700 mb-2">Course</h3>
+                                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                                        <div 
+                                            className={`px-2 py-1 rounded cursor-pointer ${selectedCourseFilter === '' ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                                            onClick={() => setSelectedCourseFilter('')}
                                         >
-                                            <svg
-                                                className={`h-5 w-5 mr-1 ${selectedCollege ? 'text-gray-600' : 'text-gray-400'}`}
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
+                                            All Courses
+                                        </div>
+                                        {collegeFilteredCourses.map(course => (
+                                            <div
+                                            key={course.id}
+                                            className={`px-2 py-1 rounded cursor-pointer ${selectedCourseFilter === course.Course ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                                            onClick={() => setSelectedCourseFilter(course.Course)}
                                             >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                                            </svg>
-                                            Filter Course
-                                            {selectedCourseFilter && (
-                                                <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-                                                    {selectedCourseFilter}
-                                                </span>
-                                            )}
-                                        </button>
-
-                                        {showCourseFilter && selectedCollege && (
-                                            <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                                                <div className="py-1">
-                                                    <button
-                                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                        onClick={() => {
-                                                            setSelectedCourseFilter('');
-                                                            setShowCourseFilter(false);
-                                                        }}
-                                                    >
-                                                        All Courses
-                                                    </button>
-                                                    {collegeFilteredCourses.map(course => (
-                                                        <button
-                                                            key={course.id}
-                                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                            onClick={() => {
-                                                                setSelectedCourseFilter(course.Course);
-                                                                setShowCourseFilter(false);
-                                                            }}
-                                                        >
-                                                            {course.Course}
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                            {course.Course}
                                             </div>
-                                        )}
+                                        ))}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Year Filter Section */}
+                                    <div className="mb-3">
+                                        <h3 className="text-sm font-medium text-gray-700 mb-2">Year</h3>
+                                        <div className="space-y-1">
+                                        <div 
+                                            className={`px-2 py-1 rounded cursor-pointer ${selectedYearFilter === '' ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                                            onClick={() => setSelectedYearFilter('')}
+                                        >
+                                            All Years
+                                        </div>
+                                        {uniqueYears.map((year, index) => (
+                                            <div
+                                            key={`year-${index}`}
+                                            className={`px-2 py-1 rounded cursor-pointer ${selectedYearFilter === year ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                                            onClick={() => setSelectedYearFilter(year)}
+                                            >
+                                            {year}
+                                            </div>
+                                        ))}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Apply & Clear Buttons */}
+                                    <div className="flex justify-end pt-2 border-t">
+                                        <button
+                                        className="text-sm text-gray-600 hover:text-gray-800 mr-3"
+                                        onClick={() => {
+                                            setSelectedCourseFilter('');
+                                            setSelectedYearFilter('');
+                                        }}
+                                        >
+                                        Clear
+                                        </button>
+                                        <button
+                                        className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                                        onClick={() => setShowCombinedFilter(false)}
+                                        >
+                                        Apply
+                                        </button>
+                                    </div>
                                     </div>
                                 </div>
+                                )}
                             </div>
+
+                            {/* Delete Selected Button */}
+                            {selectedStudents.length > 0 && (
+                                <button
+                                onClick={handleBatchDelete}
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center"
+                                >
+                                <svg 
+                                    className="h-5 w-5 mr-2" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24" 
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Delete Selected ({selectedStudents.length})
+                                </button>
+                            )}
+                            </div>
+                        </div>
 
                             <div className="overflow-x-auto">
                                 <table className="min-w-full border">
                                     <thead className="bg-gray-50">
                                         <tr>
+                                            <th className="px-4 py-2 text-left">
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={selectedStudents.length === sortedStudents.length && sortedStudents.length > 0}
+                                                    onChange={toggleAllStudents}
+                                                    disabled={sortedStudents.length === 0}
+                                                    className="rounded"
+                                                />
+                                            </th>
                                             <th className="px-4 py-2 text-left"></th>
                                             <th className="px-4 py-2 text-left">Student Number</th>
                                             <th className="px-4 py-2 text-left">Name</th>
@@ -471,9 +635,17 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white">
-                                        {filteredStudents.length > 0 ? (
-                                            filteredStudents.map((student, index) => (
+                                        {sortedStudents.length > 0 ? (
+                                            sortedStudents.map((student, index) => (
                                                 <tr key={student.id} className="border-t">
+                                                    <td className="px-4 py-2">
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={selectedStudents.includes(student.id)}
+                                                            onChange={() => toggleStudentSelection(student.id)}
+                                                            className="rounded"
+                                                        />
+                                                    </td>
                                                     <td className="px-4 py-2">{index + 1}</td>
                                                     <td className="px-4 py-2 text-black">
                                                         <Link href={route('student.show', student.id)} className="text-black">
@@ -502,7 +674,7 @@ export default function Student({ students = [], courses = [], colleges = [], av
                                                     {!selectedCollege ? (
                                                         "Please select a college to view students."
                                                     ) : (
-                                                        searchTerm || selectedCourseFilter ?
+                                                        searchTerm || selectedCourseFilter || selectedYearFilter ?
                                                             "No students found matching your search criteria." :
                                                             "No students found for this college. Add a new student using the form."
                                                     )}

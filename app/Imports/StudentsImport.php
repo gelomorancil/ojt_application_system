@@ -23,14 +23,10 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
     private $schoolYear;
     private $semester;
     private $courseName;
+    private $duplicateStudents = []; // Array to track duplicate student numbers
     
     public function __construct($college, $course, $schoolYear, $semester)
     {
-        // Validate inputs
-        if (!in_array($semester, ['First', 'Second', 'Summer'])) {
-            throw new \Exception("Invalid semester selected: $semester");
-        }
-
         // Find the Course_ID based on the course name
         $courseDetails = DB::table('tbl_course')
             ->where('Course', $course)
@@ -47,15 +43,14 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
         $this->schoolYear = $schoolYear;
         $this->semester = $semester;
 
-        // Check if OJT hours exist for this course, year, and semester
+        // Check if OJT hours exist for this course and semester
         $ojtHours = DB::table('tbl_ojt_hrs')
             ->where('Course_ID', $this->courseId)
-            ->where('Year', $this->schoolYear)
             ->where('Sem', $this->semester)
             ->first();
 
         if (!$ojtHours) {
-            throw new \Exception("No OJT hours are registered for '{$this->courseName}' for school year '{$this->schoolYear}' and '{$this->semester}' semester. Please register this course with OJT hours first.");
+            throw new \Exception("No OJT hours are registered for '{$this->courseName}' for '{$this->semester}' semester. Please register this course with OJT hours first.");
         }
 
         Log::info('StudentsImport Initialized', [
@@ -66,6 +61,14 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
             'semester' => $this->semester,
             'ojt_hours' => $ojtHours->Hrs ?? 'Not found'
         ]);
+    }
+    
+    /**
+     * Get the list of duplicate student numbers found during import
+     */
+    public function getDuplicateStudents()
+    {
+        return $this->duplicateStudents;
     }
     
     /**
@@ -102,6 +105,13 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
             },
             AfterSheet::class => function(AfterSheet $event) {
                 Log::info('Finished processing Excel sheet');
+                
+                if (count($this->duplicateStudents) > 0) {
+                    Log::warning('Duplicate student numbers found', [
+                        'count' => count($this->duplicateStudents),
+                        'student_numbers' => $this->duplicateStudents
+                    ]);
+                }
             },
         ];
     }
@@ -124,7 +134,6 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
             'fname' => $firstName, 
             'lname' => $lastName,
             'student_num' => $studentNum,
-
         ]);
         
         // Check if required fields are present
@@ -135,13 +144,32 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
             return null;
         }
         
+        // Check if student number already exists in the database
+        $existingStudent = DB::table('tbl_student')
+            ->where('Student_Num', $studentNum)
+            ->first();
+            
+        if ($existingStudent) {
+            // Add to duplicate students list
+            $this->duplicateStudents[] = [
+                'student_num' => $studentNum,
+                'name' => "$firstName $lastName"
+            ];
+            
+            Log::warning('Duplicate student number found', [
+                'student_num' => $studentNum,
+                'name' => "$firstName $lastName"
+            ]);
+            
+            return null;
+        }
+        
         try {
             // Create a normalized row with column names matching tbl_student
             $normalizedRow = [
                 'fname' => $firstName,
                 'lname' => $lastName,
                 'student_num' => $studentNum,
-
             ];
             
             // Insert the student data using the insert method
@@ -165,22 +193,15 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
     
     public function insert(array $row)
     {
-        // Validate the semester, matching the database enum entries
-        $validSemesters = ['First', 'Second', 'Summer'];
-        if (!in_array($this->semester, $validSemesters)) {
-            throw new \Exception("Invalid semester: {$this->semester}");
-        }
-        
-        // Get the info for OJT hours based on the selected Course ID, Semester, and School Year
+        // Get the OJT hours info to validate the semester exists for this course
         $ojtInfo = DB::table('tbl_ojt_hrs')
             ->where('Course_ID', $this->courseId)
-            ->where('Sem', $this->semester) 
-            ->where('Year', $this->schoolYear)
+            ->where('Sem', $this->semester)
             ->first();
 
         // If no OJT hours are found, throw an exception
         if (!$ojtInfo) {
-            throw new \Exception("No OJT hours are registered for '{$this->courseName}' for school year '{$this->schoolYear}' and '{$this->semester}' semester. Please register this course with OJT hours first.");
+            throw new \Exception("No OJT hours are registered for '{$this->courseName}' for '{$this->semester}' semester. Please register this course with OJT hours first.");
         }
 
         // Prepare student data for insertion
@@ -189,7 +210,7 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
             'lname' => $row['lname'],
             'Student_Num' => $row['student_num'],
             'Course_ID' => $this->courseId,
-            'Year' => $this->schoolYear,
+            'Year' => $this->schoolYear, // Only store school year in tbl_student
             'created_at' => now(),
             'updated_at' => now()
         ];
