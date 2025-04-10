@@ -45,6 +45,7 @@ export default function UploadFiles({ id }) {
                             id="category"
                             onChange={(e) => setData("category", e.target.value)}
                         />
+                        
                         <label className="text-m text-gray-700 cursor-pointer hover:underline">
                             + Add File
                             <input
