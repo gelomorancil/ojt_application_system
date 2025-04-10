@@ -160,4 +160,6 @@ Route::post('/student-files', [StudentFileController::class, 'store'])->name('st
 //     Route::delete('/{id}', [StudentFileController::class, 'destroy']);
 // });
 
+Route::post('/student/export', [StudentController::class, 'export'])->name('student.export');
+
 require __DIR__.'/auth.php';
