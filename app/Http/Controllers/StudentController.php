@@ -11,8 +11,10 @@ use App\Models\StudentDetails;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StudentImport;
+use App\Exports\StudentsExport;
 use Inertia\Inertia;
 use Inertia\Response;
+use PDF;
 
 class StudentController extends Controller {
     
@@ -266,4 +268,47 @@ class StudentController extends Controller {
             ], 500);
         }
     }
+
+    public function export(Request $request)
+{
+    $college = $request->input('college');
+    $course = $request->input('course');
+    $year = $request->input('year');
+    
+    $query = Student::select(
+        'tbl_student.id',
+        'tbl_student.Student_Num',
+        'tbl_student.Fname',
+        'tbl_student.Lname',
+        'tbl_student.Year',
+        'tbl_course.College as College_Name',
+        'tbl_course.Course as Course_Name',
+        'tbl_ojt_hrs.Hrs as Ojt_Hours',
+        'tbl_ojt_hrs.Sem as Semester'
+    )
+    ->leftJoin('tbl_course', 'tbl_student.Course_ID', '=', 'tbl_course.id')
+    ->leftJoin('tbl_ojt_hrs', 'tbl_student.Course_ID', '=', 'tbl_ojt_hrs.Course_ID');
+    
+    if ($college) {
+        $query->where('tbl_course.College', $college);
+    }
+    
+    if ($course) {
+        $query->where('tbl_course.Course', $course);
+    }
+    
+    if ($year) {
+        $query->where('tbl_student.Year', $year);
+    }
+    
+    $students = $query->get();
+    
+    $filename = 'students';
+    if ($college) $filename .= '_' . $college;
+    if ($course) $filename .= '_' . $course;
+    if ($year) $filename .= '_' . $year;
+    $filename .= '.xlsx';
+    
+    return Excel::download(new StudentsExport($students), $filename);
+}
 }

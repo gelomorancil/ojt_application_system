@@ -158,4 +158,6 @@ Route::prefix('student-files')->group(function () {
     Route::delete('/{id}', [StudentFileController::class, 'destroy']);
 });
 
+Route::post('/student/export', [StudentController::class, 'export'])->name('student.export');
+
 require __DIR__.'/auth.php';
