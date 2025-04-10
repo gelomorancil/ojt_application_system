@@ -1,124 +1,94 @@
 import React, { useState } from "react";
 import { useForm } from "@inertiajs/react";
 
-const categories = ['Pre-Deployment', 'Deployment', 'DTR', 'Final Requirements'];
+const categories = [
+    "Pre-Deployment",
+    "Deployment",
+    "DTR",
+    "Final Requirements",
+];
 
 export default function UploadFiles({ id }) {
-    const [filesByCategory, setFilesByCategory] = useState({});
-    const [errors, setErrors] = useState({});
+    const { data, setData, post, processing, errors, reset } = useForm({
+        Student_Num: id,
+        category: "Pre-Deployment",
+        file_name: "",
+    });
 
-    const { post, processing, reset } = useForm();
+    const onSubmit = (e) => {
+        e.preventDefault();
 
-    const handleFileChange = (e, category) => {
-        const selectedFiles = Array.from(e.target.files);
-        const validFiles = selectedFiles.filter(
-            (file) => file.type === "application/pdf" || file.type.startsWith("image/")
-        );
-
-        if (validFiles.length !== selectedFiles.length) {
-            setErrors((prev) => ({
-                ...prev,
-                [category]: "Only PDF and image files are allowed.",
-            }));
-        } else {
-            setErrors((prev) => ({ ...prev, [category]: "" }));
+        const formData = new FormData();
+        formData.append("Student_Num", id);
+        formData.append("category", category);
+        if (data.file_name) {
+            formData.append("file_name", data.file_name);
         }
 
-        const newFiles = validFiles.map((file) => ({
-            file,
-            uploadedAt: new Date().toLocaleString(),
-        }));
-
-        setFilesByCategory((prev) => ({
-            ...prev,
-            [category]: [...(prev[category] || []), ...newFiles],
-        }));
-    };
-
-    const handleUpload = (category) => {
-        console.log(category);
-        const files = filesByCategory[category] || [];
-    
-        files.forEach((f) => {
-            const formData = new FormData();
-            formData.append("Student_Num", id);
-            formData.append("category", category);
-            formData.append("file_name", f.file);
-    
-            post(route("student-files.store"), formData, {
-                preserveScroll: true,
-                forceFormData: true,
-                onSuccess: () => {
-                    setFilesByCategory((prev) => ({
-                        ...prev,
-                        [category]: prev[category].filter((x) => x.file.name !== f.file.name),
-                    }));
-                },
-                onError: () => {
-                    setErrors((prev) => ({
-                        ...prev,
-                        [category]: "Upload failed.",
-                    }));
-                },
-                onFinish: () => reset(),
-            });
+        post(route("student-files.store"), {
+            onFinish: () => reset(),
+            data: formData,
         });
     };
-    
 
     return (
         <div className="max-w-full mx-auto space-y-4">
-            {categories.map((category) => (
-                <div key={category} className="bg-white border border-uslscream rounded-md p-4 shadow-sm space-y-2">
+            <form onSubmit={onSubmit}>
+                <div className="bg-white border border-uslscream rounded-md p-4 shadow-sm space-y-2">
+                    <h3 className="font-semibold text-uslsgreen text-m">Pre-Deployment</h3>
                     <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-uslsgreen text-m">{category}</h3>
-
+                        <input
+                            type="text"
+                            className="hidden"
+                            value="Pre-Deployment"
+                            name="category"
+                            id="category"
+                            onChange={(e) => setData("category", e.target.value)}
+                        />
                         <label className="text-m text-gray-700 cursor-pointer hover:underline">
                             + Add File
                             <input
                                 type="file"
-                                multiple
+                                id="file_name"
+                                name="file_name"
                                 className="hidden"
-                                onChange={(e) => handleFileChange(e, category)}
+                                onChange={(e) => setData("file_name", e.target.files[0])}
                             />
+                             {/* <input
+                    type="file"
+                    placeholder="file_name"
+                    id="file_name"
+                    name="file_name"
+                    // onChange={(e) =>setData("file_name", e.target.files[0])}
+                    // onChange={(e) => setData("file_name", e.target.files[0])}
+                    onChange={(e) =>
+                        setData("file_name", e.target.files[0])
+                    }
+                /> */}
                         </label>
                     </div>
-
-                    {/* File List */}
-                    {filesByCategory[category] && filesByCategory[category].length > 0 && (
-                        <ul className="space-y-1 text-m text-gray-700">
-                            {filesByCategory[category].map((f, index) => (
-                                <li key={index} className="flex justify-between items-center border-b border-gray-200 py-1">
-                                    <div className="flex-1 truncate">📄 {f.file.name}</div>
-                                    <div className="text-gray-500 ml-2 whitespace-nowrap">
-                                        {f.uploadedAt}
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-
-                    {/* Error */}
-                    {errors[category] && (
-                        <p className="text-red-500 text-m">{errors[category]}</p>
-                    )}
-
-                    {/* Upload Button */}
+                    <ul className="space-y-1 text-m text-gray-700">
+                        {/* Check if file_name exists before trying to display */}
+                        {data.file_name && (
+                            <li className="flex justify-between items-center border-b border-gray-200 py-1">
+                                <div className="flex-1 truncate">
+                                    📄 {data.file_name.name}
+                                </div>
+                                <div className="text-gray-500 ml-2 whitespace-nowrap"></div>
+                            </li>
+                        )}
+                    </ul>
                     <div className="text-right">
                         <button
-                        type="file"
-                        multiple
-                            onClick={() => handleUpload(category)}
-                            disabled={
-                                !filesByCategory[category] || filesByCategory[category].length === 0 || processing
-                            }
+                            type="submit"
                             className="bg-uslsgreen text-white text-m px-3 py-1 rounded hover:bg-green-800 disabled:bg-gray-400"
+                            disabled={processing}
                         >
-                            Upload
+                            {processing ? "Submitting..." : "Submit"}
                         </button>
                     </div>
                 </div>
-            ))}
+            </form>
         </div>
     );
 }
