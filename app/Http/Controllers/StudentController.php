@@ -221,4 +221,49 @@ class StudentController extends Controller {
 
         return response()->json(['message' => 'Students uploaded successfully']);
     }
+
+    public function batchDelete(Request $request)
+    {
+        $studentIds = $request->input('studentIds', []);
+        
+        if (empty($studentIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No students selected for deletion'
+            ]);
+        }
+        
+        // Check for active transactions in tbl_student_comp
+        $studentsWithTransactions = StudentCompany::whereIn('Student_ID', $studentIds)
+            ->where('Status', 'On going')
+            ->pluck('Student_ID')
+            ->toArray();
+        
+        if (!empty($studentsWithTransactions)) {
+            // Get student numbers for the restricted students
+            $restrictedStudents = Student::whereIn('id', $studentsWithTransactions)
+                ->pluck('Student_Num')
+                ->toArray();
+                
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete students with active transactions: ' . implode(', ', $restrictedStudents)
+            ]);
+        }
+        
+        // Proceed with deletion for students without active transactions
+        try {
+            Student::whereIn('id', $studentIds)->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => count($studentIds) . ' student(s) deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting students: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

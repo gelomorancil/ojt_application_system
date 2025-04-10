@@ -246,7 +246,7 @@ const Course = ({ courses, course = null }) => {
                                     { label: "Course", name: "Course", type: "text" },
                                     { label: "OJT Hours", name: "Hrs", type: "number", min: 0, step: 10 },
                                     { label: "Semester", name: "Sem", type: "select", options: ["First", "Second", "Summer"] },
-                                    { label: "School Year", name: "Year", type: "select", options: schoolYears },
+                                    { label: "Year", name: "Year", type: "select", options: ["1st", "2nd", "3rd", "4th"] },
                                 ].map(({ label, name, type, options, ...rest }) => (
                                     <div className="mb-4" key={name}>
                                         <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -364,9 +364,9 @@ const Course = ({ courses, course = null }) => {
                                                     </select>
                                                 </div>
 
-                                                {/* School Year Filter */}
+                                                {/* Year Filter */}
                                                 <div className="mb-3">
-                                                    <label className="block text-sm font-medium text-gray-700 mb-1">School Year</label>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
                                                     <select
                                                         className="w-full border rounded-lg p-2"
                                                         value={selectedYear}
