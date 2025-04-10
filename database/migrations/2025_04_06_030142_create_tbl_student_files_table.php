@@ -19,10 +19,11 @@ return new class extends Migration
             $table->timestamps(); // includes 'created_at' for upload date
 
             // Foreign key constraint
-            $table->foreign('Student_Num')
-                ->references('Student_Num')
-                ->on('tbl_student')
-                ->onDelete('cascade'); // optional: deletes file record if student is deleted
+            // $table->foreign('Student_Num')
+                // ->references('Student_Num')
+                // ->on('tbl_student')
+                // ->onDelete('cascade');
+                 // optional: deletes file record if student is deleted
         });
     }
 
