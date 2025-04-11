@@ -19,7 +19,7 @@ export default function AuthenticatedLayout({ header, children }) {
     return (
         <div className="min-h-screen bg-[#F8F6F0] flex flex-col">
             {/* Top Navigation Bar */}
-            <nav className="border-b border-gray-100 bg-white p-4 flex justify-between items-center text-white">
+            <nav className="border-b border-gray-100 bg-green-950 flex justify-between items-center text-white">
                 {/* Logo and Mobile Menu Button */}
                 <div className="flex items-center gap-4">
                     <button className="lg:hidden text-black" onClick={() => setMenuOpen(!menuOpen)}>

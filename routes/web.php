@@ -139,14 +139,16 @@ Route::get('/get-semesters', [StudentUploadingController::class, 'getSemesters']
 // Route for form submission
 Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->name('upload.students');
 
+Route::post('/student-files', [StudentFileController::class, 'store'])->name('student-files.store');
+
 });
 
-Route::prefix('student-files')->group(function () {
-    Route::get('/', [StudentFileController::class, 'index']);
-    Route::post('/', [StudentFileController::class, 'store']);
-    Route::get('/student/{Student_Num}', [StudentFileController::class, 'showByStudent']);
-    Route::delete('/{id}', [StudentFileController::class, 'destroy']);
-});
+// Route::prefix('student-files')->group(function () {
+//     Route::get('/', [StudentFileController::class, 'index']);
+//     Route::post('/', [StudentFileController::class, 'store']);
+//     Route::get('/student/{Student_Num}', [StudentFileController::class, 'showByStudent']);
+//     Route::delete('/{id}', [StudentFileController::class, 'destroy']);
+// });
 
 Route::post('/student/export', [StudentController::class, 'export'])->name('student.export');
 

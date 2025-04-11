@@ -1,127 +1,95 @@
 import React, { useState } from "react";
+import { useForm } from "@inertiajs/react";
 
-const categories = ['Pre-Deployment', 'Deployment', 'DTR', 'Final Requirement'];
+const categories = [
+    "Pre-Deployment",
+    "Deployment",
+    "DTR",
+    "Final Requirements",
+];
 
-export default function UploadFiles() {
-    const [filesByCategory, setFilesByCategory] = useState({});
-    const [errors, setErrors] = useState({});
-    const [studentNum] = useState("2021-00001");
+export default function UploadFiles({ id }) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        Student_Num: id,
+        category: "Pre-Deployment",
+        file_name: "",
+    });
 
-    const handleFileChange = (e, category) => {
-        const selectedFiles = Array.from(e.target.files);
-        const validFiles = selectedFiles.filter(file => file.type === "application/pdf");
+    const onSubmit = (e) => {
+        e.preventDefault();
 
-        if (validFiles.length !== selectedFiles.length) {
-            setErrors(prev => ({ ...prev, [category]: "Only PDF files are allowed." }));
-        } else {
-            setErrors(prev => ({ ...prev, [category]: "" }));
+        const formData = new FormData();
+        formData.append("Student_Num", id);
+        formData.append("category", category);
+        if (data.file_name) {
+            formData.append("file_name", data.file_name);
         }
 
-        const existingFiles = filesByCategory[category]?.map(f => f.file.name) || [];
-        const newFiles = validFiles.filter(f => !existingFiles.includes(f.name));
-
-        setFilesByCategory(prev => ({
-            ...prev,
-            [category]: [...(prev[category] || []), ...newFiles.map(file => ({
-                file,
-                uploadedAt: new Date().toLocaleString(),
-            }))]
-        }));
-    };
-
-    const handleRemoveFile = (category, fileName) => {
-        setFilesByCategory(prev => ({
-            ...prev,
-            [category]: prev[category].filter(f => f.file.name !== fileName)
-        }));
-    };
-
-    const handleUpload = (category) => {
-        const selectedFiles = filesByCategory[category] || [];
-
-        selectedFiles.forEach((fileWrapper) => {
-            const formData = new FormData();
-            formData.append("file", fileWrapper.file);
-            formData.append("Student_Num", studentNum);
-            formData.append("category", category);
-
-            fetch("/student-files", {
-                method: "POST",
-                body: formData,
-            })
-                .then((res) => {
-                    if (res.ok) {
-                        setFilesByCategory(prev => ({
-                            ...prev,
-                            [category]: prev[category].filter(f => f.file.name !== fileWrapper.file.name)
-                        }));
-                    } else {
-                        return res.json().then(data => {
-                            throw new Error(data.message || "Upload failed.");
-                        });
-                    }
-                })
-                .catch((error) => {
-                    setErrors(prev => ({
-                        ...prev,
-                        [category]: error.message,
-                    }));
-                });
+        post(route("student-files.store"), {
+            onFinish: () => reset(),
+            data: formData,
         });
     };
 
     return (
-        <div className="bg-white p-3 shadow rounded-md max-w-full mx-auto mt-4 space-y-3">
-            <h2 className="text-base font-semibold text-gray-800">Upload Files</h2>
-
-            {categories.map(category => (
-                <div key={category} className="border rounded p-2 bg-gray-50 space-y-1">
-                    <p className="text-sm font-medium text-gray-700">{category}</p>
-
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap w-full">
-                            <label className="cursor-pointer bg-white border border-gray-300 px-2 py-1 rounded text-xs text-gray-700 hover:bg-gray-100">
-                                📂 Choose PDF Files
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="application/pdf"
-                                    onChange={(e) => handleFileChange(e, category)}
-                                    className="hidden"
-                                />
-                            </label>
-
-                            {filesByCategory[category] && filesByCategory[category].length > 0 && (
-                                <ul className="text-xs text-gray-700 flex flex-col sm:flex-row gap-2 sm:items-center">
-                                    {filesByCategory[category].map((f, i) => (
-                                        <li key={i} className="flex items-center gap-1">
-                                            📄 {f.file.name}
-                                            <button
-                                                onClick={() => handleRemoveFile(category, f.file.name)}
-                                                className="text-red-500 hover:text-red-700 text-xs"
-                                            >
-                                                ❌
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-
+        <div className="max-w-full mx-auto space-y-4">
+            <form onSubmit={onSubmit}>
+                <div className="bg-white border border-uslscream rounded-md p-4 shadow-sm space-y-2">
+                    <h3 className="font-semibold text-uslsgreen text-m">Pre-Deployment</h3>
+                    <div className="flex items-center justify-between">
+                        <input
+                            type="text"
+                            className="hidden"
+                            value="Pre-Deployment"
+                            name="category"
+                            id="category"
+                            onChange={(e) => setData("category", e.target.value)}
+                        />
+                        
+                        <label className="text-m text-gray-700 cursor-pointer hover:underline">
+                            + Add File
+                            <input
+                                type="file"
+                                id="file_name"
+                                name="file_name"
+                                className="hidden"
+                                onChange={(e) => setData("file_name", e.target.files[0])}
+                            />
+                             {/* <input
+                    type="file"
+                    placeholder="file_name"
+                    id="file_name"
+                    name="file_name"
+                    // onChange={(e) =>setData("file_name", e.target.files[0])}
+                    // onChange={(e) => setData("file_name", e.target.files[0])}
+                    onChange={(e) =>
+                        setData("file_name", e.target.files[0])
+                    }
+                /> */}
+                        </label>
+                    </div>
+                    <ul className="space-y-1 text-m text-gray-700">
+                        {/* Check if file_name exists before trying to display */}
+                        {data.file_name && (
+                            <li className="flex justify-between items-center border-b border-gray-200 py-1">
+                                <div className="flex-1 truncate">
+                                    📄 {data.file_name.name}
+                                </div>
+                                <div className="text-gray-500 ml-2 whitespace-nowrap"></div>
+                            </li>
+                        )}
+                    </ul>
+                    <div className="text-right">
                         <button
-                            onClick={() => handleUpload(category)}
-                            disabled={!filesByCategory[category] || filesByCategory[category].length === 0}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs disabled:bg-gray-300"
+                            type="submit"
+                            className="bg-uslsgreen text-white text-m px-3 py-1 rounded hover:bg-green-800 disabled:bg-gray-400"
+                            disabled={processing}
                         >
-                            ⬆️ Upload
+                            {processing ? "Submitting..." : "Submit"}
                         </button>
                     </div>
-
-                    {errors[category] && (
-                        <p className="text-red-500 text-xs">{errors[category]}</p>
-                    )}
                 </div>
-            ))}
+            </form>
         </div>
     );
 }
