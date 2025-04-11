@@ -41,7 +41,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     </NavLink>
                     <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaBook className="w-5 h-5" /> */}
-                        <span>Course</span>
+                        <span>Program</span>
                     </NavLink>
                     <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaFileContract className="w-5 h-5" /> */}
@@ -49,7 +49,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     </NavLink>
                     <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaFileContract className="w-5 h-5" /> */}
-                        <span>Student Uploading</span>
+                        <span>Class List</span>
                     </NavLink>
 
                 </div>
