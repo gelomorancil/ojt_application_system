@@ -12,7 +12,15 @@ class Company extends Model
 
     protected $table = 'tbl_company';
 
-    protected $fillable = ['Comp_name', 'Address'];
+    protected $fillable = [
+        'Comp_name',
+        'Street_Address',
+        'Barangay',
+        'City',
+        'Province',
+        'Postal_Code',
+        'Country'
+    ];
 
     protected static function boot()
     {
@@ -35,7 +43,7 @@ class Company extends Model
     }
 
     public function CompCourse(): HasMany
-{
-    return $this->hasMany(CompCourse::class, 'Comp_ID', 'id');
-}
+    {
+        return $this->hasMany(CompCourse::class, 'Comp_ID', 'id');
+    }
 }
