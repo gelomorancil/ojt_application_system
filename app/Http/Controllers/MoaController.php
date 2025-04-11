@@ -43,6 +43,17 @@ class MoaController extends Controller
         return Inertia::render('Companies/View', ['moa_list' => $moa_list]);
     }
 
+    public function download($filename)
+    {
+        $filePath = 'moa_files/' . $filename;
+
+        if (Storage::disk('public')->exists($filePath)) {
+            return response()->download(storage_path('app/public/' . $filePath));
+        }
+
+        abort(404, 'File not found.');
+    }
+
     public function destroy($id)
     {
         $moa = Moa::findOrFail($id);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2, Download } from "lucide-react";
 
 export default function MoaList({ moa_list = [], handleDelete }) {
     const [previewFile, setPreviewFile] = useState(null);
@@ -47,6 +47,17 @@ export default function MoaList({ moa_list = [], handleDelete }) {
                                         className="text-red-500 hover:text-red-700"
                                     >
                                         <Trash2 size={20} />
+                                    </button>
+
+                                    {/* Delete Button */}
+                                    <button
+                                        onClick={() => {
+                                            const filename = moa.File.split("/").pop(); // Extract only the filename
+                                            window.open(`/moa/download/${filename}`, '_blank');
+                                        }}
+                                        className="text-green-500 hover:text-green-700"
+                                    >
+                                        <Download size={20} />
                                     </button>
                                 </td>
                             </tr>

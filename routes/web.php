@@ -105,6 +105,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/moaprocess/{moaprocess}/edit', [MoaProcessController::class, 'edit'])->name('moaprocess.edit');
     Route::put('/moaProcess/{moaprocess}', [MoaProcessController::class, 'update'])->name('moaProcess.update');
     Route::get('/company/{id}', [MoaProcessController::class, 'showCompany'])->name('company.show');
+    Route::get('/moa/download/{filename}', [MoaController::class, 'download'])->name('moa.download');
+
 
 });
 
