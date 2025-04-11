@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tbl_student_course', function (Blueprint $table) {
+        Schema::create('tbl_student_comp', function (Blueprint $table) {
             $table->id();
             $table->integer('Comp_ID');
-            $table->integer('Student_ID');
-            $table->integer('Capacity');
-            $table->string('AY');
+            $table->integer('Student_ID');            
             $table->string('Sem');
+            $table->string('AY');
             $table->string('Status');
             $table->timestamps();
         });
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tbl_student_course');
+        Schema::dropIfExists('tbl_student_comp');
     }
 };

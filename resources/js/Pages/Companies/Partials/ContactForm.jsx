@@ -12,7 +12,6 @@ export default function ContactForm({
     course_list,
 }) {
 
-    // console.log(course_list);
 
     return (
 

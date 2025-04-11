@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('Course_ID');
             $table->integer('Hrs');
             $table->enum('Sem', ['First', 'Second', 'Summer']);
-            $table->string('Year');
+            $table->enum('Year', ['1st', '2nd', '3rd', '4th']);
             $table->timestamps();
 
             $table->foreign('Course_ID')->references('id')->on('tbl_course')->onDelete('cascade');

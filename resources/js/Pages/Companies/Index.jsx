@@ -6,7 +6,6 @@ import CompanyList from './Partials/CompanyList';
 
 export default function Index({ company_list }) {
     console.log(company_list);
-
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({
         Comp_name: '',
         Address: '',

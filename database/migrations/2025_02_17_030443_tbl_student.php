@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('Student_Num')->unique();
             $table->string('Year');
             $table->timestamps();
+            $table->string('Year');
         });
     }
 

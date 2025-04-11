@@ -7,8 +7,9 @@ import ContactForm from './Partials/ContactForm';
 import MoaForm from './Partials/MoaForm';
 import MoaList from './Partials/MoaList';
 import Tabs from './Partials/Tabs';
+import InternList from './Partials/InternList';
 
-export default function View({ company, contact_list, moa_list, course_list }) {
+export default function View({ company, contact_list, moa_list, course_list, intern_list }) {
 
     const [activeTab, setActiveTab] = useState('contacts');
     const [editingContact, setEditingContact] = useState(null);
@@ -25,8 +26,8 @@ export default function View({ company, contact_list, moa_list, course_list }) {
         Comp_ID: company.id,
 
     });
-
     const handleSubmit = (e) => {
+        // console.log(data)
         e.preventDefault();
         if (activeTab === "contacts") {
             if (editingContact) {
@@ -41,34 +42,13 @@ export default function View({ company, contact_list, moa_list, course_list }) {
                 post(route('moa.store'), { onSuccess: () => reset() });
             }
         }
+        if (editingContact) {
+            put(route('contact.update', editingContact.id), { onSuccess: () => resetForm() });
+        } else {
+            post(route('contact.store'), { onSuccess: () => reset() });
+        }
         reset();
     };
-
-    // const handleEdit = (item) => {
-    //     console.log("Editing Contact Data:", item);
-
-    //     if (activeTab === "contacts") {
-    //         setEditingContact(item);
-    //         setData({
-    //             name: item?.name || "",
-    //             position: item?.position || "",
-    //             Course_id: item?.Course ? item.Course.map(course => course.id) : [], // Ensure IDs are set
-    //             email: item?.email || "",
-    //             contact_number: item?.contact_number || "",
-    //             Capacity: item?.Capacity || "",
-    //             mode: item?.mode || "",
-    //             Comp_ID: company.id,
-
-    //         });
-    //         console.log("Extracted Course IDs:", item?.courses ? item.courses.map(course => course.id) : []); // Debugging
-    //     } else if (activeTab === "moa") {
-    //         setEditingMoa(item);
-    //         setData({
-    //             title: item?.title || "",
-    //             Comp_ID: company.id,
-    //         });
-    //     }
-    // };
 
     const handleEdit = (contact) => {
         // console.log(contact);
@@ -90,7 +70,7 @@ export default function View({ company, contact_list, moa_list, course_list }) {
         setEditingMoa(null);
     };
 
-    const handleDelete = (id, filePath) => {
+    const handleDeleteMoa = (id, filePath) => {
         if (confirm("Are you sure you want to delete this item?")) {
             destroy(`/moa/${id}`, {
                 onSuccess: () => {
@@ -102,10 +82,16 @@ export default function View({ company, contact_list, moa_list, course_list }) {
         }
     };
 
+    const handleDelete = (id) => {
+        if (confirm('Are you sure you want to delete this contact person?')) {
+            destroy(route('compcourse.destroy', id));
+        }
+    };
+
     return (
         <AuthenticatedLayout>
             <div className="py-12">
-                <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
+                <div className="w-11/12 mx-auto grid grid-cols-3">
                     <div className="col-span-1">
                         <CompanyDetails company={company} />
                         {activeTab === 'contacts' && (
@@ -149,6 +135,11 @@ export default function View({ company, contact_list, moa_list, course_list }) {
                                 moa_list={moa_list}
                                 handleEdit={handleEdit}
                                 handleDelete={handleDelete}
+                            />
+                        )}
+                        {activeTab === "interns" && (
+                            <InternList
+                                intern_list={intern_list}
                             />
                         )}
                     </div>
