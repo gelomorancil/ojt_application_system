@@ -14,26 +14,31 @@ class StudentFileController extends Controller
         $request->validate([
             'Student_Num' => 'required',
             'category' => 'required',
-            'file_name' => 'required|file|mimes:pdf,jpeg,jpg,png',
+            'files' => 'required|array',
         ]);
-
-        $fileName = null;
-
-        if ($request->hasFile('file_name')) {
-            $extension = $request->file('file_name')->getClientOriginalExtension();
-            $fileName = Str::random(32) . '.' . $extension;
-            $path = $request->file('file_name')->storeAs('public/uploads', $fileName);
+    
+        $uploadedFiles = [];
+    
+        foreach ($request->file('files') as $docType => $file) {
+            if ($file && $file->isValid()) {
+                $extension = $file->getClientOriginalExtension();
+                $fileName = Str::random(32) . '.' . $extension;
+                $file->storeAs('public/uploads', $fileName);
+    
+                $record = StudentFile::create([
+                    'Student_Num' => $request->Student_Num,
+                    'category' => $request->category,
+                    'file_name' => $fileName,
+                ]);
+    
+                $uploadedFiles[] = $record;
+            }
         }
-
-        $record = StudentFile::create([
-            'Student_Num' => $request->Student_Num,
-            'category' => $request->category,
-            'file_name' => $fileName,
-        ]);
-
+    
         return response()->json([
-            'message' => 'File uploaded successfully!',
-            'file' => $record,
+            'message' => 'Files uploaded successfully!',
+            'files' => $uploadedFiles,
         ]);
     }
+    
 }
