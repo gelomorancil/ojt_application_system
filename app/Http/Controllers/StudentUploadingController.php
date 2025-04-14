@@ -106,7 +106,7 @@ class StudentUploadingController extends Controller
             return redirect()->back()->with('error', 'Upload failed: ' . $e->getMessage());
         }
     }
-
+    
     public function getCourses(Request $request)
     {
         $college = $request->input('college');

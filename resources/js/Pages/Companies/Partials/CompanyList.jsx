@@ -79,9 +79,7 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                     {sortedCompanies.map((items, index) => {
                         const fullAddress = [
                             items.Street_Address,
-                            items.Barangay,
                             items.City,
-                            items.Province
                         ]
                             .filter(Boolean)
                             .join(', ');
