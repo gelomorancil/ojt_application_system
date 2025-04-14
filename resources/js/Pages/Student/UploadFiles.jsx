@@ -24,7 +24,7 @@ export default function UploadFiles({ id }) {
       "INTERNSHIP PORTFOLIO": null
     }
   });
-  
+
   const [processing, setProcessing] = useState({
     "Pre-Deployment": false,
     "Deployment": false,
@@ -43,29 +43,24 @@ export default function UploadFiles({ id }) {
 
   const onSubmit = (category, e) => {
     e.preventDefault();
-    
-    // Update processing state for this category
+
     setProcessing(prev => ({
       ...prev,
       [category]: true
     }));
-    
-    // Create FormData
+
     const formData = new FormData();
     formData.append("Student_Num", id);
     formData.append("category", category);
-    
-    // Append only files from the selected category
+
     Object.entries(files[category]).forEach(([docType, file]) => {
       if (file) {
         formData.append(`files[${category}][${docType}]`, file);
       }
     });
-    
-    // Mock form submission since we don't have backend
+
     console.log(`Submitting files for ${category}:`, formData);
-    
-    // Simulate API call
+
     setTimeout(() => {
       setProcessing(prev => ({
         ...prev,
@@ -76,7 +71,7 @@ export default function UploadFiles({ id }) {
   };
 
   const categories = Object.keys(files);
-  
+
   const renderFileList = (category) => {
     return (
       <div className="ml-4 space-y-2">
@@ -84,7 +79,7 @@ export default function UploadFiles({ id }) {
           <div key={docType} className="flex items-center justify-between border-b border-gray-200 py-1">
             <div className="flex-1">
               <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
-                <span className={`mr-2 ${file ? 'text-green-600' : 'text-gray-400'}`}>
+                <span className={`mr-2 ${file ? 'text-green-600' : 'text-red-500'}`}>
                   {file ? '✓' : '○'}
                 </span>
                 {docType}
@@ -99,7 +94,7 @@ export default function UploadFiles({ id }) {
               {file && (
                 <div className="flex items-center">
                   <span className="truncate max-w-xs">{file.name}</span>
-                  <button 
+                  <button
                     type="button"
                     className="ml-2 text-red-500 hover:text-red-700"
                     onClick={() => handleFileChange(category, docType, null)}
@@ -115,12 +110,10 @@ export default function UploadFiles({ id }) {
     );
   };
 
-  // Function to count uploaded files per category
   const getUploadedCount = (category) => {
     return Object.values(files[category]).filter(Boolean).length;
   };
 
-  // Function to get total files per category
   const getTotalCount = (category) => {
     return Object.keys(files[category]).length;
   };
@@ -128,8 +121,20 @@ export default function UploadFiles({ id }) {
   return (
     <div className="max-w-full mx-auto space-y-4">
       <div className="space-y-6">
-        {/* Category Selection */}
         <div className="bg-white border border-gray-200 rounded-md p-4 shadow-sm">
+          {/* Legend */}
+          <div className="flex items-center space-x-6 text-sm text-gray-700 mb-4">
+            <div className="flex items-center space-x-1">
+              <span className="text-green-600">✓</span>
+              <span>Verified</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <span className="text-red-500">○</span>
+              <span>Pending</span>
+            </div>
+          </div>
+
+          {/* Category Buttons */}
           <div className="flex mb-4 border-b pb-2">
             {categories.map((category) => (
               <button
@@ -147,7 +152,7 @@ export default function UploadFiles({ id }) {
             ))}
           </div>
 
-          {/* Render the selected category section */}
+          {/* Selected Category File List */}
           <div className="bg-white rounded-md p-2 space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-semibold text-uslsgreen text-lg">{selectedCategory}</h3>
@@ -155,10 +160,10 @@ export default function UploadFiles({ id }) {
                 {getUploadedCount(selectedCategory)}/{getTotalCount(selectedCategory)} files uploaded
               </div>
             </div>
-            
+
             {renderFileList(selectedCategory)}
-            
-            {/* Submit button for the current category */}
+
+            {/* Submit */}
             <div className="text-right mt-4 pt-2 border-t border-gray-200">
               <form onSubmit={(e) => onSubmit(selectedCategory, e)}>
                 <button
@@ -166,15 +171,15 @@ export default function UploadFiles({ id }) {
                   className="bg-uslsgreen text-white px-4 py-2 rounded hover:bg-green-800 disabled:bg-gray-400"
                   disabled={processing[selectedCategory] || getUploadedCount(selectedCategory) === 0}
                 >
-                  {processing[selectedCategory] 
-                    ? `Submitting ${selectedCategory}...` 
+                  {processing[selectedCategory]
+                    ? `Submitting ${selectedCategory}...`
                     : `Submit ${selectedCategory} Files`}
                 </button>
               </form>
             </div>
           </div>
         </div>
-        </div>
       </div>
+    </div>
   );
 }
