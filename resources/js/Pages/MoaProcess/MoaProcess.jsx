@@ -83,11 +83,12 @@ export default function MoaProcess() {
         return {
             ...moa,
             daysLeft,
-            isExpiringSoon: daysLeft <= 7 && daysLeft > 0,
+            isExpiringSoon: daysLeft <= 60 && daysLeft > 0,  // changed from 7 to 60
             isExpired: daysLeft < 0,
             isExpiringToday: daysLeft === 0,
         };
     });
+
 
     const [filter, setFilter] = useState('');
 
