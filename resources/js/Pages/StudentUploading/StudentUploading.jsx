@@ -206,9 +206,9 @@ export default function StudentUploading({ colleges, flash }) {
 
   return (
     <AuthenticatedLayout>
-      <Head title="Student Uploading" />
+      <Head title="Class List" />
       <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg">
-        <h2 className="text-xl font-semibold mb-4">Student Uploading</h2>
+        <h2 className="text-xl font-semibold mb-4">Class List</h2>
         
         {/* Flash Messages */}
         {flash && flash.success && (

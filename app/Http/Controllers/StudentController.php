@@ -30,21 +30,42 @@ class StudentController extends Controller {
             'tbl_course.Course as Course_Name',
             'tbl_ojt_hrs.Hrs as Ojt_Hours',
             'tbl_ojt_hrs.Sem as Semester',
-            // 'tbl_ojt_hrs.Year as School_Year' // Comment this out if not needed
+            'tbl_company.City',
+            'tbl_company.Province'
         )
         ->leftJoin('tbl_course', 'tbl_student.Course_ID', '=', 'tbl_course.id')
         ->leftJoin('tbl_ojt_hrs', 'tbl_student.Course_ID', '=', 'tbl_ojt_hrs.Course_ID')
+        ->leftJoin('tbl_student_comp', 'tbl_student.id', '=', 'tbl_student_comp.Student_ID')
+        ->leftJoin('tbl_company', 'tbl_student_comp.Comp_ID', '=', 'tbl_company.id')
         ->get();
 
         $courses = Course::select('id', 'College', 'Course')->get();
         $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
         
+        // Get all provinces and cities from the company table
+        $provinces = Company::distinct('Province')->whereNotNull('Province')->pluck('Province')->toArray();
+        
+        // Organize cities by province
+        $citiesByProvince = [];
+        $allCities = Company::whereNotNull('Province')->whereNotNull('City')
+            ->select('Province', 'City')
+            ->get();
+        
+        foreach ($allCities as $record) {
+            if (!isset($citiesByProvince[$record->Province])) {
+                $citiesByProvince[$record->Province] = [];
+            }
+            if (!in_array($record->City, $citiesByProvince[$record->Province])) {
+                $citiesByProvince[$record->Province][] = $record->City;
+            }
+        }
 
         return Inertia::render('Student/Student', [
             'students' => $students,
             'courses' => $courses,
             'colleges' => $colleges,
-            // 'company_list' => $company_list,
+            'provinces' => $provinces,
+            'citiesByProvince' => $citiesByProvince,
         ]);
     }
 
@@ -270,45 +291,61 @@ class StudentController extends Controller {
     }
 
     public function export(Request $request)
-{
-    $college = $request->input('college');
-    $course = $request->input('course');
-    $year = $request->input('year');
-    
-    $query = Student::select(
-        'tbl_student.id',
-        'tbl_student.Student_Num',
-        'tbl_student.Fname',
-        'tbl_student.Lname',
-        'tbl_student.Year',
-        'tbl_course.College as College_Name',
-        'tbl_course.Course as Course_Name',
-        'tbl_ojt_hrs.Hrs as Ojt_Hours',
-        'tbl_ojt_hrs.Sem as Semester'
-    )
-    ->leftJoin('tbl_course', 'tbl_student.Course_ID', '=', 'tbl_course.id')
-    ->leftJoin('tbl_ojt_hrs', 'tbl_student.Course_ID', '=', 'tbl_ojt_hrs.Course_ID');
-    
-    if ($college) {
-        $query->where('tbl_course.College', $college);
+    {
+        $college = $request->input('college');
+        $course = $request->input('course');
+        $year = $request->input('year');
+        $province = $request->input('province');
+        $city = $request->input('city');
+        
+        $query = Student::select(
+            'tbl_student.id',
+            'tbl_student.Student_Num',
+            'tbl_student.Fname',
+            'tbl_student.Lname',
+            'tbl_student.Year',
+            'tbl_course.College as College_Name',
+            'tbl_course.Course as Course_Name',
+            'tbl_ojt_hrs.Hrs as Ojt_Hours',
+            'tbl_ojt_hrs.Sem as Semester',
+            'tbl_company.City',
+            'tbl_company.Province'
+        )
+        ->leftJoin('tbl_course', 'tbl_student.Course_ID', '=', 'tbl_course.id')
+        ->leftJoin('tbl_ojt_hrs', 'tbl_student.Course_ID', '=', 'tbl_ojt_hrs.Course_ID')
+        ->leftJoin('tbl_student_comp', 'tbl_student.id', '=', 'tbl_student_comp.Student_ID')
+        ->leftJoin('tbl_company', 'tbl_student_comp.Comp_ID', '=', 'tbl_company.id');
+        
+        if ($college) {
+            $query->where('tbl_course.College', $college);
+        }
+        
+        if ($course) {
+            $query->where('tbl_course.Course', $course);
+        }
+        
+        if ($year) {
+            $query->where('tbl_student.Year', $year);
+        }
+        
+        if ($province) {
+            $query->where('tbl_company.Province', $province);
+        }
+        
+        if ($city) {
+            $query->where('tbl_company.City', $city);
+        }
+        
+        $students = $query->get();
+        
+        $filename = 'students';
+        if ($college) $filename .= '_' . $college;
+        if ($course) $filename .= '_' . $course;
+        if ($year) $filename .= '_' . $year;
+        if ($province) $filename .= '_' . $province;
+        if ($city) $filename .= '_' . $city;
+        $filename .= '.xlsx';
+        
+        return Excel::download(new StudentsExport($students), $filename);
     }
-    
-    if ($course) {
-        $query->where('tbl_course.Course', $course);
-    }
-    
-    if ($year) {
-        $query->where('tbl_student.Year', $year);
-    }
-    
-    $students = $query->get();
-    
-    $filename = 'students';
-    if ($college) $filename .= '_' . $college;
-    if ($course) $filename .= '_' . $course;
-    if ($year) $filename .= '_' . $year;
-    $filename .= '.xlsx';
-    
-    return Excel::download(new StudentsExport($students), $filename);
-}
 }

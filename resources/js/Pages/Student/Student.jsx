@@ -3,9 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import axios from "axios";
 
-export default function Student({ students = [], courses = [], colleges = [], availableYears = [], selectedYear }) {
+export default function Student({ students = [], courses = [], colleges = [], provinces = [], cities = [], citiesByProvince = {} }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editingStudentId, setEditingStudentId] = useState(null);
+    const [selectedYear, setSelectedYear] = useState('');
     const [year, setYear] = useState(selectedYear || "");
     const [selectedStudents, setSelectedStudents] = useState([]);
 
@@ -24,13 +25,52 @@ export default function Student({ students = [], courses = [], colleges = [], av
     const [selectedCourseFilter, setSelectedCourseFilter] = useState("");
     const [showCourseFilter, setShowCourseFilter] = useState(false);
     const [selectedCollege, setSelectedCollege] = useState("");
-    // New state for year filter
+
     const [selectedYearFilter, setSelectedYearFilter] = useState("");
     const [showYearFilter, setShowYearFilter] = useState(false);
 
     const currentYear = new Date().getFullYear();
     const schoolYears = [`${currentYear - 1}-${currentYear}`, `${currentYear}-${currentYear + 1}`, `${currentYear + 1}-${currentYear + 2}`];
     
+    const [exportCity, setExportCity] = useState("");
+    const [exportProvince, setExportProvince] = useState("");
+
+    // Filter cities based on selected province
+    const filteredCities = useMemo(() => {
+        if (!exportProvince) return cities;
+        return citiesByProvince[exportProvince] || [];
+    }, [exportProvince, citiesByProvince, cities]);
+    
+    // Reset city when province changes
+    useEffect(() => {
+        setExportCity("");
+    }, [exportProvince]);
+
+    // Get unique cities and provinces from students data
+    const uniqueCities = useMemo(() => {
+        const citiesSet = new Set();
+        
+        students.forEach(student => {
+            if (student.City) {
+                citiesSet.add(student.City);
+            }
+        });
+        
+        return Array.from(citiesSet).sort();
+    }, [students]);
+
+    const uniqueProvinces = useMemo(() => {
+        const provincesSet = new Set();
+        
+        students.forEach(student => {
+            if (student.Province) {
+                provincesSet.add(student.Province);
+            }
+        });
+        
+        return Array.from(provincesSet).sort();
+    }, [students]);
+
     // Get unique years from the students array for filtering
     const uniqueYears = useMemo(() => {
         const yearsSet = new Set();
@@ -71,6 +111,8 @@ export default function Student({ students = [], courses = [], colleges = [], av
             if (exportCollege) formData.append('college', exportCollege);
             if (exportCourse) formData.append('course', exportCourse);
             if (exportYear) formData.append('year', exportYear);
+            if (exportCity) formData.append('city', exportCity); // Add city
+            if (exportProvince) formData.append('province', exportProvince); // Add province
             
             // Send a POST request to the export endpoint
             const response = await axios.post('/student/export', formData, {
@@ -87,6 +129,8 @@ export default function Student({ students = [], courses = [], colleges = [], av
             if (exportCollege) filename += `_${exportCollege}`;
             if (exportCourse) filename += `_${exportCourse}`;
             if (exportYear) filename += `_${exportYear}`;
+            if (exportCity) filename += `_${exportCity}`;
+            if (exportProvince) filename += `_${exportProvince}`;
             filename += '.xlsx';
             
             link.setAttribute('download', filename);
@@ -102,6 +146,8 @@ export default function Student({ students = [], courses = [], colleges = [], av
             setExportCollege("");
             setExportCourse("");
             setExportYear("");
+            setExportCity(""); // Reset city
+            setExportProvince(""); // Reset province
         } catch (error) {
             console.error('Export error:', error);
             alert('Error exporting student data');
@@ -771,96 +817,131 @@ export default function Student({ students = [], courses = [], colleges = [], av
                     </div>
                 </div>
             </div>
+
         {/* Export Modal */}
         {showExportModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
-                        <h3 className="text-xl font-semibold mb-4">Export Students to Excel</h3>
-                        <form onSubmit={handleExport}>
-                            {/* College Selection */}
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">College (Optional)</label>
-                                <select
-                                    className="w-full border rounded-lg p-2"
-                                    value={exportCollege}
-                                    onChange={(e) => setExportCollege(e.target.value)}
-                                >
-                                    <option value="">All Colleges</option>
-                                    {colleges.map((college) => (
-                                        <option key={college} value={college}>
-                                            {college}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            
-                            {/* Course Selection */}
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Course (Optional)</label>
-                                <select
-                                    className="w-full border rounded-lg p-2"
-                                    value={exportCourse}
-                                    onChange={(e) => setExportCourse(e.target.value)}
-                                    disabled={!exportCollege}
-                                >
-                                    <option value="">All Courses</option>
-                                    {exportFilteredCourses.map((course, index) => (
-                                        <option key={`export-course-${index}`} value={course.Course}>
-                                            {course.Course}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            
-                            {/* School Year Selection */}
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">School Year (Optional)</label>
-                                <select
-                                    className="w-full border rounded-lg p-2"
-                                    value={exportYear}
-                                    onChange={(e) => setExportYear(e.target.value)}
-                                >
-                                    <option value="">All Years</option>
-                                    {schoolYears.map((year, index) => (
-                                        <option key={`export-year-${index}`} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            
-                            {/* Buttons */}
-                            <div className="flex justify-end gap-2 mt-6">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowExportModal(false)}
-                                    className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
-                                    disabled={exportLoading}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="bg-green-500 text-white px-4 py-2 rounded flex items-center"
-                                    disabled={exportLoading}
-                                >
-                                    {exportLoading ? (
-                                        <>
-                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Exporting...
-                                        </>
-                                    ) : (
-                                        "Export"
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
+                    <h3 className="text-xl font-semibold mb-4">Export Students to Excel</h3>
+                    <form onSubmit={handleExport}>
+                        {/* College Selection */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">College (Optional)</label>
+                            <select
+                                className="w-full border rounded-lg p-2"
+                                value={exportCollege}
+                                onChange={(e) => setExportCollege(e.target.value)}
+                            >
+                                <option value="">All Colleges</option>
+                                {colleges.map((college) => (
+                                    <option key={college} value={college}>
+                                        {college}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        {/* Course Selection */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Course (Optional)</label>
+                            <select
+                                className="w-full border rounded-lg p-2"
+                                value={exportCourse}
+                                onChange={(e) => setExportCourse(e.target.value)}
+                                disabled={!exportCollege}
+                            >
+                                <option value="">All Courses</option>
+                                {exportFilteredCourses.map((course, index) => (
+                                    <option key={`export-course-${index}`} value={course.Course}>
+                                        {course.Course}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        {/* School Year Selection */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">School Year (Optional)</label>
+                            <select
+                                className="w-full border rounded-lg p-2"
+                                value={exportYear}
+                                onChange={(e) => setExportYear(e.target.value)}
+                            >
+                                <option value="">All Years</option>
+                                {schoolYears.map((year, index) => (
+                                    <option key={`export-year-${index}`} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        {/* Province Selection */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Province (Optional)</label>
+                            <select
+                                className="w-full border rounded-lg p-2"
+                                value={exportProvince}
+                                onChange={(e) => setExportProvince(e.target.value)}
+                            >
+                                <option value="">All Provinces</option>
+                                {provinces.map((province, index) => (
+                                    <option key={`export-province-${index}`} value={province}>
+                                        {province}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">City (Optional)</label>
+                            <select
+                                className="w-full border rounded-lg p-2"
+                                value={exportCity}
+                                onChange={(e) => setExportCity(e.target.value)}
+                                disabled={!exportProvince}
+                            >
+                                <option value="">All Cities</option>
+                                {filteredCities.map((city, index) => (
+                                    <option key={`export-city-${index}`} value={city}>
+                                        {city}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        {/* Buttons */}
+                        <div className="flex justify-end gap-2 mt-6">
+                            <button
+                                type="button"
+                                onClick={() => setShowExportModal(false)}
+                                className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
+                                disabled={exportLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className="bg-green-500 text-white px-4 py-2 rounded flex items-center"
+                                disabled={exportLoading}
+                            >
+                                {exportLoading ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Exporting...
+                                    </>
+                                ) : (
+                                    "Export"
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            )}
+            </div>
+        )}
         </AuthenticatedLayout>
     );
 }
