@@ -1,9 +1,16 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
-import { usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { FaTachometerAlt, FaUserGraduate, FaFileContract, FaBook, FaSearch, FaRegBuilding, FaBars } from 'react-icons/fa';
+import ApplicationLogo from "@/Components/ApplicationLogo";
+import Dropdown from "@/Components/Dropdown";
+import NavLink from "@/Components/NavLink";
+import { usePage } from "@inertiajs/react";
+import { useState } from "react";
+import {
+    FaTachometerAlt,
+    FaUserGraduate,
+    FaFileContract,
+    FaBook,
+    FaRegBuilding,
+    FaBars,
+} from "react-icons/fa";
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -35,17 +42,13 @@ export default function AuthenticatedLayout({ header, children }) {
                         {/* <FaUserGraduate className="w-5 h-5" /> */}
                         <span>Student Management</span>
                     </NavLink>
-                    <NavLink href={route('moa')} active={route().current('moa')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaFileContract className="w-5 h-5" /> */}
-                        <span>MOA</span>
-                    </NavLink>
                     <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaBook className="w-5 h-5" /> */}
                         <span>Program</span>
                     </NavLink>
                     <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaFileContract className="w-5 h-5" /> */}
-                        <span>MOA Processing</span>
+                        <span>MOA Status</span>
                     </NavLink>
                     <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaFileContract className="w-5 h-5" /> */}
@@ -54,7 +57,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 </div>
 
-                {/* Right Side - Search Bar & User Dropdown */}
+                {/* Right - User Dropdown */}
                 <div className="flex items-center gap-6">
                     {/* Search Bar */}
                     <div className="relative flex items-center">
@@ -69,26 +72,36 @@ export default function AuthenticatedLayout({ header, children }) {
                     {/* User Dropdown */}
                     <Dropdown>
                         <Dropdown.Trigger>
-                            <span className="inline-flex rounded-md">
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center rounded-md bg-white px-3 py-2 text-lg font-medium leading-4 text-gray-900 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                            <button className="flex items-center bg-white px-3 py-2 text-lg font-medium text-black rounded-md hover:text-gray-700 transition">
+                                {user.name}
+                                <svg
+                                    className="ml-2 h-5 w-5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
                                 >
-                                    {user.name}
-                                    <svg className="ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                            clipRule="evenodd"
-                                        />
-                                    </svg>
-                                </button>
-                            </span>
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            </button>
                         </Dropdown.Trigger>
 
-                        <Dropdown.Content>
-                            <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                            <Dropdown.Link href={route('logout')} method="post" as="button">
+                        <Dropdown.Content className="bg-white shadow-lg border border-gray-300">
+                            <Dropdown.Link
+                                href={route("profile.edit")}
+                                className="text-black hover:bg-gray-100"
+                            >
+                                Profile
+                            </Dropdown.Link>
+                            <Dropdown.Link
+                                href={route("logout")}
+                                method="post"
+                                as="button"
+                                className="text-black hover:bg-gray-100"
+                            >
                                 Log Out
                             </Dropdown.Link>
                         </Dropdown.Content>
@@ -99,7 +112,9 @@ export default function AuthenticatedLayout({ header, children }) {
             {/* Page Header */}
             {header && (
                 <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{header}</div>
+                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                        {header}
+                    </div>
                 </header>
             )}
 

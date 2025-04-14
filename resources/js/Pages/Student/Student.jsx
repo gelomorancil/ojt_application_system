@@ -74,16 +74,16 @@ export default function Student({ students = [], courses = [], colleges = [], pr
     // Get unique years from the students array for filtering
     const uniqueYears = useMemo(() => {
         const yearsSet = new Set();
-        
+
         students.forEach(student => {
             if (student.Year || student.School_Year) {
                 yearsSet.add(student.Year || student.School_Year);
             }
         });
-        
+
         // Add the school years to the set as well
         schoolYears.forEach(year => yearsSet.add(year));
-        
+
         return Array.from(yearsSet).sort();
     }, [students, schoolYears]);
 
@@ -93,18 +93,18 @@ export default function Student({ students = [], courses = [], colleges = [], pr
     const [exportCourse, setExportCourse] = useState("");
     const [exportYear, setExportYear] = useState("");
     const [exportLoading, setExportLoading] = useState(false);
-    
+
     // Filter courses for the export dropdown
     const exportFilteredCourses = useMemo(() => {
         if (!exportCollege) return [];
         return courses.filter(course => course.College === exportCollege);
     }, [exportCollege, courses]);
-    
+
     // Handle export form submission
     const handleExport = async (e) => {
         e.preventDefault();
         setExportLoading(true);
-        
+
         try {
             // Create a form data object
             const formData = new FormData();
@@ -118,12 +118,12 @@ export default function Student({ students = [], courses = [], colleges = [], pr
             const response = await axios.post('/student/export', formData, {
                 responseType: 'blob', // Important for file download
             });
-            
+
             // Create a download link and click it
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            
+
             // Generate a filename based on the selected filters
             let filename = 'students';
             if (exportCollege) filename += `_${exportCollege}`;
@@ -132,15 +132,15 @@ export default function Student({ students = [], courses = [], colleges = [], pr
             if (exportCity) filename += `_${exportCity}`;
             if (exportProvince) filename += `_${exportProvince}`;
             filename += '.xlsx';
-            
+
             link.setAttribute('download', filename);
             document.body.appendChild(link);
             link.click();
-            
+
             // Clean up
             window.URL.revokeObjectURL(url);
             document.body.removeChild(link);
-            
+
             // Close the modal
             setShowExportModal(false);
             setExportCollege("");
@@ -155,7 +155,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
             setExportLoading(false);
         }
     };
-    
+
     // Reset export form when college changes
     useEffect(() => {
         setExportCourse("");
@@ -175,7 +175,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                 Sem: studentToEdit.Sem || "",
                 Year: studentToEdit.Year || studentToEdit.School_Year || "",
             });
-            
+
             // Then set the course in a separate update to ensure college filtering has occurred
             setTimeout(() => {
                 setData(prevData => ({
@@ -183,7 +183,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                     Course: studentToEdit.Course_Name || ""
                 }));
             }, 0);
-            
+
             setIsEditing(true);
             setEditingStudentId(studentId);
         }
@@ -192,7 +192,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
     // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
-    
+
         if (!data.Student_Num || !data.Fname || !data.Lname || !data.College || !data.Course) {
             alert("Please fill in all required fields.");
             return;
@@ -212,7 +212,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
             });
         } else {
             // Check for duplicates
-            const isDuplicate = students.some(student => 
+            const isDuplicate = students.some(student =>
                 student.Student_Num === data.Student_Num
             );
 
@@ -253,22 +253,22 @@ export default function Student({ students = [], courses = [], colleges = [], pr
 
     const filteredCourses = useMemo(() => {
         if (!data.College) return [];
-    
+
         // Get courses for the selected college
         const collegeCourses = courses.filter(course => course.College === data.College);
-    
+
         // Ensure the pre-selected course (for editing) is included
         if (isEditing && editingStudentId) {
             const studentToEdit = students.find(student => student.id === editingStudentId);
-            if (studentToEdit && studentToEdit.Course_Name && 
+            if (studentToEdit && studentToEdit.Course_Name &&
                 !collegeCourses.some(course => course.Course === studentToEdit.Course_Name)) {
-                collegeCourses.push({ 
-                    Course: studentToEdit.Course_Name, 
-                    College: studentToEdit.College_Name 
+                collegeCourses.push({
+                    Course: studentToEdit.Course_Name,
+                    College: studentToEdit.College_Name
                 });
             }
         }
-    
+
         // Remove duplicates
         const uniqueCoursesMap = new Map();
         collegeCourses.forEach(course => {
@@ -276,9 +276,9 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                 uniqueCoursesMap.set(course.Course, course);
             }
         });
-    
+
         return Array.from(uniqueCoursesMap.values());
-    }, [data.College, courses, isEditing, editingStudentId, students]);   
+    }, [data.College, courses, isEditing, editingStudentId, students]);
 
     // Filter courses for dropdown based on selected college (for table filtering)
     const collegeFilteredCourses = useMemo(() => {
@@ -317,7 +317,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
             const selectedCourse = courses.find(
                 course => course.College === data.College && course.Course === data.Course
             );
-            
+
             // Set the hours based on the selected course
             if (selectedCourse && selectedCourse.Hours) {
                 setData('Hrs', selectedCourse.Hours);
@@ -332,11 +332,11 @@ export default function Student({ students = [], courses = [], colleges = [], pr
 
     const handleSelection = (name, value) => {
         setData(name, value);
-    
+
         if (name === "Course") {
             // Find the selected course
             const selectedCourse = courses.find(c => c.Course === value);
-    
+
             if (selectedCourse) {
                 // Update OJT Hours only, not affecting Year
                 setData("Hrs", selectedCourse.Hours || "");
@@ -344,18 +344,18 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                 setData("Hrs", "");
             }
         }
-    };    
+    };
 
     // Filter students based on selected college, search, course filter, and year filter
     const filteredStudents = useMemo(() => {
         // Only show students when a college is selected
         if (!selectedCollege) return [];
-    
+
         // Filter students by selected college
         let result = students.filter(student =>
             student.College_Name === selectedCollege
         );
-    
+
         // Apply search filter
         if (searchTerm) {
             const lowerSearchTerm = searchTerm.toLowerCase();
@@ -365,32 +365,32 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                 student.Lname.toLowerCase().includes(lowerSearchTerm)
             );
         }
-    
+
         // Apply course filter
         if (selectedCourseFilter) {
             result = result.filter(student =>
                 student.Course_Name === selectedCourseFilter
             );
         }
-        
+
         // Apply year filter
         if (selectedYearFilter) {
             result = result.filter(student =>
                 (student.Year || student.School_Year) === selectedYearFilter
             );
         }
-        
+
         // Deduplicate students by Student_Num
         const uniqueStudents = [];
         const seenStudentNums = new Set();
-        
+
         result.forEach(student => {
             if (!seenStudentNums.has(student.Student_Num)) {
                 seenStudentNums.add(student.Student_Num);
                 uniqueStudents.push(student);
             }
         });
-        
+
         return uniqueStudents;
     }, [students, selectedCollege, searchTerm, selectedCourseFilter, selectedYearFilter]);
 
@@ -409,13 +409,13 @@ export default function Student({ students = [], courses = [], colleges = [], pr
     };
 
     const toggleStudentSelection = (studentId) => {
-        setSelectedStudents(prev => 
-            prev.includes(studentId) 
-                ? prev.filter(id => id !== studentId) 
+        setSelectedStudents(prev =>
+            prev.includes(studentId)
+                ? prev.filter(id => id !== studentId)
                 : [...prev, studentId]
         );
     };
-    
+
     const toggleAllStudents = () => {
         if (selectedStudents.length === sortedStudents.length) {
             setSelectedStudents([]);
@@ -423,19 +423,19 @@ export default function Student({ students = [], courses = [], colleges = [], pr
             setSelectedStudents(sortedStudents.map(student => student.id));
         }
     };
-    
+
     const handleBatchDelete = async () => {
         if (selectedStudents.length === 0) {
             alert("Please select at least one student to delete.");
             return;
         }
-        
+
         if (confirm(`Are you sure you want to delete ${selectedStudents.length} selected student(s)?`)) {
             try {
-                const response = await axios.post('/student/batch-delete', { 
-                    studentIds: selectedStudents 
+                const response = await axios.post('/student/batch-delete', {
+                    studentIds: selectedStudents
                 });
-                
+
                 if (response.data.success) {
                     alert(response.data.message);
                     window.location.reload();
@@ -476,7 +476,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
     };
 
     const sortedStudents = useMemo(() => {
-        return [...filteredStudents].sort((a, b) => 
+        return [...filteredStudents].sort((a, b) =>
             a.Lname.localeCompare(b.Lname)
         );
     }, [filteredStudents]);
@@ -498,7 +498,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                             <form onSubmit={handleSubmit}>
                             {[
                                 { label: "Student Number", name: "Student_Num", type: "text" },
-                                { label: "First Name", name: "Fname", type: "text" },                                
+                                { label: "First Name", name: "Fname", type: "text" },
                                 { label: "Last Name", name: "Lname", type: "text" },
                                 { label: "College", name: "College", type: "select", options: colleges },
                                 { label: "Course", name: "Course", type: "select", options: filteredCourses.map(c => c.Course) },
@@ -513,8 +513,8 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                             onChange={(e) => setData(name, e.target.value)}
                                         >
                                             <option value="">Select {label}</option>
-                                        
-                                            { 
+
+                                            {
                                                 name === "Course"
                                                 ? filteredCourses.map((course, index) => (
                                                     <option key={`course-${index}`} value={course.Course}>
@@ -528,7 +528,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                                     </option>
                                                 ))
                                             }
-                                        </select>                                                                   
+                                        </select>
                                     ) : (
                                         <input
                                             type={type}
@@ -550,7 +550,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                 >
                                     {isEditing ? "Update Student" : "Add Student"}
                                 </button>
-                                
+
                                 {isEditing && (
                                     <button
                                         type="button"
@@ -589,11 +589,11 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                     onClick={() => setShowExportModal(true)}
                                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
                                     >
-                                    <svg 
-                                        className="h-5 w-5 mr-2" 
-                                        fill="none" 
-                                        stroke="currentColor" 
-                                        viewBox="0 0 24 24" 
+                                    <svg
+                                        className="h-5 w-5 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
                                         xmlns="http://www.w3.org/2000/svg"
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -641,8 +641,8 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                         Filters
                                         {(selectedCourseFilter || selectedYearFilter) && (
                                         <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded">
-                                            {selectedCourseFilter && selectedYearFilter 
-                                            ? `${selectedCourseFilter}, ${selectedYearFilter}` 
+                                            {selectedCourseFilter && selectedYearFilter
+                                            ? `${selectedCourseFilter}, ${selectedYearFilter}`
                                             : selectedCourseFilter || selectedYearFilter}
                                         </span>
                                         )}
@@ -655,7 +655,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                             <div className="mb-3">
                                             <h3 className="text-sm font-medium text-gray-700 mb-2">Course</h3>
                                             <div className="space-y-1 max-h-32 overflow-y-auto">
-                                                <div 
+                                                <div
                                                 className={`px-2 py-1 rounded cursor-pointer ${selectedCourseFilter === '' ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}
                                                 onClick={() => setSelectedCourseFilter('')}
                                                 >
@@ -672,12 +672,12 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                                 ))}
                                             </div>
                                             </div>
-                                            
+
                                             {/* Year Filter Section */}
                                             <div className="mb-3">
                                             <h3 className="text-sm font-medium text-gray-700 mb-2">Year</h3>
                                             <div className="space-y-1">
-                                                <div 
+                                                <div
                                                 className={`px-2 py-1 rounded cursor-pointer ${selectedYearFilter === '' ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}
                                                 onClick={() => setSelectedYearFilter('')}
                                                 >
@@ -694,7 +694,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                                 ))}
                                             </div>
                                             </div>
-                                            
+
                                             {/* Apply & Clear Buttons */}
                                             <div className="flex justify-end pt-2 border-t">
                                             <button
@@ -724,11 +724,11 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                         onClick={handleBatchDelete}
                                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center"
                                     >
-                                        <svg 
-                                        className="h-5 w-5 mr-2" 
-                                        fill="none" 
-                                        stroke="currentColor" 
-                                        viewBox="0 0 24 24" 
+                                        <svg
+                                        className="h-5 w-5 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
                                         xmlns="http://www.w3.org/2000/svg"
                                         >
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -744,7 +744,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-4 py-2 text-left">
-                                                <input 
+                                                <input
                                                     type="checkbox"
                                                     checked={selectedStudents.length === sortedStudents.length && sortedStudents.length > 0}
                                                     onChange={toggleAllStudents}
@@ -768,7 +768,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                             sortedStudents.map((student, index) => (
                                                 <tr key={student.id} className="border-t">
                                                     <td className="px-4 py-2">
-                                                        <input 
+                                                        <input
                                                             type="checkbox"
                                                             checked={selectedStudents.includes(student.id)}
                                                             onChange={() => toggleStudentSelection(student.id)}
@@ -785,7 +785,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                                     <td className="px-4 py-2">{student.College_Name || "N/A"}</td>
                                                     <td className="px-4 py-2">{student.Course_Name || "N/A"}</td>
                                                     <td className="px-4 py-2">{student.Ojt_Hours || "N/A"}</td>
-                                                    <td className="px-4 py-2">{student.Semester || "N/A"}</td>                                             
+                                                    <td className="px-4 py-2">{student.Semester || "N/A"}</td>
                                                     <td className="px-4 py-2">{student.Year || student.School_Year || "N/A"}</td>
                                                     <td className="px-4 py-2">
                                                         <button onClick={() => editStudent(student.id)} className="text-blue-600 mr-4">

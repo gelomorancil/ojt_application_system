@@ -6,13 +6,12 @@ import CompanyList from './Partials/CompanyList';
 
 export default function Index({ company_list }) {
     console.log(company_list);
-    
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({
         Comp_name: '',
         Address: '',
         Courses: '',
     });
-    
+
     const [editingCompany, setEditingCompany] = useState(null);
 
     const handleSubmit = (e) => {
@@ -31,7 +30,7 @@ export default function Index({ company_list }) {
             Address: company.Address || '',
         });
     };
-    
+
     const handleDelete = (id) => {
         if (confirm('Are you sure you want to delete this company?')) {
             destroy(route('companies.destroy', id));
@@ -49,20 +48,20 @@ export default function Index({ company_list }) {
             <div className="py-12">
                 <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
                     <div className="col-span-1">
-                        <CompanyCreate 
-                            data={data} 
-                            setData={setData} 
-                            handleSubmit={handleSubmit} 
-                            editingCompany={editingCompany} 
-                            resetForm={resetForm} 
-                            errors={errors} 
+                        <CompanyCreate
+                            data={data}
+                            setData={setData}
+                            handleSubmit={handleSubmit}
+                            editingCompany={editingCompany}
+                            resetForm={resetForm}
+                            errors={errors}
                         />
                     </div>
                     <div className="col-span-2">
-                        <CompanyList 
-                            company_list={company_list} 
-                            handleEdit={handleEdit} 
-                            handleDelete={handleDelete} 
+                        <CompanyList
+                            company_list={company_list}
+                            handleEdit={handleEdit}
+                            handleDelete={handleDelete}
                         />
                     </div>
                 </div>

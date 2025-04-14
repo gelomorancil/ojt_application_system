@@ -2,95 +2,71 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Moa;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
 class MoaController extends Controller
 {
-    public function index()
-    {
-        // Retrieve MOAs with uploader info
-        $moas = Moa::all()->map(function ($moa) {
-            return [
-                'id' => $moa->id,
-                'File_name' => $moa->File_name,
-                'File_type' => $moa->File_type,
-                'Start' => $moa->Start,
-                'End' => $moa->End,
-                'uploaded_by' => $moa->uploaded_by, // Now stored in DB
-            ];
-        });
-
-        return Inertia::render('Moa/Moa', ['moas' => $moas]);
-    }
-
     public function store(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf|max:25600',
+            'file' => 'required|mimes:pdf|max:2048',
+            'start' => 'required|date',
+            'end' => 'required|date|after_or_equal:start',
+            'Comp_ID' => 'required|exists:tbl_company,id',
         ]);
 
         $file = $request->file('file');
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $fileExtension = $file->getClientOriginalExtension();
-        $concatenatedFileName = $originalName . '.' . $fileExtension;
-        $filePath = $file->storeAs('moa_files', $concatenatedFileName, 'public');
+        $fileName = $file->getClientOriginalName();
 
-        // Store the file in database
+        $filePath = $file->storeAs('moa_files', $fileName, 'public');
+
         Moa::create([
-            'File_name' => $originalName,
-            'File_type' => $fileExtension,
+            'Comp_ID' => $request->Comp_ID,
+            'File_name' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+            'File_type' => 'PDF',
             'File' => $filePath,
-            'Start' => $request->input('start', now()),
-            'End' => $request->input('end', now()->addYear()),
-            'uploaded_by' => Auth::user()->name, // Store uploader's name in the database
+            'Start' => $request->start,
+            'End' => $request->end,
+            'uploaded_by' => Auth::id(),
         ]);
 
-        return redirect()->route('moa')->with('success', 'PDF uploaded successfully.');
+        return redirect()->back()->with('success', 'MOA uploaded successfully.');
     }
 
-    public function download($file_name, $file_type)
+    public function index()
     {
-        $filePath = "moa_files/{$file_name}.{$file_type}";
-
-        if (!Storage::disk('public')->exists($filePath)) {
-            return back()->with('error', 'File not found.');
-        }
-
-        return response()->download(storage_path("app/public/{$filePath}"), "{$file_name}.{$file_type}");
+        $moa_list = Moa::with('company')->get();
+        return Inertia::render('Companies/View', ['moa_list' => $moa_list]);
     }
 
-    public function preview($file_name)
+    public function download($filename)
     {
-        $filePath = storage_path("app/public/moa_files/{$file_name}");
+        $filePath = 'moa_files/' . $filename;
 
-        if (!file_exists($filePath)) {
-            abort(404, 'File not found.');
+        if (Storage::disk('public')->exists($filePath)) {
+            return response()->download(storage_path('app/public/' . $filePath));
         }
 
-        if (pathinfo($filePath, PATHINFO_EXTENSION) !== 'pdf') {
-            abort(403, 'Preview is only available for PDF files.');
-        }
-
-        return response()->file($filePath, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline',
-        ]);
+        abort(404, 'File not found.');
     }
 
     public function destroy($id)
     {
         $moa = Moa::findOrFail($id);
 
-        if (Storage::disk('public')->exists($moa->File)) {
+        // Check if the file exists and delete it
+        if ($moa->File && Storage::disk('public')->exists($moa->File)) {
             Storage::disk('public')->delete($moa->File);
         }
 
+        // Delete the MOA record from the database
         $moa->delete();
 
-        return redirect()->route('moa')->with('success', 'File deleted successfully.');
+        return redirect()->back()->with('success', 'MOA deleted successfully.');
     }
+
 }

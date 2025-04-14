@@ -17,7 +17,7 @@ use Inertia\Response;
 use PDF;
 
 class StudentController extends Controller {
-    
+
     public function index(): Response
     {
         $students = Student::select(
@@ -83,7 +83,7 @@ class StudentController extends Controller {
         {
         // Define allowed colleges
         $allowedColleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
-        
+
         $validated = $request->validate([
             'College' => ['required', function ($attribute, $value, $fail) use ($allowedColleges) {
                 if (!in_array($value, $allowedColleges)) {
@@ -107,16 +107,16 @@ class StudentController extends Controller {
                 }
             }],
         ]);
-        
+
         // Find Course ID for the given College & Course
         $course = Course::where('College', $validated['College'])
             ->where('Course', $validated['Course'])
             ->first();
-        
+
         if (!$course) {
             return redirect()->back()->withErrors(['Course' => 'The selected course does not exist.']);
         }
-        
+
         // Store Student with the correct Course_ID
         Student::create([
             'Course_ID' => $course->id,
@@ -125,7 +125,7 @@ class StudentController extends Controller {
             'Student_Num' => $validated['Student_Num'],
             'Year' => $request->Year ?? '2024-2025', // Default value if not provided
         ]);
-        
+
         return redirect()->route('student')->with('success', 'Student added successfully!');
     }
 
@@ -165,7 +165,7 @@ class StudentController extends Controller {
     public function update(Request $request, $id)
     {
         $student = Student::findOrFail($id);
-        
+
         $validated = $request->validate([
             'College' => 'required',
             'Course' => 'required',
@@ -178,16 +178,16 @@ class StudentController extends Controller {
                 }
             }],
         ]);
-        
+
         // Find the appropriate course based on College and Course name
         $course = Course::where('College', $validated['College'])
             ->where('Course', $validated['Course'])
             ->first();
-        
+
         if (!$course) {
             return redirect()->back()->withErrors(['Course' => 'Invalid course selection.']);
         }
-        
+
         $student->update([
             'Course_ID' => $course->id,
             'Fname' => $validated['Fname'],
@@ -195,7 +195,7 @@ class StudentController extends Controller {
             'Student_Num' => $validated['Student_Num'],
             'Year' => $validated['Year'] ?? $student->Year, // Move this here after validation
         ]);
-        
+
         return redirect()->route('student')->with('success', 'Student updated successfully!');
     }
 
@@ -248,36 +248,36 @@ class StudentController extends Controller {
     public function batchDelete(Request $request)
     {
         $studentIds = $request->input('studentIds', []);
-        
+
         if (empty($studentIds)) {
             return response()->json([
                 'success' => false,
                 'message' => 'No students selected for deletion'
             ]);
         }
-        
+
         // Check for active transactions in tbl_student_comp
         $studentsWithTransactions = StudentCompany::whereIn('Student_ID', $studentIds)
             ->where('Status', 'On going')
             ->pluck('Student_ID')
             ->toArray();
-        
+
         if (!empty($studentsWithTransactions)) {
             // Get student numbers for the restricted students
             $restrictedStudents = Student::whereIn('id', $studentsWithTransactions)
                 ->pluck('Student_Num')
                 ->toArray();
-                
+
             return response()->json([
                 'success' => false,
                 'message' => 'Cannot delete students with active transactions: ' . implode(', ', $restrictedStudents)
             ]);
         }
-        
+
         // Proceed with deletion for students without active transactions
         try {
             Student::whereIn('id', $studentIds)->delete();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => count($studentIds) . ' student(s) deleted successfully'

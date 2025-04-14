@@ -12,20 +12,20 @@ class CompCourse extends Model
     protected $table = 'tbl_comp_course';
 
     protected $fillable = [
-        'Comp_ID', 
-        'name', 
-        'position', 
-        'Course_id', 
-        'email', 
-        'contact_number', 
-        'Capacity', 
+        'Comp_ID',
+        'name',
+        'position',
+        'Course_id',
+        'email',
+        'contact_number',
+        'Capacity',
         'mode'
     ];
 
     protected $casts = [
-        'Course_id' => 'array', 
+        'Course_id' => 'array',
     ];
-        
+
     public function company()
     {
         return $this->belongsTo(Company::class, 'Comp_ID');

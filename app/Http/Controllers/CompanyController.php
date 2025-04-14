@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Company;
 use Inertia\Inertia;
 use App\Models\MoaProcess;
 use App\Models\Course;
 use App\Models\CompCourse;
 use App\Models\StudentCompany;
-use App\Models\Student;
+use App\Models\Moa; // Import the Moa model
 
 class CompanyController extends Controller
 {
@@ -114,10 +113,13 @@ class CompanyController extends Controller
     {
         $company = Company::findOrFail($id);
         $course_list = Course::all();
+        $moa_list = Moa::where('Comp_ID', $id)->get(); // Fetch MOA list for this company
 
+        // Fetch contact list and associated course names
         $contact_list = CompCourse::where('Comp_ID', $id)->get()->map(function ($contact) {
             $courseIds = is_string($contact->Course_id) ? json_decode($contact->Course_id, true) : $contact->Course_id;
 
+            // If Course_id is still not an array, make it an empty array
             if (!is_array($courseIds)) {
                 $courseIds = [];
             }
@@ -127,11 +129,14 @@ class CompanyController extends Controller
             return $contact;
         });
 
+        // Fetch intern list based on Comp_ID
+        // $intern_list = StudentCompany::with(['student', 'course'])->where('Comp_ID', $id)->get();
         $intern_list = StudentCompany::with(['student.course'])->where('Comp_ID', $id)->get();
 
         return Inertia::render('Companies/View', [
             'company' => $company,
             'course_list' => $course_list,
+            'moa_list' => $moa_list, // Pass MOA list to the frontend
             'contact_list' => $contact_list ?? [],
             'intern_list' => $intern_list ?? [],
         ]);
