@@ -1,8 +1,6 @@
 export default function MoaList({ moa_list = [] }) {
     return (
-        <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full">
-            <h3 className="mb-4 text-lg font-semibold">MOA Files</h3>
-            <table className="min-w-full divide-y divide-gray-200 table-fixed">
+            <table className="min-w-full divide-y divide-gray-200 table-fixed align-top mt-4">
                 <thead className="bg-gray-100">
                     <tr>
                         <th className="px-4 py-3 text-left text-sm font-semibold">#</th>
@@ -36,6 +34,5 @@ export default function MoaList({ moa_list = [] }) {
                     )}
                 </tbody>
             </table>
-        </div>
     );
 }
