@@ -17,19 +17,19 @@ class StudentFileController extends Controller
             'file_name' => 'required|string',
             'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:20480',
         ]);
-
+    
         $file = $request->file('file');
         $filename = time() . '_' . $file->getClientOriginalName();
-        $file->storeAs('public/uploads', $filename);
-
+        $file->storeAs('public/uploads', $filename); // Store once with correct filename
+    
         StudentFile::create([
             'Student_Num' => $request->Student_Num,
             'category' => $request->category,
             'file_name' => $filename,
         ]);
-
+    
         return redirect()->back()->with('success', 'File uploaded successfully.');
-    }
+    }    
 
     public function show($id)
     {
@@ -47,4 +47,18 @@ class StudentFileController extends Controller
         $file = StudentFile::findOrFail($id);
         return Storage::download('public/uploads/' . $file->file_name);
     }
+
+    public function destroy($id)
+{
+    $file = StudentFile::findOrFail($id);
+
+    // Delete the physical file
+    Storage::disk('public')->delete('uploads/' . $file->file_name);
+
+    // Delete the database record
+    $file->delete();
+
+    return redirect()->back()->with('success', 'File deleted successfully.');
+}
+
 }

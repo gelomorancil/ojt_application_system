@@ -150,7 +150,8 @@ Route::get('/get-semesters', [StudentUploadingController::class, 'getSemesters']
 Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->name('upload.students');
 
 Route::post('/student-files', [StudentFileController::class, 'store'])->name('student-files.store');
-// Route::get('/student-files/{id}/download', [StudentFileController::class, 'download'])->name('student-files.download');
+Route::delete('/student-files/{id}', [StudentFileController::class, 'destroy'])->name('student-files.destroy');
+
 
 
 });
