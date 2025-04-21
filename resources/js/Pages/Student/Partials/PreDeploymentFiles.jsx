@@ -1,6 +1,6 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import { FaSave, FaSpinner, FaTrash } from "react-icons/fa"; // ⬅️ Added FaTrash
+import { FaEye, FaSave, FaSpinner, FaTrash } from "react-icons/fa"; // ⬅️ Added FaTrash
 
 export default function PreDeploymentFiles({ id, preDeployment }) {
   const { data, setData, post, processing, reset, delete: destroy } = useForm({
@@ -10,13 +10,22 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
     file: null,
   });
 
+  const [needsLetterOfIntent, setNeedsLetterOfIntent] = useState(() => {
+    const letterOfIntentFile = preDeployment.find(
+      (file) => file.category === "LETTER OF INTENT"
+    );
+    return letterOfIntentFile?.needs_letter_of_intent === 1;
+  });
+  
   const categories = [
     "RESUME",
     "ENDORSEMENT LETTER",
     "APPLICATION LETTER",
     "PARENT'S/GUARDIAN CONSENT",
     "PARENT'S/GUARDIAN ID",
+    ...(needsLetterOfIntent ? ["LETTER OF INTENT"] : []),
   ];
+  
 
   const [uploadedCategories, setUploadedCategories] = useState({});
   const [filePreviewUrl, setFilePreviewUrl] = useState(null);
@@ -53,6 +62,7 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
     formData.append("category", category);
     formData.append("file_name", data.file_name);
     formData.append("file", data.file);
+    formData.append("needs_letter_of_intent", needsLetterOfIntent ? 1 : 0);
 
     post(route("student-files.store"), {
       data: formData,
@@ -84,6 +94,17 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
 
   return (
     <div className="ml-4 space-y-4">
+      <div className="mb-4">
+        <label className="flex items-center text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={needsLetterOfIntent}
+            onChange={(e) => setNeedsLetterOfIntent(e.target.checked)}
+            className="mr-2"
+          />
+          I am an intern outside of the city (requires Letter of Intent)
+        </label>
+      </div>
       {categories.map((category) => (
         <div key={category} className="border-b border-gray-200 pb-4">
           <form onSubmit={(e) => handleSubmit(category, e)} className="space-y-2">
@@ -98,13 +119,11 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
                   {data.file_name && data.category === category ? "✓" : "○"}
                 </span>
                 {category}
-                {!latestFiles[category] && (
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => handleFileChange(category, e.target.files[0])}
-                  />
-                )}
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => handleFileChange(category, e.target.files[0])}
+                />
               </label>
 
               <div className="text-xs text-gray-600 flex items-center gap-2">
@@ -139,16 +158,21 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
                 ) : latestFiles[category] ? (
                   <>
                     <span className="text-green-600">
-                      {latestFiles[category].file_name}
+                      {latestFiles[category].file_name}{" "}
+                      <span className="text-gray-500 text-xs">
+                        ({new Date(latestFiles[category].created_at).toLocaleString()})
+                      </span>
                     </span>
                     <a
                       href={`/storage/uploads/${latestFiles[category].file_name}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline ml-2"
+                      className="text-blue-500 hover:text-blue-700 text-lg ml-2"
+                      title="View File"
                     >
-                      View
+                      <FaEye />
                     </a>
+
                     {/* 👇 DELETE ICON */}
                     <button
                       type="button"

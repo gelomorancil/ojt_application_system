@@ -1,6 +1,6 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import { FaSave, FaSpinner, FaTrash } from "react-icons/fa";
+import { FaEye, FaSave, FaSpinner, FaTrash } from "react-icons/fa";
 
 export default function FinalRequirementsFiles({ id, final }) {
   const { data, setData, post, processing, reset, delete: destroy } = useForm({
@@ -97,13 +97,11 @@ export default function FinalRequirementsFiles({ id, final }) {
                   {data.file_name && data.category === category ? "✓" : "○"}
                 </span>
                 {category}
-                {!latestFiles[category] && (
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => handleFileChange(category, e.target.files[0])}
-                  />
-                )}
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => handleFileChange(category, e.target.files[0])}
+                />
               </label>
 
               <div className="text-xs text-gray-600 flex items-center gap-2">
@@ -138,15 +136,20 @@ export default function FinalRequirementsFiles({ id, final }) {
                 ) : latestFiles[category] ? (
                   <>
                     <span className="text-green-600">
-                      {latestFiles[category].file_name}
+                    {latestFiles[category].file_name}{" "}
+                    <span className="text-gray-500 text-xs">
+                      ({new Date(latestFiles[category].created_at).toLocaleString()})
                     </span>
+                  </span>
+
                     <a
                       href={`/storage/uploads/${latestFiles[category].file_name}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline ml-2"
+                      className="text-blue-500 hover:text-blue-700 text-lg ml-2"
+                      title="View File"
                     >
-                      View
+                      <FaEye />
                     </a>
                     <button
                       type="button"

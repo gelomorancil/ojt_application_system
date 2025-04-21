@@ -10,10 +10,12 @@ class StudentFile extends Model
 
     protected $fillable = [
         'Student_Num',
-        'file_name',
         'category',
+        'file_name',
         // 'file_path',
+        'needs_letter_of_intent',
     ];
+    
     // Relationship to Student (assuming Student model exists)
     public function student()
     {

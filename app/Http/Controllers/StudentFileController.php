@@ -28,6 +28,7 @@ class StudentFileController extends Controller
         'Student_Num' => $request->Student_Num,
         'category' => $request->category,
         'file_name' => $filename,
+        'needs_letter_of_intent' => $request->has('needs_letter_of_intent') ? 1 : 0,
     ]);
 
     return redirect()->back()->with('success', 'File uploaded successfully.');

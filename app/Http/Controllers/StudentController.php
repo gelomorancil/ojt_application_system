@@ -161,6 +161,7 @@ class StudentController extends Controller {
         'APPLICATION LETTER',
         "PARENT'S/GUARDIAN CONSENT",
         "PARENT'S/GUARDIAN ID",
+        "LETTER OF INTENT",
     ])
     ->get();
 
@@ -179,9 +180,9 @@ class StudentController extends Controller {
     $final = StudentFile::where('Student_Num', $id)
     ->whereIn('category', [
         "DAILY TIME RECORD (DTR)",
-    "ACCOMPLISHMENT REPORT",
-    "STUDENT INTERNSHIP EVALUATION",
-    "CERTIFICATE OF COMPLETION",
+        "ACCOMPLISHMENT REPORT",
+        "STUDENT INTERNSHIP EVALUATION",
+        "CERTIFICATE OF COMPLETION",
     ])
     ->get();
 
