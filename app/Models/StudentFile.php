@@ -12,6 +12,7 @@ class StudentFile extends Model
         'Student_Num',
         'file_name',
         'category',
+        // 'file_path',
     ];
     // Relationship to Student (assuming Student model exists)
     public function student()

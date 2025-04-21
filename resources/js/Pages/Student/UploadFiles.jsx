@@ -1,128 +1,17 @@
 import React, { useState } from "react";
+import PreDeploymentFiles from "./Partials/PreDeploymentFiles";
+import DeploymentFiles from "./Partials/DeploymentFiles";
+import FinalRequirementFiles from "./Partials/FinalRequirementFiles";
 
-export default function UploadFiles({ id }) {
+export default function UploadFiles({ id, preDeployment }) {
   const [selectedCategory, setSelectedCategory] = useState("Pre-Deployment");
-  const [files, setFiles] = useState({
-    "Pre-Deployment": {
-      "RESUME": null,
-      "ENDORSEMENT LETTER": null,
-      "APPLICATION LETTER": null,
-      "PARENT'S/GUARDIAN CONSENT": null,
-      "PARENT'S/GUARDIAN ID": null
-    },
-    "Deployment": {
-      "INTERNSHIP PROGRAM COVER": null,
-      "COMPANY PROFILE": null,
-      "CERTIFICATE OF REGISTRATION": null,
-      "INTERNSHIP UNDERTAKING": null,
-      "INTERNSHIP INFORMATION SHEET": null,
-      "DAILY TIME RECORD": null
-    },
-    "Final Requirements": {
-      "INTERNSHIP SITE EVALUATION": null,
-      "TRAINEE'S PERFORMANCE EVALUATION": null,
-      "INTERNSHIP PORTFOLIO": null
-    }
-  });
 
-  const [processing, setProcessing] = useState({
-    "Pre-Deployment": false,
-    "Deployment": false,
-    "Final Requirements": false
-  });
-
-  const handleFileChange = (category, documentType, file) => {
-    setFiles(prevFiles => ({
-      ...prevFiles,
-      [category]: {
-        ...prevFiles[category],
-        [documentType]: file
-      }
-    }));
-  };
-
-  const onSubmit = (category, e) => {
-    e.preventDefault();
-
-    setProcessing(prev => ({
-      ...prev,
-      [category]: true
-    }));
-
-    const formData = new FormData();
-    formData.append("Student_Num", id);
-    formData.append("category", category);
-
-    Object.entries(files[category]).forEach(([docType, file]) => {
-      if (file) {
-        formData.append(`files[${category}][${docType}]`, file);
-      }
-    });
-
-    console.log(`Submitting files for ${category}:`, formData);
-
-    setTimeout(() => {
-      setProcessing(prev => ({
-        ...prev,
-        [category]: false
-      }));
-      alert(`Files for ${category} submitted successfully!`);
-    }, 1500);
-  };
-
-  const categories = Object.keys(files);
-
-  const renderFileList = (category) => {
-    return (
-      <div className="ml-4 space-y-2">
-        {Object.entries(files[category]).map(([docType, file]) => (
-          <div key={docType} className="flex items-center justify-between border-b border-gray-200 py-1">
-            <div className="flex-1">
-              <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
-                <span className={`mr-2 ${file ? 'text-green-600' : 'text-red-500'}`}>
-                  {file ? '✓' : '○'}
-                </span>
-                {docType}
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => handleFileChange(category, docType, e.target.files[0])}
-                />
-              </label>
-            </div>
-            <div className="text-gray-500 text-xs">
-              {file && (
-                <div className="flex items-center">
-                  <span className="truncate max-w-xs">{file.name}</span>
-                  <button
-                    type="button"
-                    className="ml-2 text-red-500 hover:text-red-700"
-                    onClick={() => handleFileChange(category, docType, null)}
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const getUploadedCount = (category) => {
-    return Object.values(files[category]).filter(Boolean).length;
-  };
-
-  const getTotalCount = (category) => {
-    return Object.keys(files[category]).length;
-  };
+  const categories = ["Pre-Deployment", "Deployment", "Final Requirements"];
 
   return (
     <div className="max-w-full mx-auto space-y-4">
       <div className="space-y-6">
         <div className="bg-white border border-gray-200 rounded-md p-4 shadow-sm">
-          {/* Legend */}
           <div className="flex items-center space-x-6 text-sm text-gray-700 mb-4">
             <div className="flex items-center space-x-1">
               <span className="text-green-600">✓</span>
@@ -134,7 +23,6 @@ export default function UploadFiles({ id }) {
             </div>
           </div>
 
-          {/* Category Buttons */}
           <div className="flex mb-4 border-b pb-2">
             {categories.map((category) => (
               <button
@@ -152,31 +40,14 @@ export default function UploadFiles({ id }) {
             ))}
           </div>
 
-          {/* Selected Category File List */}
           <div className="bg-white rounded-md p-2 space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-semibold text-uslsgreen text-lg">{selectedCategory}</h3>
-              <div className="text-sm text-gray-600">
-                {getUploadedCount(selectedCategory)}/{getTotalCount(selectedCategory)} files uploaded
-              </div>
             </div>
 
-            {renderFileList(selectedCategory)}
-
-            {/* Submit */}
-            <div className="text-right mt-4 pt-2 border-t border-gray-200">
-              <form onSubmit={(e) => onSubmit(selectedCategory, e)}>
-                <button
-                  type="submit"
-                  className="bg-uslsgreen text-white px-4 py-2 rounded hover:bg-green-800 disabled:bg-gray-400"
-                  disabled={processing[selectedCategory] || getUploadedCount(selectedCategory) === 0}
-                >
-                  {processing[selectedCategory]
-                    ? `Submitting ${selectedCategory}...`
-                    : `Submit ${selectedCategory} Files`}
-                </button>
-              </form>
-            </div>
+            {selectedCategory === "Pre-Deployment" && <PreDeploymentFiles id={id} preDeployment={preDeployment}/>}
+            {selectedCategory === "Deployment" && <DeploymentFiles id={id} />}
+            {selectedCategory === "Final Requirements" && <FinalRequirementFiles id={id} />}
           </div>
         </div>
       </div>

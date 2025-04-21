@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Student;
 use App\Models\StudentCompany;
 use App\Models\StudentDetails;
+use App\Models\StudentFIle;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\StudentImport;
@@ -153,10 +154,21 @@ class StudentController extends Controller {
         ->with('company') // Load related company details
         ->get();
 
+        $preDeployment = StudentFile::where('Student_Num', $id)
+    ->whereIn('category', [
+        'RESUME',
+        'ENDORSEMENT LETTER',
+        'APPLICATION LETTER',
+        "PARENT'S/GUARDIAN CONSENT",
+        "PARENT'S/GUARDIAN ID",
+    ])
+    ->get();
+
         return Inertia::render('Student/StudentDetails', [
             'student' => $student,
             'company_list' => $company_list,
             'student_company' => $student_company,
+            'preDeployment' => $preDeployment
             // 'details_list' => $details_list,
         ]);
     }
