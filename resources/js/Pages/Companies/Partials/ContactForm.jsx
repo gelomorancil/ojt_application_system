@@ -11,7 +11,11 @@ export default function ContactForm({
     errors,
     course_list,
 }) {
+
+
     return (
+
+
         <div className="bg-white p-6 shadow-sm sm:rounded-lg w-full max-w-md m-4">
             <h3 className="mb-4 text-lg font-semibold">
                 {editingContact ? "Edit Contact" : "Add Contacts"}
@@ -33,10 +37,9 @@ export default function ContactForm({
                     className="border p-2 rounded"
                     required
                 />
-                
-                <Select
+
+<Select
                     isMulti
-                    placeholder="Course"
                     options={course_list.map(course => ({
                         value: course.id,
                         label: course.Course
@@ -82,6 +85,8 @@ export default function ContactForm({
                     <option value="Blended">Blended</option>
                     <option value="Work from Home">Work from Home</option>
                 </select>
+
+
                 <button
                     type="submit"
                     className="w-full bg-blue-500 text-white py-2 rounded"
@@ -89,6 +94,7 @@ export default function ContactForm({
                     {editingContact ? "Update Contact" : "Add Contact"}
                 </button>
                 {editingContact && (
+
                     <button
                         type="button"
                         onClick={resetForm}

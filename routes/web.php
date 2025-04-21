@@ -9,10 +9,11 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompCourseController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MoaProcessController;
-use App\Http\Controllers\StudentUploadingController;
-use App\Http\Controllers\StudentFileController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StudentUploadingController;
+use App\Http\Controllers\StudentFileController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -25,9 +26,9 @@ Route::get('/', function () {
 });
 
 //Dashboard Routes
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -63,24 +64,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/student-companies/{studentCompany}', [StudentCompanyController::class, 'destroy'])->name('student_comp.destroy');
 });
 
-// Moa Routing
-Route::middleware('auth')->group(function () {
-    Route::get('/moa', [MoaController::class, 'index'])->name('moa');
-    Route::get('/moa/create', function () {
-        return Inertia::render('Moa/Partials/Create_Moa');
-    })->name('moa.create');
-
-    Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
-    Route::get('/moa/{id}', [MoaController::class, 'show'])->name('moa.show');
-    // Route::get('/moa/{id}/edit', [MoaController::class, 'edit'])->name('moa.edit');
-    Route::patch('/moa/{id}', [MoaController::class, 'update'])->name('moa.update');
-    Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
-    Route::get('/moa/download/{file_name}/{file_type}', [MoaController::class, 'download'])->name('moa.download');
-    Route::get('/moa/preview/{file_name}', [MoaController::class, 'preview'])
-    ->where('file_name', '.*') // Allows handling filenames with spaces or special characters
-    ->name('moa.preview');
-});
-
 Route::middleware('auth')->group(function () {
     Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
     Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
@@ -92,6 +75,10 @@ Route::middleware('auth')->group(function () {
 
     // COMPANY PROFILE
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
+    // MOA STORE FUNCTION
+    Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
+    // MOA DELETE FUNCTION
+    Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
 });
 
 
@@ -113,22 +100,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/contacts/{id}', [ContactController::class, 'destroy'])->name('contact.destroy');
 });
 
-// Route::middleware(['auth', 'verified'])->group(function () {
-//     Route::get('/compcourse', [ContactController::class, 'index'])->name('compcourse.index');
-//     Route::post('/compcourse/store', [ContactController::class, 'store'])->name('compcourse.store');
-//     Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
-//     Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
-// });
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/compcourse', [ContactController::class, 'index'])->name('compcourse.index');
+    // Route::get('/compcourse/create', [ContactController::class, 'create'])->name('compcourse.create');
+    Route::post('/compcourse/store', [ContactController::class, 'store'])->name('compcourse.store');
+    // Route::put('/compcourse/update', [ContactController::class, 'update'])->name('compcourse.update');
+    Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
+    Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
+
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/moaprocess', [MoaProcessController::class, 'index'])->name('moaprocess.index');
-    // Route::get('/moaprocess/create', [MoaProcessController::class, 'create'])->name('moaprocess.create');
     Route::post('/moaprocess', [MoaProcessController::class, 'store'])->name('moaprocess.store');
     Route::get('/moaprocess/{moaprocess}/edit', [MoaProcessController::class, 'edit'])->name('moaprocess.edit');
     Route::put('/moaProcess/{moaprocess}', [MoaProcessController::class, 'update'])->name('moaProcess.update');
-
-    Route::delete('/moa-process/{id}', [MoaProcessController::class, 'destroy'])->name('moaProcess.destroy');
     Route::get('/company/{id}', [MoaProcessController::class, 'showCompany'])->name('company.show');
+    Route::get('/moa/download/{filename}', [MoaController::class, 'download'])->name('moa.download');
+
 
 //Student Uploading Routing
 Route::middleware('auth')->group(function () {

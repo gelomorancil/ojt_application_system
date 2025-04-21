@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tbl_moa', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('Comp_ID');
             $table->string('File_name');
             $table->string('File_type');
             $table->string('File');
@@ -20,6 +21,9 @@ return new class extends Migration
             $table->date('End');
             $table->string('uploaded_by');
             $table->timestamps();
+
+            $table->foreign('Comp_ID')->references('id')->on('tbl_company')->onDelete('cascade');
+            // $table->foreign('uploaded_by')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

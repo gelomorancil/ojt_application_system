@@ -14,8 +14,8 @@ export default function CreateStudent({ courses = [], colleges = [] }) {
     });
 
     // Ensure courses are properly filtered based on the selected college
-    const filteredCourses = data.College 
-    ? courses.filter(course => course.College === data.College) 
+    const filteredCourses = data.College
+    ? courses.filter(course => course.College === data.College)
     : [];
 
     // Handle form submission
@@ -47,7 +47,7 @@ export default function CreateStudent({ courses = [], colleges = [] }) {
                                     value={data.College}
                                     onChange={(e) => {
                                         setData('College', e.target.value);
-                                        setData('Course_ID', ''); 
+                                        setData('Course_ID', '');
                                     }}
                                 >
                                     <option value="">Select a College</option>

@@ -46,7 +46,7 @@ class ContactController extends Controller
 
     // Convert Course_id array to JSON before saving
     if (isset($validatedData['Course_id'])) {
-        $validatedData['Course_id'] = $validatedData['Course_id'];
+        // No additional processing needed for Course_id
     }
 
     $contact->update($validatedData);

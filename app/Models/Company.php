@@ -39,7 +39,7 @@ class Company extends Model
 
     public function courses()
     {
-        return $this->belongsToMany(Course::class, 'tbl_comp_course', 'Comp_ID', 'Course'); 
+        return $this->belongsToMany(Course::class, 'tbl_comp_course', 'Comp_ID', 'Course');
     }
 
     public function CompCourse(): HasMany

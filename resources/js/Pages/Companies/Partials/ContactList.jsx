@@ -1,21 +1,28 @@
 import { Link } from '@inertiajs/react';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { MdDelete } from 'react-icons/md';
 import InternList from './InternList';
+import MoaList from './MoaList';
 
-export default function ContactList({ contacts = [], handleDelete = () => { }, contact_list = [], intern_list = [], handleEdit = () => { }, companyId }) {
-    const [activeTab, setActiveTab] = useState('contacts');
-    const [internList, setInternList] = useState([]);
-
-    useEffect(() => {
-        if (activeTab === 'interns' && companyId) {
-            fetch(route('companies.interns', companyId))
-                .then(response => response.json())
-                .then(data => setInternList(data))
-                .catch(error => console.error('Error fetching interns:', error));
-        }
-    }, [activeTab, companyId]);
+export default function ContactList({
+    contacts = [],
+    handleDelete = () => {},
+    contact_list = [],
+    moa_list = [],
+    intern_list = [],
+    handleEdit = () => {},
+    companyId,
+    activeTab,
+    setActiveTab,
+}) {
+    // useEffect(() => {
+    //     if (activeTab === 'interns' && companyId) {
+    //         fetch(route('companies.interns', companyId))
+    //             .then(response => response.json())
+    //             .catch(error => console.error('Error fetching interns:', error));
+    //     }
+    // }, [activeTab, companyId]);
 
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full min-w-full">
@@ -23,8 +30,7 @@ export default function ContactList({ contacts = [], handleDelete = () => { }, c
             <div className="border-b">
                 <nav className="flex space-x-8">
                     <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'contacts' ? 'border-b-2 border-black' : 'text-gray-500'
-                            }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'contacts' ? 'border-b-2 border-black' : 'text-gray-500'}`}
                         onClick={() => setActiveTab('contacts')}
                     >
                         List of Contacts
@@ -36,8 +42,7 @@ export default function ContactList({ contacts = [], handleDelete = () => { }, c
                         List of Programs
                     </button>
                     <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'moa' ? 'border-b-2 border-black' : 'text-gray-500'
-                            }`}
+                        className={`py-2 px-4 font-medium ${activeTab === 'moa' ? 'border-b-2 border-black' : 'text-gray-500'}`}
                         onClick={() => setActiveTab('moa')}
                     >
                         Status of MOA
@@ -45,9 +50,14 @@ export default function ContactList({ contacts = [], handleDelete = () => { }, c
                 </nav>
             </div>
 
-             {/* Interns Tab */}
-             {activeTab === 'interns' && (
+            {/* Interns Tab */}
+            {activeTab === 'interns' && (
                 <InternList intern_list={intern_list} />
+            )}
+
+            {/* MOA Tab */}
+            {activeTab === 'moa' && (
+                <MoaList moa_list={moa_list} />
             )}
 
             {/* Contacts Table */}
@@ -75,7 +85,7 @@ export default function ContactList({ contacts = [], handleDelete = () => { }, c
                                     <td className="align-top px-4 py-4">{contact.position}</td>
                                     <td className="align-top px-4 py-4 max-w-[200px]">
                                         {contact.course_names && contact.course_names.length > 0
-                                            ? contact.course_names.join(', ') // Join names with commas
+                                            ? contact.course_names.join(', ')
                                             : 'N/A'}
                                     </td>
                                     <td className="align-top px-4 py-4">{contact.email}</td>

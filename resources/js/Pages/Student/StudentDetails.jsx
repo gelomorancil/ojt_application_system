@@ -61,7 +61,7 @@ function StudentDetails({ company_list, student_company, preDeployment }) {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
                 <div className="bg-white p-6 shadow rounded-lg mb-4 flex flex-col items-center">
