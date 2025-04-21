@@ -4,8 +4,8 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
 
-function StudentDetails({ company_list, student_company, preDeployment }) {
-    // console.log(student_company);
+function StudentDetails({ company_list, student_company, preDeployment, deployment, final }) {
+    console.log("final time",final);
     const { student } = usePage().props;
     const [extraCompanies, setExtraCompanies] = useState([]);
 
@@ -75,7 +75,7 @@ function StudentDetails({ company_list, student_company, preDeployment }) {
                             <CompanyForm key={company.id} company_list={company_list} onDelete={() => handleDelete(company.id)} student={student} />
                         ))}
                     </div>
-                    <UploadFiles id={student.id} preDeployment={preDeployment}/>
+                    <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final}/>
                 </div>
             </div>
         </AuthenticatedLayout>

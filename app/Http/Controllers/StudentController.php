@@ -154,7 +154,7 @@ class StudentController extends Controller {
         ->with('company') // Load related company details
         ->get();
 
-        $preDeployment = StudentFile::where('Student_Num', $id)
+    $preDeployment = StudentFile::where('Student_Num', $id)
     ->whereIn('category', [
         'RESUME',
         'ENDORSEMENT LETTER',
@@ -164,11 +164,34 @@ class StudentController extends Controller {
     ])
     ->get();
 
+
+    $deployment = StudentFile::where('Student_Num', $id)
+    ->whereIn('category', [
+        "INTERNSHIP PROGRAM COVER",
+        "COMPANY PROFILE",
+        "CERTIFICATE OF REGISTRATION",
+        "INTERNSHIP UNDERTAKING",
+        "INTERNSHIP INFORMATION SHEET",
+        "DAILY TIME RECORD",
+    ])
+    ->get();
+
+    $final = StudentFile::where('Student_Num', $id)
+    ->whereIn('category', [
+        "DAILY TIME RECORD (DTR)",
+    "ACCOMPLISHMENT REPORT",
+    "STUDENT INTERNSHIP EVALUATION",
+    "CERTIFICATE OF COMPLETION",
+    ])
+    ->get();
+
         return Inertia::render('Student/StudentDetails', [
             'student' => $student,
             'company_list' => $company_list,
             'student_company' => $student_company,
-            'preDeployment' => $preDeployment
+            'preDeployment' => $preDeployment,
+            'deployment' => $deployment,
+            'final' => $final,
             // 'details_list' => $details_list,
         ]);
     }

@@ -153,7 +153,6 @@ Route::post('/student-files', [StudentFileController::class, 'store'])->name('st
 Route::delete('/student-files/{id}', [StudentFileController::class, 'destroy'])->name('student-files.destroy');
 
 
-
 });
 
 // Route::prefix('student-files')->group(function () {
