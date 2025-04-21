@@ -587,7 +587,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                     {/* Export Button */}
                                     <button
                                     onClick={() => setShowExportModal(true)}
-                                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
+                                    className="bg-uslsgreen text-white px-4 py-2 rounded-lg flex items-center"
                                     >
                                     <svg
                                         className="h-5 w-5 mr-2"
@@ -922,7 +922,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                             </button>
                             <button
                                 type="submit"
-                                className="bg-green-500 text-white px-4 py-2 rounded flex items-center"
+                                className="bg-uslsgreen text-white px-4 py-2 rounded flex items-center"
                                 disabled={exportLoading}
                             >
                                 {exportLoading ? (

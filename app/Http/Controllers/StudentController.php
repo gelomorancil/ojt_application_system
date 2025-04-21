@@ -138,6 +138,8 @@ class StudentController extends Controller {
                 'tbl_student.Fname',
                 'tbl_student.Lname',
                 'tbl_student.Year',
+                'tbl_student.Remarks',
+                'tbl_student.Read as remarks_read_at',
                 'tbl_course.College as College_Name',
                 'tbl_course.Course as Course_Name',
                 'tbl_ojt_hrs.Hrs as Ojt_Hours',
@@ -171,6 +173,16 @@ class StudentController extends Controller {
             'preDeployment' => $preDeployment
             // 'details_list' => $details_list,
         ]);
+
+        // Check if this is a student viewing their own page
+        // This logic depends on your auth system - adjust accordingly
+        if (auth()->user()->role === 'student' && auth()->user()->student_id == $id) {
+            // Only update timestamp if there are remarks to read and it hasn't been read yet
+            if ($student->Remarks && ($student->remarks_read_at == '0000-00-00 00:00:00' || $student->remarks_read_at === null)) {
+                $student->Read = now(); // Use the existing Read column
+                $student->save();
+            }
+        }
     }
 
     // Update student details
@@ -359,5 +371,18 @@ class StudentController extends Controller {
         $filename .= '.xlsx';
         
         return Excel::download(new StudentsExport($students), $filename);
+    }
+
+    public function updateRemarks(Request $request, $id)
+    {
+        $request->validate([
+            'remarks' => 'nullable|string|max:2000'
+        ]);
+
+        $student = Student::findOrFail($id);
+        $student->Remarks = $request->input('remarks');
+        $student->save();
+
+        return redirect()->back()->with('success', 'Remarks updated successfully.');
     }
 }

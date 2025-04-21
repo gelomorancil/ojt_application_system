@@ -113,7 +113,7 @@ class CompanyController extends Controller
     {
         $company = Company::findOrFail($id);
         $course_list = Course::all();
-        $moa_list = Moa::where('Comp_ID', $id)->get(); // Fetch MOA list for this company
+        // $moa_list = Moa::where('Comp_ID', $id)->get(); // Fetch MOA list for this company
 
         // Fetch contact list and associated course names
         $contact_list = CompCourse::where('Comp_ID', $id)->get()->map(function ($contact) {
@@ -134,7 +134,7 @@ class CompanyController extends Controller
         return Inertia::render('Companies/View', [
             'company' => $company,
             'course_list' => $course_list,
-            'moa_list' => $moa_list, // Pass MOA list to the frontend
+            // 'moa_list' => $moa_list, // Pass MOA list to the frontend
             'contact_list' => $contact_list ?? [],
             'intern_list' => $intern_list ?? [],
         ]);

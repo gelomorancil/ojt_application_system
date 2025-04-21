@@ -3,9 +3,9 @@ import { Head, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
+import StudentRemarks from "./Partials/StudentRemarks";
 
 function StudentDetails({ company_list, student_company, preDeployment }) {
-    // console.log(student_company);
     const { student } = usePage().props;
     const [extraCompanies, setExtraCompanies] = useState([]);
 
@@ -23,6 +23,7 @@ function StudentDetails({ company_list, student_company, preDeployment }) {
 
             <div className="grid grid-cols-4 gap-5">
                 <div className="col-span-2 space-y-6">
+                    {/* Left side content remains the same */}
                     <div className="bg-white p-6 shadow rounded-lg">
                         <div className="flex justify-between items-start">
                             <div className="flex gap-4 items-center">
@@ -64,7 +65,7 @@ function StudentDetails({ company_list, student_company, preDeployment }) {
 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
-                <div className="bg-white p-6 shadow rounded-lg mb-4 flex flex-col items-center">
+                    <div className="bg-white p-6 shadow rounded-lg mb-4 flex flex-col items-center">
                         <button
                             onClick={addCompanyBox}
                             className="px-4 h-8 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
@@ -76,6 +77,7 @@ function StudentDetails({ company_list, student_company, preDeployment }) {
                         ))}
                     </div>
                     <UploadFiles id={student.id} preDeployment={preDeployment}/>
+                    <StudentRemarks studentId={student.id} initialRemarks={student.Remarks} />
                 </div>
             </div>
         </AuthenticatedLayout>

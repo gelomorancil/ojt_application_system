@@ -155,4 +155,6 @@ Route::delete('/student-files/{id}', [StudentFileController::class, 'destroy'])-
 
 Route::post('/student/export', [StudentController::class, 'export'])->name('student.export');
 
+Route::post('/student/{id}/update-remarks', [StudentController::class, 'updateRemarks'])->name('student.update-remarks');
+
 require __DIR__.'/auth.php';

@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('Lname');
             $table->string('Student_Num')->unique();
             $table->string('Year');
+            $table->dateTime('Read');
+            $table->string('Remarks');
             $table->timestamps();
         });
     }
