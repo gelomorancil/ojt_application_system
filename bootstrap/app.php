@@ -16,7 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        // Register route middleware
+        $middleware->alias([
+            'guest.intern' => \App\Http\Middleware\RedirectIfAuthenticatedIntern::class,
+            ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

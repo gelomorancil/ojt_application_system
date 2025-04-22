@@ -6,7 +6,6 @@ use App\Http\Controllers\StudentCompanyController;
 use App\Http\Controllers\MoaController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CompCourseController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MoaProcessController;
 use App\Http\Controllers\DashboardController;
@@ -142,14 +141,10 @@ Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->
 Route::post('/student-files', [StudentFileController::class, 'store'])->name('student-files.store');
 
 });
-
-// Route::prefix('student-files')->group(function () {
-//     Route::get('/', [StudentFileController::class, 'index']);
-//     Route::post('/', [StudentFileController::class, 'store']);
-//     Route::get('/student/{Student_Num}', [StudentFileController::class, 'showByStudent']);
-//     Route::delete('/{id}', [StudentFileController::class, 'destroy']);
-// });
-
+;
 Route::post('/student/export', [StudentController::class, 'export'])->name('student.export');
 
 require __DIR__.'/auth.php';
+
+require __DIR__.'/intern-auth.php';
+
