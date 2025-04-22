@@ -193,6 +193,9 @@ class StudentController extends Controller {
             'preDeployment' => $preDeployment,
             'deployment' => $deployment,
             'final' => $final,
+            'auth' => [
+                'user' => auth()->user(),
+            ],
             // 'details_list' => $details_list,
         ]);
     }

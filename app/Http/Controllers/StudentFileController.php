@@ -63,4 +63,13 @@ class StudentFileController extends Controller
     return redirect()->back()->with('success', 'File deleted successfully.');
 }
 
+public function verify($id)
+    {
+        $file = StudentFile::findOrFail($id);
+        $file->verified = !$file->verified;
+        $file->save();
+
+        return redirect()->back()->with('success', 'File verification status updated.');
+    }
+
 }

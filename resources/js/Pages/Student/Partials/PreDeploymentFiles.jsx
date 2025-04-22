@@ -1,9 +1,14 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import { FaEye, FaSave, FaSpinner, FaTrash } from "react-icons/fa"; // ⬅️ Added FaTrash
+import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from "react-icons/fa";
 
-export default function PreDeploymentFiles({ id, preDeployment }) {
-  const { data, setData, post, processing, reset, delete: destroy } = useForm({
+export default function PreDeploymentFiles({ id, preDeployment, auth }) {
+  // TEMPORARY: Always treat the user as a coordinator for now
+  const isCoordinator = true;
+
+  const user = auth?.user;
+
+  const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
     category: "",
     file_name: "",
@@ -17,19 +22,14 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
     return letterOfIntentFile?.needs_letter_of_intent === 1;
   });
 
-  const hasLetterOfIntentFile = preDeployment.some(
-    (file) => file.category === "LETTER OF INTENT"
-  );
-  
   const categories = [
     "RESUME",
     "ENDORSEMENT LETTER",
     "APPLICATION LETTER",
     "PARENT'S/GUARDIAN CONSENT",
     "PARENT'S/GUARDIAN ID",
-    ...(needsLetterOfIntent || hasLetterOfIntentFile ? ["LETTER OF INTENT"] : []),
+    ...(preDeployment.some(f => f.category === "LETTER OF INTENT") || needsLetterOfIntent ? ["LETTER OF INTENT"] : []),
   ];
-  
 
   const [uploadedCategories, setUploadedCategories] = useState({});
   const [filePreviewUrl, setFilePreviewUrl] = useState(null);
@@ -66,7 +66,7 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
     formData.append("category", category);
     formData.append("file_name", data.file_name);
     formData.append("file", data.file);
-    formData.append("needs_letter_of_intent", needsLetterOfIntent ? 1 : 0); // ✅ send with form
+    formData.append("needs_letter_of_intent", needsLetterOfIntent ? true : false);
 
     post(route("student-files.store"), {
       data: formData,
@@ -96,6 +96,12 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
     });
   };
 
+  const handleVerify = (fileId) => {
+    post(route('student-files.verify', fileId), {
+      onSuccess: () => {},
+    });
+  };  
+  
   return (
     <div className="ml-4 space-y-4">
       <div className="mb-4">
@@ -133,20 +139,18 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
               <div className="text-xs text-gray-600 flex items-center gap-2">
                 {data.file_name && data.category === category ? (
                   <>
-                    <span className="truncate max-w-xs">{data.file_name}</span>
+                    <span className="truncate max-w-xs">
+                      {data.file_name.length > 10
+                        ? `${data.file_name.slice(0, 10)}...`
+                        : data.file_name}
+                    </span>
                     <button
                       type="submit"
                       title={`Save ${category}`}
                       className="text-uslsgreen hover:text-green-800 text-lg"
-                      disabled={
-                        !data.file || data.category !== category || processing
-                      }
+                      disabled={!data.file || data.category !== category || processing}
                     >
-                      {processing ? (
-                        <FaSpinner className="animate-spin" />
-                      ) : (
-                        <FaSave />
-                      )}
+                      {processing ? <FaSpinner className="animate-spin" /> : <FaSave />}
                     </button>
                     {filePreviewUrl && (
                       <a
@@ -162,10 +166,10 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
                 ) : latestFiles[category] ? (
                   <>
                     <span className="text-green-600">
-                      {latestFiles[category].file_name}{" "}
-                      <span className="text-gray-500 text-xs">
-                        ({new Date(latestFiles[category].created_at).toLocaleString()})
-                      </span>
+                      {latestFiles[category].file_name.length > 10
+                        ? `${latestFiles[category].file_name.slice(0, 10)}...`
+                        : latestFiles[category].file_name}
+                      <span className="text-gray-500 text-xs"> ({new Date(latestFiles[category].created_at).toLocaleString()})</span>
                     </span>
                     <a
                       href={`/storage/uploads/${latestFiles[category].file_name}`}
@@ -176,8 +180,6 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
                     >
                       <FaEye />
                     </a>
-
-                    {/* 👇 DELETE ICON */}
                     <button
                       type="button"
                       onClick={(e) => handleDelete(e, latestFiles[category].id)}
@@ -186,6 +188,20 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
                     >
                       <FaTrash />
                     </button>
+                    {isCoordinator && (
+                      <button
+                        type="button"
+                        onClick={() => handleVerify(latestFiles[category].id)}
+                        className="text-green-600 ml-2 cursor-pointer"
+                        title="Verify File"
+                      >
+                        {latestFiles[category]?.verified === 1 || latestFiles[category]?.verified === true ? (
+                          <FaCheckCircle />
+                        ) : (
+                          "○"
+                        )}
+                      </button>
+                    )}
                   </>
                 ) : uploadedCategories[category] ? (
                   <>
