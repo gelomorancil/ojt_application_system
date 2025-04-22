@@ -21,19 +21,17 @@ class StudentFileController extends Controller
     $file = $request->file('file');
     $filename = time() . '_' . $file->getClientOriginalName();
 
-    // 👇 Force Laravel to store in storage/app/public/uploads
     Storage::disk('public')->putFileAs('uploads', $file, $filename);
 
     StudentFile::create([
         'Student_Num' => $request->Student_Num,
         'category' => $request->category,
         'file_name' => $filename,
-        'needs_letter_of_intent' => $request->has('needs_letter_of_intent') ? 1 : 0,
+        'needs_letter_of_intent' => $request->category === 'LETTER OF INTENT' ? true : false,
     ]);
 
     return redirect()->back()->with('success', 'File uploaded successfully.');
-}
-  
+} 
 
     public function show($id)
     {

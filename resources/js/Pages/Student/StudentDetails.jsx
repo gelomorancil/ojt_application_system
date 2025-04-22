@@ -45,7 +45,6 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                             </div>
                         </div>
                         <div className="col-span-1 bg-white p-6 shadow-xl rounded-lg mb-4 mt-4">
-                            <h3><strong>Company History</strong></h3>
                             {student_company.length > 0 ? (
                                 student_company.map((item, index) => (
                                     <div key={index} className='bg-white rounded mb-2 p-2'>
@@ -59,15 +58,10 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                 <p>No company assigned.</p>
                             )}
                         </div>
-                    </div>
-                </div>
-                
-                {/* Right Section */}
-                <div className="col-span-2 space-y-6">
-                <div className="bg-white p-6 shadow rounded-lg mb-4 flex flex-col items-center">
+                        <div className="rounded-lg mb-4 flex flex-col items-center">
                         <button
                             onClick={addCompanyBox}
-                            className="px-4 h-8 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+                            className="px-4 h-8 bg-gray-500 text-white rounded-lg hover:bg-uslsgreen"
                         >
                             Add Company Profile
                         </button>
@@ -75,6 +69,11 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                             <CompanyForm key={company.id} company_list={company_list} onDelete={() => handleDelete(company.id)} student={student} />
                         ))}
                     </div>
+                    </div>
+                </div>
+                
+                {/* Right Section */}
+                <div className="col-span-2 space-y-6">
                     <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final}/>
                 </div>
             </div>

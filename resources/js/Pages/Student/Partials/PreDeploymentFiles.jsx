@@ -16,6 +16,10 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
     );
     return letterOfIntentFile?.needs_letter_of_intent === 1;
   });
+
+  const hasLetterOfIntentFile = preDeployment.some(
+    (file) => file.category === "LETTER OF INTENT"
+  );
   
   const categories = [
     "RESUME",
@@ -23,7 +27,7 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
     "APPLICATION LETTER",
     "PARENT'S/GUARDIAN CONSENT",
     "PARENT'S/GUARDIAN ID",
-    ...(needsLetterOfIntent ? ["LETTER OF INTENT"] : []),
+    ...(needsLetterOfIntent || hasLetterOfIntentFile ? ["LETTER OF INTENT"] : []),
   ];
   
 
@@ -62,7 +66,7 @@ export default function PreDeploymentFiles({ id, preDeployment }) {
     formData.append("category", category);
     formData.append("file_name", data.file_name);
     formData.append("file", data.file);
-    formData.append("needs_letter_of_intent", needsLetterOfIntent ? 1 : 0);
+    formData.append("needs_letter_of_intent", needsLetterOfIntent ? 1 : 0); // ✅ send with form
 
     post(route("student-files.store"), {
       data: formData,
