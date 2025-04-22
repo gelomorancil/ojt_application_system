@@ -3,7 +3,7 @@ import PreDeploymentFiles from "./Partials/PreDeploymentFiles";
 import DeploymentFiles from "./Partials/DeploymentFiles";
 import FinalRequirementFiles from "./Partials/FinalRequirementFiles";
 
-export default function UploadFiles({ id, preDeployment }) {
+export default function UploadFiles({ id, preDeployment, deployment, final}) {
   const [selectedCategory, setSelectedCategory] = useState("Pre-Deployment");
 
   const categories = ["Pre-Deployment", "Deployment", "Final Requirements"];
@@ -46,8 +46,8 @@ export default function UploadFiles({ id, preDeployment }) {
             </div>
 
             {selectedCategory === "Pre-Deployment" && <PreDeploymentFiles id={id} preDeployment={preDeployment}/>}
-            {selectedCategory === "Deployment" && <DeploymentFiles id={id} />}
-            {selectedCategory === "Final Requirements" && <FinalRequirementFiles id={id} />}
+            {selectedCategory === "Deployment" && <DeploymentFiles id={id} deployment={deployment} />}
+            {selectedCategory === "Final Requirements" && <FinalRequirementFiles id={id} final={final} />}
           </div>
         </div>
       </div>

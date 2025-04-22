@@ -10,26 +10,28 @@ use Illuminate\Support\Facades\Storage;
 class StudentFileController extends Controller
 {
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'Student_Num' => 'required',
-            'category' => 'required',
-            'file_name' => 'required|string',
-            'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:20480',
-        ]);
-    
-        $file = $request->file('file');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $file->storeAs('public/uploads', $filename); // Store once with correct filename
-    
-        StudentFile::create([
-            'Student_Num' => $request->Student_Num,
-            'category' => $request->category,
-            'file_name' => $filename,
-        ]);
-    
-        return redirect()->back()->with('success', 'File uploaded successfully.');
-    }    
+{
+    $validated = $request->validate([
+        'Student_Num' => 'required',
+        'category' => 'required',
+        'file_name' => 'required|string',
+        'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:20480',
+    ]);
+
+    $file = $request->file('file');
+    $filename = time() . '_' . $file->getClientOriginalName();
+
+    Storage::disk('public')->putFileAs('uploads', $file, $filename);
+
+    StudentFile::create([
+        'Student_Num' => $request->Student_Num,
+        'category' => $request->category,
+        'file_name' => $filename,
+        'needs_letter_of_intent' => $request->category === 'LETTER OF INTENT' ? true : false,
+    ]);
+
+    return redirect()->back()->with('success', 'File uploaded successfully.');
+} 
 
     public function show($id)
     {
@@ -48,9 +50,9 @@ class StudentFileController extends Controller
         return Storage::download('public/uploads/' . $file->file_name);
     }
 
-    public function destroy($id)
+    public function destroy($fileId)
 {
-    $file = StudentFile::findOrFail($id);
+    $file = StudentFile::findOrFail($fileId);
 
     // Delete the physical file
     Storage::disk('public')->delete('uploads/' . $file->file_name);

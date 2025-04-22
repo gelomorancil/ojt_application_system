@@ -1,9 +1,9 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import { FaSave, FaSpinner } from "react-icons/fa";
+import { FaEye, FaSave, FaSpinner, FaTrash } from "react-icons/fa";
 
-export default function FinalRequirementFiles({ id }) {
-  const { data, setData, post, processing, reset } = useForm({
+export default function FinalRequirementsFiles({ id, final }) {
+  const { data, setData, post, processing, reset, delete: destroy } = useForm({
     Student_Num: id,
     category: "",
     file_name: "",
@@ -11,13 +11,25 @@ export default function FinalRequirementFiles({ id }) {
   });
 
   const categories = [
-    "INTERNSHIP SITE EVALUATION",
-    "TRAINEE'S PERFORMANCE EVALUATION",
-    "INTERNSHIP PORTFOLIO"
-  ];  
+    "DAILY TIME RECORD (DTR)",
+    "ACCOMPLISHMENT REPORT",
+    "STUDENT INTERNSHIP EVALUATION",
+    "CERTIFICATE OF COMPLETION",
+  ];
 
   const [uploadedCategories, setUploadedCategories] = useState({});
   const [filePreviewUrl, setFilePreviewUrl] = useState(null);
+  const [submittedFiles, setSubmittedFiles] = useState({});
+
+  const latestFiles = {};
+  final?.forEach((file) => {
+    if (
+      !latestFiles[file.category] ||
+      new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
+    ) {
+      latestFiles[file.category] = file;
+    }
+  });
 
   const handleFileChange = (category, file) => {
     setData({
@@ -49,8 +61,22 @@ export default function FinalRequirementFiles({ id }) {
           ...prev,
           [category]: true,
         }));
+        setSubmittedFiles((prev) => ({
+          ...prev,
+          [category]: filePreviewUrl,
+        }));
         reset("file_name", "file", "category");
         setFilePreviewUrl(null);
+      },
+    });
+  };
+
+  const handleDelete = (e, fileId) => {
+    e.preventDefault();
+
+    destroy(route("student-files.destroy", fileId), {
+      onSuccess: () => {
+        onFinish: () => reset();
       },
     });
   };
@@ -62,7 +88,12 @@ export default function FinalRequirementFiles({ id }) {
           <form onSubmit={(e) => handleSubmit(category, e)} className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
-                <span className={`mr-2 ${data.file_name && data.category === category ? "text-green-600" : "text-gray-400"}`}>
+                <span
+                  className={`mr-2 ${data.file_name && data.category === category
+                    ? "text-green-600"
+                    : "text-gray-400"
+                    }`}
+                >
                   {data.file_name && data.category === category ? "✓" : "○"}
                 </span>
                 {category}
@@ -81,11 +112,16 @@ export default function FinalRequirementFiles({ id }) {
                       type="submit"
                       title={`Save ${category}`}
                       className="text-uslsgreen hover:text-green-800 text-lg"
-                      disabled={!data.file || data.category !== category || processing}
+                      disabled={
+                        !data.file || data.category !== category || processing
+                      }
                     >
-                      {processing ? <FaSpinner className="animate-spin" /> : <FaSave />}
+                      {processing ? (
+                        <FaSpinner className="animate-spin" />
+                      ) : (
+                        <FaSave />
+                      )}
                     </button>
-
                     {filePreviewUrl && (
                       <a
                         href={filePreviewUrl}
@@ -97,8 +133,47 @@ export default function FinalRequirementFiles({ id }) {
                       </a>
                     )}
                   </>
+                ) : latestFiles[category] ? (
+                  <>
+                    <span className="text-green-600">
+                    {latestFiles[category].file_name}{" "}
+                    <span className="text-gray-500 text-xs">
+                      ({new Date(latestFiles[category].created_at).toLocaleString()})
+                    </span>
+                  </span>
+
+                    <a
+                      href={`/storage/uploads/${latestFiles[category].file_name}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-700 text-lg ml-2"
+                      title="View File"
+                    >
+                      <FaEye />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={(e) => handleDelete(e, latestFiles[category].id)}
+                      className="text-red-600 hover:text-red-800 ml-2"
+                      title={`Delete ${category}`}
+                    >
+                      <FaTrash />
+                    </button>
+                  </>
                 ) : uploadedCategories[category] ? (
-                  <span className="text-green-600">Uploaded!</span>
+                  <>
+                    <span className="text-green-600">Uploaded!</span>
+                    {submittedFiles[category] && (
+                      <a
+                        href={submittedFiles[category]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline ml-2"
+                      >
+                        View
+                      </a>
+                    )}
+                  </>
                 ) : (
                   <span className="text-gray-400">Not uploaded</span>
                 )}
