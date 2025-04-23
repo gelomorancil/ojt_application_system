@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "@inertiajs/react";
 import Select from "react-select";
 
-function CompanyForm({ company_list, onDelete, student }) {
+function CompanyForm({ company_list, onDelete, student, onSave }) {
     const { data, setData, post, processing, reset } = useForm({
         Comp_ID: "",
         Student_ID: student.id,
@@ -10,11 +10,15 @@ function CompanyForm({ company_list, onDelete, student }) {
         AY: "",
         Status: "",
     });
-    
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('student_comp.store'), { 
-            onSuccess: () => {
+        post(route('student_comp.store'), {
+            onSuccess: (page) => {
+                const newCompany = page.props.new_company_record;
+                if (newCompany && onSave) {
+                    onSave(newCompany); // Notify parent
+                }
                 reset();
                 onDelete();
             }
@@ -54,12 +58,12 @@ function CompanyForm({ company_list, onDelete, student }) {
                         onChange={(e) => setData("Sem", e.target.value)}
                     >
                         <option value="">Select Semester</option>
-                        <option value="1st">First</option>
-                        <option value="2nd">Second</option>
+                        <option value="First">First</option>
+                        <option value="Second">Second</option>
                         <option value="Summer">Summer</option>
                     </select>
                 </div>
-                
+
                 {/* School Year */}
                 <div className="w-1/4">
                     <label className="block text-gray-700 font-medium">School Year:</label>
@@ -84,9 +88,9 @@ function CompanyForm({ company_list, onDelete, student }) {
                         onChange={(e) => setData("Status", e.target.value)}
                     >
                         <option value="">Select Status</option>
-                        <option value="Denied">Denied</option>
                         <option value="On going">On going</option>
-                        <option value="Completed">Completed</option>
+                        <option value="Ended Incomplete">Ended Incomplete</option>
+                        <option value="Ended Complete">Ended Complete</option>
                     </select>
                 </div>
             </div>
