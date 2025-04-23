@@ -146,6 +146,28 @@ class CompanyController extends Controller
         ]);
     }
 
+    public function internIndex()
+    {
+        $company_list = Company::select('id', 'Comp_name', 'Address')
+            ->with('CompCourse') // Load the relationship
+            ->get()
+            ->map(function ($company) {
+                $courseIds = collect($company->CompCourse)->pluck('Course_id')->map(function ($courseId) {
+                    return is_string($courseId) ? json_decode($courseId, true) : $courseId;
+                })->flatten()->unique()->toArray();
+
+                $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
+                $company->course_names = implode(', ', $courses);
+
+                return $company;
+            });
+
+        return Inertia::render('Intern/CompanyList', [
+            'company_list' => $company_list,
+        ]);
+    }
+
+
 public function getInternsByCompany($id)
 {
     // Ensure that StudentCompany has a working relationship with Student

@@ -30,7 +30,13 @@ export default function InternAuthenticatedLayout({ header, children }) {
                     >
                         <span>Dashboard</span>
                     </NavLink>
-
+                    <NavLink
+                        href={route('intern.companylist')}
+                        active={route().current('intern.companylist')}
+                        className="flex items-center gap-2 text-lg font-medium text-white"
+                    >
+                        <span>Companies</span>
+                    </NavLink>
                 </div>
 
                 {/* Right - User Dropdown */}

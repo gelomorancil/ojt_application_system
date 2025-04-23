@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\AllowUserOrIntern;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,11 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        // Register route middleware
+        // ✅ All route middleware aliases go here
         $middleware->alias([
+            'user_or_intern' => AllowUserOrIntern::class,
             'guest.intern' => \App\Http\Middleware\RedirectIfAuthenticatedIntern::class,
-            ]);
-
+            // Add more middleware aliases here if needed
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

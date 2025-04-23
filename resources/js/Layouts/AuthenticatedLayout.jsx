@@ -13,8 +13,16 @@ import {
 } from "react-icons/fa";
 
 export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const { user } = usePage().props.auth; // Destructure user directly from props
     const [menuOpen, setMenuOpen] = useState(false);
+
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-[#F8F6F0] flex justify-center items-center">
+                <span>Loading...</span>
+            </div>
+        ); // Return a loading state if user data is missing
+    }
 
     return (
         <div className="min-h-screen bg-[#F8F6F0] flex flex-col">
@@ -31,44 +39,27 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* Navigation Links */}
                 <div className={`lg:flex gap-6 ${menuOpen ? 'flex flex-col absolute top-16 left-0 w-full bg-gray-900 p-4' : 'hidden'}`}>
                     <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaTachometerAlt className="w-5 h-5" /> */}
                         <span>Dashboard</span>
                     </NavLink>
                     <NavLink href={route('companies.index')} active={route().current('companies.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaRegBuilding className="w-5 h-5" /> */}
                         <span>Companies</span>
                     </NavLink>
                     <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaUserGraduate className="w-5 h-5" /> */}
                         <span>Student Management</span>
                     </NavLink>
                     <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaBook className="w-5 h-5" /> */}
                         <span>Program</span>
                     </NavLink>
                     <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>MOA Status</span>
                     </NavLink>
                     <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>Student Uploading</span>
                     </NavLink>
-
                 </div>
 
                 {/* Right - User Dropdown */}
                 <div className="flex items-center gap-6">
-                    {/* Search Bar */}
-                    <div className="relative flex items-center">
-                        {/* <FaSearch className="absolute left-3 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="w-64 pl-10 pr-4 py-2 border rounded-lg text-black focus:outline-none focus:ring focus:border-blue-300"
-                        /> */}
-                    </div>
-
                     {/* User Dropdown */}
                     <Dropdown>
                         <Dropdown.Trigger>
