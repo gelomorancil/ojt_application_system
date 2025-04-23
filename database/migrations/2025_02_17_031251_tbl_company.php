@@ -14,7 +14,12 @@ return new class extends Migration
         Schema::create('tbl_company', function (Blueprint $table) {
             $table->id();
             $table->string('Comp_name');
-            $table->string('Address');
+            $table->string('Street_Address');
+            $table->string('Barangay');
+            $table->string('City');
+            $table->string('Province');
+            $table->string('Postal_Code');
+            $table->string('Country');
             $table->timestamps();
         });
     }

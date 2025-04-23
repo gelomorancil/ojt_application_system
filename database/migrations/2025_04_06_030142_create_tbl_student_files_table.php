@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('Student_Num');
             $table->string('file_name');
-            $table->string('category'); // 'Pre-Deployment', 'Deployment', etc.
+            $table->string('category');  // 'Pre-Deployment', 'Deployment', etc.
+            // $table->string('file_path');
             $table->timestamps(); // includes 'created_at' for upload date
         });
     }

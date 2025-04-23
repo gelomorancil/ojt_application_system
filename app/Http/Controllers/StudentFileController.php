@@ -2,38 +2,74 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\StudentFile;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class StudentFileController extends Controller
 {
     public function store(Request $request)
+{
+    $validated = $request->validate([
+        'Student_Num' => 'required',
+        'category' => 'required',
+        'file_name' => 'required|string',
+        'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:20480',
+    ]);
+
+    $file = $request->file('file');
+    $filename = time() . '_' . $file->getClientOriginalName();
+
+    Storage::disk('public')->putFileAs('uploads', $file, $filename);
+
+    StudentFile::create([
+        'Student_Num' => $request->Student_Num,
+        'category' => $request->category,
+        'file_name' => $filename,
+        'needs_letter_of_intent' => $request->category === 'LETTER OF INTENT' ? true : false,
+    ]);
+
+    return redirect()->back()->with('success', 'File uploaded successfully.');
+} 
+
+    public function show($id)
     {
-        $request->validate([
-            'Student_Num' => 'required',
-            'category' => 'required',
-            'file_name' => 'required|file|mimes:pdf,jpeg,jpg,png',
-        ]);
+        $files = StudentFile::where('Student_Num', $id)
+            ->get()
+            ->groupBy('category');
 
-        $fileName = null;
-
-        if ($request->hasFile('file_name')) {
-            $extension = $request->file('file_name')->getClientOriginalExtension();
-            $fileName = Str::random(32) . '.' . $extension;
-            $path = $request->file('file_name')->storeAs('public/uploads', $fileName);
-        }
-
-        $record = StudentFile::create([
-            'Student_Num' => $request->Student_Num,
-            'category' => $request->category,
-            'file_name' => $fileName,
-        ]);
-
-        return response()->json([
-            'message' => 'File uploaded successfully!',
-            'file' => $record,
+        return Inertia::render('Student/UploadFiles', [
+            'studentFiles' => $files,
         ]);
     }
+
+    public function download($id)
+    {
+        $file = StudentFile::findOrFail($id);
+        return Storage::download('public/uploads/' . $file->file_name);
+    }
+
+    public function destroy($fileId)
+{
+    $file = StudentFile::findOrFail($fileId);
+
+    // Delete the physical file
+    Storage::disk('public')->delete('uploads/' . $file->file_name);
+
+    // Delete the database record
+    $file->delete();
+
+    return redirect()->back()->with('success', 'File deleted successfully.');
+}
+
+public function verify($id)
+    {
+        $file = StudentFile::findOrFail($id);
+        $file->verified = !$file->verified;
+        $file->save();
+
+        return redirect()->back()->with('success', 'File verification status updated.');
+    }
+
 }

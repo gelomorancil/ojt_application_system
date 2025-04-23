@@ -1,95 +1,56 @@
 import React, { useState } from "react";
-import { useForm } from "@inertiajs/react";
+import PreDeploymentFiles from "./Partials/PreDeploymentFiles";
+import DeploymentFiles from "./Partials/DeploymentFiles";
+import FinalRequirementFiles from "./Partials/FinalRequirementFiles";
 
-const categories = [
-    "Pre-Deployment",
-    "Deployment",
-    "DTR",
-    "Final Requirements",
-];
+export default function UploadFiles({ id, preDeployment, deployment, final}) {
+  const [selectedCategory, setSelectedCategory] = useState("Pre-Deployment");
 
-export default function UploadFiles({ id }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        Student_Num: id,
-        category: "Pre-Deployment",
-        file_name: "",
-    });
+  const categories = ["Pre-Deployment", "Deployment", "Final Requirements"];
 
-    const onSubmit = (e) => {
-        e.preventDefault();
+  return (
+    <div className="max-w-full mx-auto space-y-4">
+      <div className="space-y-6">
+        <div className="bg-white border border-gray-200 rounded-md p-4 shadow-sm">
+          <div className="flex items-center space-x-6 text-sm text-gray-700 mb-4">
+            <div className="flex items-center space-x-1">
+              <span className="text-green-600">✓</span>
+              <span>Verified</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <span className="text-red-500">○</span>
+              <span>Pending</span>
+            </div>
+          </div>
 
-        const formData = new FormData();
-        formData.append("Student_Num", id);
-        formData.append("category", category);
-        if (data.file_name) {
-            formData.append("file_name", data.file_name);
-        }
+          <div className="flex mb-4 border-b pb-2">
+            {categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={`mr-4 py-1 px-3 rounded ${
+                  selectedCategory === category
+                    ? "bg-uslsgreen text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                onClick={() => setSelectedCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
 
-        post(route("student-files.store"), {
-            onFinish: () => reset(),
-            data: formData,
-        });
-    };
+          <div className="bg-white rounded-md p-2 space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold text-uslsgreen text-lg">{selectedCategory}</h3>
+            </div>
 
-    return (
-        <div className="max-w-full mx-auto space-y-4">
-            <form onSubmit={onSubmit}>
-                <div className="bg-white border border-uslscream rounded-md p-4 shadow-sm space-y-2">
-                    <h3 className="font-semibold text-uslsgreen text-m">Pre-Deployment</h3>
-                    <div className="flex items-center justify-between">
-                        <input
-                            type="text"
-                            className="hidden"
-                            value="Pre-Deployment"
-                            name="category"
-                            id="category"
-                            onChange={(e) => setData("category", e.target.value)}
-                        />
-                        
-                        <label className="text-m text-gray-700 cursor-pointer hover:underline">
-                            + Add File
-                            <input
-                                type="file"
-                                id="file_name"
-                                name="file_name"
-                                className="hidden"
-                                onChange={(e) => setData("file_name", e.target.files[0])}
-                            />
-                             {/* <input
-                    type="file"
-                    placeholder="file_name"
-                    id="file_name"
-                    name="file_name"
-                    // onChange={(e) =>setData("file_name", e.target.files[0])}
-                    // onChange={(e) => setData("file_name", e.target.files[0])}
-                    onChange={(e) =>
-                        setData("file_name", e.target.files[0])
-                    }
-                /> */}
-                        </label>
-                    </div>
-                    <ul className="space-y-1 text-m text-gray-700">
-                        {/* Check if file_name exists before trying to display */}
-                        {data.file_name && (
-                            <li className="flex justify-between items-center border-b border-gray-200 py-1">
-                                <div className="flex-1 truncate">
-                                    📄 {data.file_name.name}
-                                </div>
-                                <div className="text-gray-500 ml-2 whitespace-nowrap"></div>
-                            </li>
-                        )}
-                    </ul>
-                    <div className="text-right">
-                        <button
-                            type="submit"
-                            className="bg-uslsgreen text-white text-m px-3 py-1 rounded hover:bg-green-800 disabled:bg-gray-400"
-                            disabled={processing}
-                        >
-                            {processing ? "Submitting..." : "Submit"}
-                        </button>
-                    </div>
-                </div>
-            </form>
+            {selectedCategory === "Pre-Deployment" && <PreDeploymentFiles id={id} preDeployment={preDeployment}/>}
+            {selectedCategory === "Deployment" && <DeploymentFiles id={id} deployment={deployment} />}
+            {selectedCategory === "Final Requirements" && <FinalRequirementFiles id={id} final={final} />}
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
