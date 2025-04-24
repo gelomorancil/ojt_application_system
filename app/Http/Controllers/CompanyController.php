@@ -155,7 +155,7 @@ class CompanyController extends Controller
 
     public function internIndex()
     {
-        $company_list = Company::select('id', 'Comp_name', 'Street_Address') // ✅ Fixed column name
+        $company_list = Company::select('id', 'Comp_name', 'Street_Address', 'Barangay', 'City', 'Province', 'Postal_Code', 'Country')
             ->with('CompCourse') // Load the relationship
             ->get()
             ->map(function ($company) {
@@ -173,6 +173,7 @@ class CompanyController extends Controller
             'company_list' => $company_list,
         ]);
     }
+
 
 
 
