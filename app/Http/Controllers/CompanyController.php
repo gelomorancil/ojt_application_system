@@ -113,9 +113,10 @@ class CompanyController extends Controller
     {
         $company = Company::findOrFail($id);
         $course_list = Course::all();
-        // $moa_list = Moa::where('Comp_ID', $id)->get(); // Fetch MOA list for this company
+        $moa_list = Moa::where('Comp_ID', $id)->get(); // Fetch MOA list for this company
 
         // Fetch contact list and associated course names
+
         $contact_list = CompCourse::where('Comp_ID', $id)->get()->map(function ($contact) {
             $courseIds = is_string($contact->Course_id) ? json_decode($contact->Course_id, true) : $contact->Course_id;
 
@@ -130,6 +131,7 @@ class CompanyController extends Controller
         });
 
         $intern_list = StudentCompany::with(['student.course'])->where('Comp_ID', $id)->get();
+
 
         return Inertia::render('Companies/View', [
             'company' => $company,
@@ -150,6 +152,31 @@ class CompanyController extends Controller
         ]);
     }
 
+    public function internIndex()
+    {
+        $company_list = Company::select('id', 'Comp_name', 'Street_Address', 'Barangay', 'City', 'Province', 'Postal_Code', 'Country')
+            ->with('CompCourse') // Load the relationship
+            ->get()
+            ->map(function ($company) {
+                $courseIds = collect($company->CompCourse)->pluck('Course_id')->map(function ($courseId) {
+                    return is_string($courseId) ? json_decode($courseId, true) : $courseId;
+                })->flatten()->unique()->toArray();
+
+                $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
+                $company->course_names = implode(', ', $courses);
+
+                return $company;
+            });
+
+        return Inertia::render('Intern/CompanyList', [
+            'company_list' => $company_list,
+        ]);
+    }
+
+
+
+
+// Removed duplicate method declaration
     public function getInternsByCompany($id)
     {
         $intern_list = StudentCompany::where('Comp_ID', $id)

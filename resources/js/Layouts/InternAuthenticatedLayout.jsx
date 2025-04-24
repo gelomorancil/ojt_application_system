@@ -3,21 +3,11 @@ import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import { usePage } from "@inertiajs/react";
 import { useState } from "react";
-import {
-    FaBars,
-} from "react-icons/fa";
+import { FaBars } from "react-icons/fa";
 
-export default function AuthenticatedLayout({ header, children }) {
-    const { user } = usePage().props.auth; // Destructure user directly from props
+export default function InternAuthenticatedLayout({ header, children }) {
+    const user = usePage().props.auth.user;
     const [menuOpen, setMenuOpen] = useState(false);
-
-    if (!user) {
-        return (
-            <div className="min-h-screen bg-[#F8F6F0] flex justify-center items-center">
-                <span>Loading...</span>
-            </div>
-        ); // Return a loading state if user data is missing
-    }
 
     return (
         <div className="min-h-screen bg-[#F8F6F0] flex flex-col">
@@ -33,36 +23,24 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 {/* Navigation Links */}
                 <div className={`lg:flex gap-6 ${menuOpen ? 'flex flex-col absolute top-16 left-0 w-full bg-gray-900 p-4' : 'hidden'}`}>
-                    <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-2 text-lg font-medium">
+                    <NavLink
+                        href={route('intern.dashboard')}
+                        active={route().current('intern.dashboard')}
+                        className="flex items-center gap-2 text-lg font-medium text-white"
+                    >
                         <span>Dashboard</span>
                     </NavLink>
-                    <NavLink href={route('companies.index')} active={route().current('companies.index')} className="flex items-center gap-2 text-lg font-medium">
+                    <NavLink
+                        href={route('intern.companylist')}
+                        active={route().current('intern.companylist')}
+                        className="flex items-center gap-2 text-lg font-medium text-white"
+                    >
                         <span>Companies</span>
                     </NavLink>
-                    <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-2 text-lg font-medium">
-                        <span>Student Management</span>
-                    </NavLink>
-                    <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaBook className="w-5 h-5" /> */}
-                        <span>Program</span>
-                    </NavLink>
-                    <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
-                        <span>MOA Status</span>
-                    </NavLink>
-                    <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaFileContract className="w-5 h-5" /> */}
-                        <span>Class List</span>
-                    </NavLink>
-                    <NavLink href={route('forms.index')} active={route().current('forms.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaFileContract className="w-5 h-5" /> */}
-                        <span>Downloadable Forms</span>
-                    </NavLink>
-
                 </div>
 
                 {/* Right - User Dropdown */}
                 <div className="flex items-center gap-6">
-                    {/* User Dropdown */}
                     <Dropdown>
                         <Dropdown.Trigger>
                             <button className="flex items-center bg-white px-3 py-2 text-lg font-medium text-black rounded-md hover:text-gray-700 transition">
@@ -84,13 +62,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         <Dropdown.Content className="bg-white shadow-lg border border-gray-300">
                             <Dropdown.Link
-                                href={route("profile.edit")}
-                                className="text-black hover:bg-gray-100"
-                            >
-                                Profile
-                            </Dropdown.Link>
-                            <Dropdown.Link
-                                href={route("logout")}
+                                href={route("intern.logout")}
                                 method="post"
                                 as="button"
                                 className="text-black hover:bg-gray-100"

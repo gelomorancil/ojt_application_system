@@ -12,9 +12,10 @@ class StudentFile extends Model
         'Student_Num',
         'category',
         'file_name',
-        // 'file_path',
         'needs_letter_of_intent',
+        'verified',
     ];
+    
     
     // Relationship to Student (assuming Student model exists)
     public function student()

@@ -6,7 +6,6 @@ use App\Http\Controllers\StudentCompanyController;
 use App\Http\Controllers\MoaController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CompCourseController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MoaProcessController;
 use App\Http\Controllers\DashboardController;
@@ -142,17 +141,11 @@ Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->
 
 Route::post('/student-files', [StudentFileController::class, 'store'])->name('student-files.store');
 Route::delete('/student-files/{id}', [StudentFileController::class, 'destroy'])->name('student-files.destroy');
+Route::post('/student-files/verify/{id}', [StudentFileController::class, 'verify'])->name('student-files.verify');
 
 
 });
-
-// Route::prefix('student-files')->group(function () {
-//     Route::get('/', [StudentFileController::class, 'index']);
-//     Route::post('/', [StudentFileController::class, 'store']);
-//     Route::get('/student/{Student_Num}', [StudentFileController::class, 'showByStudent']);
-//     Route::delete('/{id}', [StudentFileController::class, 'destroy']);
-// });
-
+;
 Route::post('/student/export', [StudentController::class, 'export'])->name('student.export');
 
 Route::post('/student/{id}/update-remarks', [StudentController::class, 'updateRemarks'])->name('student.update-remarks');
@@ -171,3 +164,6 @@ Route::prefix('api/forms')->name('api.forms.')->middleware(['auth'])->group(func
 });
 
 require __DIR__.'/auth.php';
+
+require __DIR__.'/intern-auth.php';
+

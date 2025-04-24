@@ -1,9 +1,13 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import {  FaEye, FaSave, FaSpinner, FaTrash } from "react-icons/fa";
+import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from "react-icons/fa";
 
-export default function DeploymentFiles({ id, deployment }) {
-  const { data, setData, post, processing, reset, delete: destroy } = useForm({
+export default function DeploymentFiles({ id, deployment, auth }) {
+  const isCoordinator = true;
+
+  const user = auth?.user;
+
+  const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
     category: "",
     file_name: "",
@@ -83,6 +87,12 @@ export default function DeploymentFiles({ id, deployment }) {
     });
   };
 
+  const handleVerify = (fileId) => {
+    post(route("student-files.verify", fileId), {
+      onSuccess: () => {},
+    });
+  };
+
   return (
     <div className="ml-4 space-y-4">
       {categories.map((category) => (
@@ -138,7 +148,9 @@ export default function DeploymentFiles({ id, deployment }) {
                 ) : latestFiles[category] ? (
                   <>
                     <span className="text-green-600">
-                      {latestFiles[category].file_name}{" "}
+                      {latestFiles[category].file_name.length > 10
+                        ? `${latestFiles[category].file_name.slice(0, 10)}...`
+                        : latestFiles[category].file_name}{" "}
                       <span className="text-gray-500 text-xs">
                         ({new Date(latestFiles[category].created_at).toLocaleString()})
                       </span>
@@ -160,6 +172,20 @@ export default function DeploymentFiles({ id, deployment }) {
                     >
                       <FaTrash />
                     </button>
+                    {isCoordinator && (
+                      <button
+                        type="button"
+                        onClick={() => handleVerify(latestFiles[category].id)}
+                        className="text-green-600 ml-2 cursor-pointer"
+                        title="Verify File"
+                      >
+                        {latestFiles[category]?.verified === 1 || latestFiles[category]?.verified === true ? (
+                          <FaCheckCircle />
+                        ) : (
+                          "○"
+                        )}
+                      </button>
+                    )}
                   </>
                 ) : uploadedCategories[category] ? (
                   <>

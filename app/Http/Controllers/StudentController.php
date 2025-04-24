@@ -15,6 +15,7 @@ use App\Imports\StudentImport;
 use App\Exports\StudentsExport;
 use Inertia\Inertia;
 use Inertia\Response;
+use \Illuminate\Support\Facades\Auth;
 use PDF;
 
 class StudentController extends Controller {
@@ -45,13 +46,13 @@ class StudentController extends Controller {
         
         // Get all provinces and cities from the company table
         $provinces = Company::distinct('Province')->whereNotNull('Province')->pluck('Province')->toArray();
-        
+
         // Organize cities by province
         $citiesByProvince = [];
         $allCities = Company::whereNotNull('Province')->whereNotNull('City')
             ->select('Province', 'City')
             ->get();
-        
+
         foreach ($allCities as $record) {
             if (!isset($citiesByProvince[$record->Province])) {
                 $citiesByProvince[$record->Province] = [];
@@ -195,6 +196,9 @@ class StudentController extends Controller {
             'preDeployment' => $preDeployment,
             'deployment' => $deployment,
             'final' => $final,
+            'auth' => [
+                'user' => Auth::user(),
+            ],
             // 'details_list' => $details_list,
         ]);
 
@@ -345,7 +349,7 @@ class StudentController extends Controller {
         $year = $request->input('year');
         $province = $request->input('province');
         $city = $request->input('city');
-        
+
         $query = Student::select(
             'tbl_student.id',
             'tbl_student.Student_Num',
@@ -363,29 +367,29 @@ class StudentController extends Controller {
         ->leftJoin('tbl_ojt_hrs', 'tbl_student.Course_ID', '=', 'tbl_ojt_hrs.Course_ID')
         ->leftJoin('tbl_student_comp', 'tbl_student.id', '=', 'tbl_student_comp.Student_ID')
         ->leftJoin('tbl_company', 'tbl_student_comp.Comp_ID', '=', 'tbl_company.id');
-        
+
         if ($college) {
             $query->where('tbl_course.College', $college);
         }
-        
+
         if ($course) {
             $query->where('tbl_course.Course', $course);
         }
-        
+
         if ($year) {
             $query->where('tbl_student.Year', $year);
         }
-        
+
         if ($province) {
             $query->where('tbl_company.Province', $province);
         }
-        
+
         if ($city) {
             $query->where('tbl_company.City', $city);
         }
-        
+
         $students = $query->get();
-        
+
         $filename = 'students';
         if ($college) $filename .= '_' . $college;
         if ($course) $filename .= '_' . $course;
@@ -393,7 +397,7 @@ class StudentController extends Controller {
         if ($province) $filename .= '_' . $province;
         if ($city) $filename .= '_' . $city;
         $filename .= '.xlsx';
-        
+
         return Excel::download(new StudentsExport($students), $filename);
     }
 

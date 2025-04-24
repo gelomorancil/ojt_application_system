@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Course;
 
 class Student extends Model
 {
@@ -14,8 +13,9 @@ class Student extends Model
 
     protected $fillable = ['Course_ID', 'Fname', 'Lname', 'Student_Num', 'Year', 'Remarks'];
 
-    public function course() {
-        return $this->belongsTo(Course::class, 'Course_ID', 'id');
+    public function course()
+    {
+        return $this->belongsTo(Course::class, 'Course_ID', 'id'); // ✅ Eloquent relation
     }
 
     public function ojtHours()

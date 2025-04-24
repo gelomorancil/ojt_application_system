@@ -40,7 +40,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
         if (!exportProvince) return cities;
         return citiesByProvince[exportProvince] || [];
     }, [exportProvince, citiesByProvince, cities]);
-    
+
     // Reset city when province changes
     useEffect(() => {
         setExportCity("");
@@ -49,25 +49,25 @@ export default function Student({ students = [], courses = [], colleges = [], pr
     // Get unique cities and provinces from students data
     const uniqueCities = useMemo(() => {
         const citiesSet = new Set();
-        
+
         students.forEach(student => {
             if (student.City) {
                 citiesSet.add(student.City);
             }
         });
-        
+
         return Array.from(citiesSet).sort();
     }, [students]);
 
     const uniqueProvinces = useMemo(() => {
         const provincesSet = new Set();
-        
+
         students.forEach(student => {
             if (student.Province) {
                 provincesSet.add(student.Province);
             }
         });
-        
+
         return Array.from(provincesSet).sort();
     }, [students]);
 
@@ -482,9 +482,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
     }, [filteredStudents]);
 
     return (
-        <AuthenticatedLayout
-            // header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Student Management</h2>}
-        >
+        <AuthenticatedLayout>
             <Head title="Student Management" />
 
             <div className="py-12">
@@ -840,7 +838,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                 ))}
                             </select>
                         </div>
-                        
+
                         {/* Course Selection */}
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Course (Optional)</label>
@@ -858,7 +856,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                 ))}
                             </select>
                         </div>
-                        
+
                         {/* School Year Selection */}
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">School Year (Optional)</label>
@@ -875,7 +873,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                 ))}
                             </select>
                         </div>
-                        
+
                         {/* Province Selection */}
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Province (Optional)</label>
@@ -909,7 +907,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                 ))}
                             </select>
                         </div>
-                        
+
                         {/* Buttons */}
                         <div className="flex justify-end gap-2 mt-6">
                             <button
