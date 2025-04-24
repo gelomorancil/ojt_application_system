@@ -25,19 +25,24 @@ class FormsController extends Controller
             $collegeId = 1;
         }
         
+        Log::info("Fetching forms for college ID: " . $collegeId);
+        
         // Get forms from database using the Form model
         $forms = Form::where('Course_ID', $collegeId)
-            ->select(['id', 'Filename', 'Label'])
+            ->select(['id', 'Filename', 'Label', 'Course_ID'])
             ->get();
         
+        Log::info("Found " . $forms->count() . " forms");
+        
         // For API requests, return JSON data
-        if ($request->expectsJson()) {
+        if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json(['forms' => $forms]);
         }
         
         // For web requests, return Inertia view with data
         return Inertia::render('Forms', [
-            'forms' => $forms
+            'forms' => $forms,
+            'collegeId' => $collegeId
         ]);
     }
 
@@ -86,7 +91,7 @@ class FormsController extends Controller
             ]);
             
             // Log successful upload
-            Log::info("Form uploaded: {$label}");
+            Log::info("Form uploaded: {$label} for college ID: {$collegeId}");
             
             if ($request->expectsJson()) {
                 return response()->json([
@@ -109,66 +114,61 @@ class FormsController extends Controller
     }
 
     /**
-     * Download a specific form
+     * Download form
      */
     public function download($id, Request $request)
-{
-    try {
-        // Get form details using the Form model
-        $form = Form::findOrFail($id);
-        
-        $filePath = storage_path('app/public/forms/' . $form->Filename);
-        
-        // Check if file exists
-        if (!File::exists($filePath)) {
-            Log::warning("File not found: {$filePath} for form ID: {$id}");
-            return back()->with('error', 'File not found on server');
-        }
-        
-        // Check if this is a preview request
-        if ($request->has('preview') && $request->preview === 'true') {
-            // Get file extension
-            $extension = File::extension($filePath);
+    {
+        try {
+            // Get form details using the Form model
+            $form = Form::findOrFail($id);
             
-            // For PDF files, we can display them directly
-            if (strtolower($extension) === 'pdf') {
+            $filePath = storage_path('app/public/forms/' . $form->Filename);
+            
+            // Check if file exists
+            if (!File::exists($filePath)) {
+                Log::warning("File not found: {$filePath} for form ID: {$id}");
+                return back()->with('error', 'File not found on server');
+            }
+            
+            // Check if this is a preview request
+            if ($request->has('preview') && $request->preview === 'true') {
+                // Get file extension
+                $extension = File::extension($filePath);
+                
+                // For PDF files, we can display them directly
+                if (strtolower($extension) === 'pdf') {
+                    return response()->file($filePath, [
+                        'Content-Type' => 'application/pdf',
+                    ]);
+                }
+                
                 return response()->file($filePath, [
-                    'Content-Type' => 'application/pdf',
+                    'Content-Type' => $this->getContentType($filePath),
+                    'Content-Disposition' => 'inline; filename="' . $form->Label . '"'
                 ]);
             }
             
-            // For other file types, we'll need to handle differently
-            // For Office documents, you might redirect to a preview service
-            // or use a library that converts them to viewable format
+            // If not a preview, log download and proceed with download
+            $this->logFormDownload($form->id);
             
-            // For now, just send with inline disposition
-            return response()->file($filePath, [
-                'Content-Type' => $this->getContentType($filePath),
-                'Content-Disposition' => 'inline; filename="' . $form->Label . '"'
-            ]);
+            // Get file extension safely
+            $extension = File::extension($filePath);
+            $downloadFilename = Str::slug($form->Label) . '.' . $extension;
+            
+            // Return file for download
+            return response()->download(
+                $filePath,
+                $downloadFilename,
+                [
+                    'Content-Type' => $this->getContentType($filePath),
+                    'Content-Disposition' => 'attachment; filename="' . $downloadFilename . '"'
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error('Form download error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to download form');
         }
-        
-        // If not a preview, log download and proceed with download
-        $this->logFormDownload($form->id);
-        
-        // Get file extension safely
-        $extension = File::extension($filePath);
-        $downloadFilename = Str::slug($form->Label) . '.' . $extension;
-        
-        // Return file for download
-        return response()->download(
-            $filePath,
-            $downloadFilename,
-            [
-                'Content-Type' => $this->getContentType($filePath),
-                'Content-Disposition' => 'attachment; filename="' . $downloadFilename . '"'
-            ]
-        );
-    } catch (\Exception $e) {
-        Log::error('Form download error: ' . $e->getMessage());
-        return back()->with('error', 'Failed to download form');
     }
-}
 
     /**
      * Delete a form
@@ -226,25 +226,25 @@ class FormsController extends Controller
         }
     }
 
-    /**
-     * Get content type based on file extension
-     */
-    protected function getContentType($filename)
-    {
-        $extension = strtolower(File::extension($filename));
+    // /**
+    //  * Get content type based on file extension
+    //  */
+    // protected function getContentType($filename)
+    // {
+    //     $extension = strtolower(File::extension($filename));
         
-        $contentTypes = [
-            'pdf' => 'application/pdf',
-            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'doc' => 'application/msword',
-            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'xls' => 'application/vnd.ms-excel',
-            'ppt' => 'application/vnd.ms-powerpoint',
-            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-            'txt' => 'text/plain',
-            'csv' => 'text/csv',
-        ];
+    //     $contentTypes = [
+    //         'pdf' => 'application/pdf',
+    //         'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    //         'doc' => 'application/msword',
+    //         'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    //         'xls' => 'application/vnd.ms-excel',
+    //         'ppt' => 'application/vnd.ms-powerpoint',
+    //         'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    //         'txt' => 'text/plain',
+    //         'csv' => 'text/csv',
+    //     ];
 
-        return $contentTypes[$extension] ?? 'application/octet-stream';
-    }
+    //     return $contentTypes[$extension] ?? 'application/octet-stream';
+    // }
 }
