@@ -54,7 +54,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>Class List</span>
                     </NavLink>
-                    <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
+                    <NavLink href={route('forms.index')} active={route().current('forms.index')} className="flex items-center gap-2 text-lg font-medium">
                         {/* <FaFileContract className="w-5 h-5" /> */}
                         <span>Downloadable Forms</span>
                     </NavLink>

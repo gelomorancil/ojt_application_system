@@ -61,22 +61,23 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                             )}
                         </div>
                         <div className="rounded-lg mb-4 flex flex-col items-center">
-                        <button
-                            onClick={addCompanyBox}
-                            className="px-4 h-8 bg-gray-500 text-white rounded-lg hover:bg-uslsgreen"
-                        >
-                            Add Company Profile
-                        </button>
-                        {extraCompanies.map((company) => (
-                            <CompanyForm key={company.id} company_list={company_list} onDelete={() => handleDelete(company.id)} student={student} />
-                        ))}
-                    </div>
+                            <button
+                                onClick={addCompanyBox}
+                                className="px-4 h-8 bg-gray-500 text-white rounded-lg hover:bg-uslsgreen"
+                            >
+                                Add Company Profile
+                            </button>
+                            {extraCompanies.map((company) => (
+                                <CompanyForm key={company.id} company_list={company_list} onDelete={() => handleDelete(company.id)} student={student} />
+                            ))}
+                        </div>
                     </div>
                 </div>
                 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
                     <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final}/>
+                    <StudentRemarks studentId={student.id} initialRemarks={student.Remarks} />
                 </div>
             </div>
         </AuthenticatedLayout>

@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('tbl_forms', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('Course_ID');
-            $table->string('Filename');
+            $table->unsignedBigInteger('Course_ID');
             $table->string('Label');
+            $table->string('Filename');
+            $table->timestamps();
         });
     }
 
