@@ -133,6 +133,7 @@ class CompanyController extends Controller
 
         $intern_list = StudentCompany::with(['student.course'])->where('Comp_ID', $id)->get();
 
+
         return Inertia::render('Companies/View', [
             'company' => $company,
             'course_list' => $course_list,

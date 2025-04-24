@@ -4,11 +4,6 @@ import NavLink from "@/Components/NavLink";
 import { usePage } from "@inertiajs/react";
 import { useState } from "react";
 import {
-    FaTachometerAlt,
-    FaUserGraduate,
-    FaFileContract,
-    FaBook,
-    FaRegBuilding,
     FaBars,
 } from "react-icons/fa";
 

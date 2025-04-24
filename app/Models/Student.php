@@ -3,13 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Course;
 use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
+
     protected $table = 'tbl_student';
 
     protected $fillable = [
@@ -22,7 +21,7 @@ class Student extends Model
 
     public function course()
     {
-        return $this->belongsTo(Course::class, 'Course_ID', 'id')->first()->toArray();
+        return $this->belongsTo(Course::class, 'Course_ID', 'id'); // ✅ Eloquent relation
     }
 
     public function ojtHours()
