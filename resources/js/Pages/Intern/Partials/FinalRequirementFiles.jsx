@@ -2,8 +2,7 @@ import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from "react-icons/fa";
 
-export default function PreDeploymentFiles({ id, preDeployment, auth }) {
-  // TEMPORARY: Always treat the user as a coordinator for now
+export default function FinalRequirementsFiles({ id, final, auth }) {
   const isCoordinator = true;
 
   const user = auth?.user;
@@ -15,20 +14,11 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
     file: null,
   });
 
-  const [needsLetterOfIntent, setNeedsLetterOfIntent] = useState(() => {
-    const letterOfIntentFile = preDeployment.find(
-      (file) => file.category === "LETTER OF INTENT"
-    );
-    return letterOfIntentFile?.needs_letter_of_intent === 1;
-  });
-
   const categories = [
-    "RESUME",
-    "ENDORSEMENT LETTER",
-    "APPLICATION LETTER",
-    "PARENT'S/GUARDIAN CONSENT",
-    "PARENT'S/GUARDIAN ID",
-    ...(preDeployment.some(f => f.category === "LETTER OF INTENT") || needsLetterOfIntent ? ["LETTER OF INTENT"] : []),
+    "DAILY TIME RECORD (DTR)",
+    "ACCOMPLISHMENT REPORT",
+    "STUDENT INTERNSHIP EVALUATION",
+    "CERTIFICATE OF COMPLETION",
   ];
 
   const [uploadedCategories, setUploadedCategories] = useState({});
@@ -36,7 +26,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
   const [submittedFiles, setSubmittedFiles] = useState({});
 
   const latestFiles = {};
-  preDeployment.forEach((file) => {
+  final?.forEach((file) => {
     if (
       !latestFiles[file.category] ||
       new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
@@ -66,7 +56,6 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
     formData.append("category", category);
     formData.append("file_name", data.file_name);
     formData.append("file", data.file);
-    formData.append("needs_letter_of_intent", needsLetterOfIntent ? true : false);
 
     post(route("student-files.store"), {
       data: formData,
@@ -89,32 +78,21 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
   const handleDelete = (e, fileId) => {
     e.preventDefault();
 
-    destroy(route('student-files.destroy', fileId), {
+    destroy(route("student-files.destroy", fileId), {
       onSuccess: () => {
-        onFinish: () => reset()
+        onFinish: () => reset();
       },
     });
   };
 
   const handleVerify = (fileId) => {
-    post(route('student-files.verify', fileId), {
+    post(route("student-files.verify", fileId), {
       onSuccess: () => {},
     });
   };
 
   return (
     <div className="ml-4 space-y-4">
-      <div className="mb-4">
-        <label className="flex items-center text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={needsLetterOfIntent}
-            onChange={(e) => setNeedsLetterOfIntent(e.target.checked)}
-            className="mr-2"
-          />
-          I am an intern outside of the city (requires Letter of Intent)
-        </label>
-      </div>
       {categories.map((category) => (
         <div key={category} className="border-b border-gray-200 pb-4">
           <form onSubmit={(e) => handleSubmit(category, e)} className="space-y-2">
@@ -122,8 +100,8 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
               <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
                 <span
                   className={`mr-2 ${data.file_name && data.category === category
-                      ? "text-green-600"
-                      : "text-gray-400"
+                    ? "text-green-600"
+                    : "text-gray-400"
                     }`}
                 >
                   {data.file_name && data.category === category ? "✓" : "○"}
@@ -139,18 +117,20 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
               <div className="text-xs text-gray-600 flex items-center gap-2">
                 {data.file_name && data.category === category ? (
                   <>
-                    <span className="truncate max-w-xs">
-                      {data.file_name.length > 10
-                        ? `${data.file_name.slice(0, 10)}...`
-                        : data.file_name}
-                    </span>
+                    <span className="truncate max-w-xs">{data.file_name}</span>
                     <button
                       type="submit"
                       title={`Save ${category}`}
                       className="text-uslsgreen hover:text-green-800 text-lg"
-                      disabled={!data.file || data.category !== category || processing}
+                      disabled={
+                        !data.file || data.category !== category || processing
+                      }
                     >
-                      {processing ? <FaSpinner className="animate-spin" /> : <FaSave />}
+                      {processing ? (
+                        <FaSpinner className="animate-spin" />
+                      ) : (
+                        <FaSave />
+                      )}
                     </button>
                     {filePreviewUrl && (
                       <a
@@ -165,12 +145,14 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
                   </>
                 ) : latestFiles[category] ? (
                   <>
-                    <span className="text-green-600">
-                      {latestFiles[category].file_name.length > 10
-                        ? `${latestFiles[category].file_name.slice(0, 10)}...`
-                        : latestFiles[category].file_name}
-                      <span className="text-gray-500 text-xs"> ({new Date(latestFiles[category].created_at).toLocaleString()})</span>
+                  <span className="text-green-600">
+                    {latestFiles[category].file_name.length > 10
+                      ? `${latestFiles[category].file_name.slice(0, 10)}...`
+                      : latestFiles[category].file_name}{" "}
+                    <span className="text-gray-500 text-xs">
+                      ({new Date(latestFiles[category].created_at).toLocaleString()})
                     </span>
+                  </span>
                     <a
                       href={`/storage/uploads/${latestFiles[category].file_name}`}
                       target="_blank"

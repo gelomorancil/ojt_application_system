@@ -42,7 +42,7 @@ class StudentCompanyController extends Controller
             'Sem' => 'required',
             'AY' => 'required',
             'Status' => 'required',
-        ]);        
+        ]);
 
         $studentCompany->update($request->all());
 

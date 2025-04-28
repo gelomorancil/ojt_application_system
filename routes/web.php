@@ -140,7 +140,7 @@ Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->
 
 Route::post('/student-files', [StudentFileController::class, 'store'])->name('student-files.store');
 Route::delete('/student-files/{id}', [StudentFileController::class, 'destroy'])->name('student-files.destroy');
-Route::post('/student-files/verify/{id}', [StudentFileController::class, 'verify'])->name('student-files.verify');
+// Route::post('/student-files/verify/{id}', [StudentFileController::class, 'verify'])->name('student-files.verify');
 
 
 });

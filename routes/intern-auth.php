@@ -4,6 +4,7 @@ use App\Http\Controllers\Intern\Auth\LoginController;
 use App\Http\Controllers\Intern\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\InternStudentCompanyController;
 use Inertia\Inertia;
 
 Route::prefix('intern')->middleware('guest.intern')->group(function () {
@@ -22,6 +23,11 @@ Route::prefix('intern')->middleware('auth:intern')->group(function () {
     })->name('intern.dashboard');
 
     Route::get('/companylist', [CompanyController::class, 'internIndex'])->name('intern.companylist');
+
+    Route::middleware(['auth:intern'])->group(function () {
+        Route::get('/intern/profile/{student}', [InternStudentCompanyController::class, 'show'])->name('intern.studentdetails');
+    });
+
 
     Route::post('logout', [LoginController::class, 'destroy'])
         ->name('intern.logout');

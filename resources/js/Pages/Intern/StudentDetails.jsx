@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { Head, usePage } from "@inertiajs/react";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import InternAuthenticatedLayout from "@/Layouts/InternAuthenticatedLayout";
 import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
 
@@ -25,7 +25,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
 
 
     return (
-        <AuthenticatedLayout>
+        <InternAuthenticatedLayout>
             <Head title="Student Details" />
 
             <div className="grid grid-cols-4 gap-5">
@@ -85,7 +85,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                     <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final}/>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </InternAuthenticatedLayout>
     );
 }
 

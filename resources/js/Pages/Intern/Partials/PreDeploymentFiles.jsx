@@ -15,11 +15,15 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
     file: null,
   });
 
+  // Check if preDeployment is an array and find the letter of intent
   const [needsLetterOfIntent, setNeedsLetterOfIntent] = useState(() => {
-    const letterOfIntentFile = preDeployment.find(
-      (file) => file.category === "LETTER OF INTENT"
-    );
-    return letterOfIntentFile?.needs_letter_of_intent === 1;
+    if (Array.isArray(preDeployment)) {
+      const letterOfIntentFile = preDeployment.find(
+        (file) => file.category === "LETTER OF INTENT"
+      );
+      return letterOfIntentFile?.needs_letter_of_intent === 1;
+    }
+    return false; // Default to false if preDeployment is not an array
   });
 
   const categories = [
@@ -28,7 +32,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
     "APPLICATION LETTER",
     "PARENT'S/GUARDIAN CONSENT",
     "PARENT'S/GUARDIAN ID",
-    ...(preDeployment.some(f => f.category === "LETTER OF INTENT") || needsLetterOfIntent ? ["LETTER OF INTENT"] : []),
+    ...(Array.isArray(preDeployment) && preDeployment.some(f => f.category === "LETTER OF INTENT") || needsLetterOfIntent ? ["LETTER OF INTENT"] : []),
   ];
 
   const [uploadedCategories, setUploadedCategories] = useState({});
@@ -36,14 +40,16 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
   const [submittedFiles, setSubmittedFiles] = useState({});
 
   const latestFiles = {};
-  preDeployment.forEach((file) => {
-    if (
-      !latestFiles[file.category] ||
-      new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
-    ) {
-      latestFiles[file.category] = file;
-    }
-  });
+  if (Array.isArray(preDeployment)) {
+    preDeployment.forEach((file) => {
+      if (
+        !latestFiles[file.category] ||
+        new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
+      ) {
+        latestFiles[file.category] = file;
+      }
+    });
+  }
 
   const handleFileChange = (category, file) => {
     setData({
