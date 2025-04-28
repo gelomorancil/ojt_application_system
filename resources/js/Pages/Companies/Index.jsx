@@ -27,7 +27,12 @@ export default function Index({ company_list }) {
         setEditingCompany(company);
         setData({
             Comp_name: company.Comp_name || '',
-            Address: company.Address || '',
+            Street_Address: company.Street_Address || '',
+            Barangay: company.Barangay || '',
+            City: company.City || '',
+            Province: company.Province || '',
+            Postal_Code: company.Postal_Code || '',
+            Country: company.Country || '',
         });
     };
 

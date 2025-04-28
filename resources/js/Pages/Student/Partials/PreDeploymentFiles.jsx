@@ -205,7 +205,6 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
                   </>
                 ) : uploadedCategories[category] ? (
                   <>
-                    <span className="text-green-600">Uploaded!</span>
                     {submittedFiles[category] && (
                       <a
                         href={submittedFiles[category]}
@@ -213,7 +212,6 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:underline ml-2"
                       >
-                        View
                       </a>
                     )}
                   </>

@@ -72,4 +72,31 @@ public function verify($id)
         return redirect()->back()->with('success', 'File verification status updated.');
     }
 
+    public function replace(Request $request, $id)
+    {
+        $request->validate([
+            'file' => 'required|mimes:pdf|max:10240',
+        ]);
+    
+        $studentFile = StudentFile::findOrFail($id);
+    
+        // Delete old file from storage
+        if ($studentFile->file_path && Storage::disk('public')->exists($studentFile->file_path)) {
+            Storage::disk('public')->delete($studentFile->file_path);
+        }
+    
+        // Store new file
+        $newFile = $request->file('file');
+        $filename = time() . '_' . $newFile->getClientOriginalName();
+        $path = $newFile->storeAs('student_files', $filename, 'public');
+    
+        // Update the row in the database
+        $studentFile->file_name = $filename;
+        $studentFile->file_path = $path;
+        $studentFile->verified = false; // Optional: reset verification status
+        $studentFile->save();
+    
+        return response()->json(['message' => 'File replaced successfully.']);
+    }
+
 }
