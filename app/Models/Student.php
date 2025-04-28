@@ -17,6 +17,8 @@ class Student extends Model
         'Lname',
         'Student_Num',
         'Year',
+        'email',
+        'password',
     ];
 
     public function course()

@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react'; // 👈 Import usePage to access user role
 import React, { useState, useMemo } from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { MdDelete } from 'react-icons/md';
@@ -31,6 +31,9 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
             (!selectedCity || item.City === selectedCity)
         )
         .sort((a, b) => a.Comp_name.localeCompare(b.Comp_name));
+
+    const { user } = usePage().props.auth; // 👈 Get user from page props
+    const isStudent = user?.role === 'student'; // 👈 Check if the user is a student
 
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg h-[650px]">
@@ -72,7 +75,10 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Courses</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        {/* Conditionally render the Actions column based on the role */}
+                        {!isStudent && (
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        )}
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -88,9 +94,13 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                             <tr key={items.id}>
                                 <td className="align-top px-4 py-4">{index + 1}</td>
                                 <td className="align-top px-4 py-4">
-                                    <Link href={`/companies/${items.id}/profile`}>
-                                        {items.Comp_name}
-                                    </Link>
+                                    {!isStudent ? ( // 👈 Only show Link if not a student
+                                        <Link href={`/companies/${items.id}/profile`}>
+                                            {items.Comp_name}
+                                        </Link>
+                                    ) : (
+                                        items.Comp_name
+                                    )}
                                 </td>
                                 <td className="align-top px-4 py-4 max-w-[250px] truncate">
                                     {fullAddress || 'N/A'}
@@ -98,14 +108,17 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                                 <td className="align-top px-4 py-4 max-w-[250px]">
                                     {items.course_names ? items.course_names : <span className="text-gray-500">No courses</span>}
                                 </td>
-                                <td className="align-top px-4 py-4 flex gap-4">
-                                    <button onClick={() => handleEdit(items)} className="text-blue-500 hover:text-blue-700">
-                                        <FiEdit size={18} />
-                                    </button>
-                                    <button onClick={() => handleDelete(items.id)} className="text-red-500 hover:text-red-700 ml-2">
-                                        <MdDelete size={20} />
-                                    </button>
-                                </td>
+                                {/* Conditionally render Actions if not a student */}
+                                {!isStudent && (
+                                    <td className="align-top px-4 py-4 flex gap-4">
+                                        <button onClick={() => handleEdit(items)} className="text-blue-500 hover:text-blue-700">
+                                            <FiEdit size={18} />
+                                        </button>
+                                        <button onClick={() => handleDelete(items.id)} className="text-red-500 hover:text-red-700 ml-2">
+                                            <MdDelete size={20} />
+                                        </button>
+                                    </td>
+                                )}
                             </tr>
                         );
                     })}
