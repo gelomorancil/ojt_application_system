@@ -31,31 +31,6 @@ const Forms = () => {
     { id: 5, name: 'CON', fullName: 'College of Nursing' }
   ];
 
-  // Grouped form categories
-  const formCategories = {
-    'Pre-deployment': [
-      'RESUME', 
-      'ENDORSEMENT LETTER', 
-      'APPLICATION LETTER', 
-      'PARENT CONSENT', 
-      'PARENTS ID', 
-      'LETTER OF INTENT'
-    ],
-    'Deployment': [
-      'INTERNSHIP PROGRAM COVER', 
-      'COMPANY PROFILE', 
-      'CERTIFICATE OF REGISTRATION', 
-      'INTERNSHIP UNDERTAKING', 
-      'INTERNSHIP INFORMATION SHEET', 
-      'DTR'
-    ],
-    'Final requirements': [
-      'FINAL JOURNAL',
-      'INTERNSHIP PORTFOLIO', 
-      'INTERNSHIP SITE EVALUATION', 
-      'TRAINEE\'S PERFORMANCE EVALUATION'
-    ]
-  };
 
   // Load forms when component mounts
   useEffect(() => {

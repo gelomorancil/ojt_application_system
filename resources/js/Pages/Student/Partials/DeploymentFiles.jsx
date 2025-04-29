@@ -20,7 +20,6 @@ export default function DeploymentFiles({ id, deployment, auth }) {
     "CERTIFICATE OF REGISTRATION",
     "INTERNSHIP UNDERTAKING",
     "INTERNSHIP INFORMATION SHEET",
-    "DAILY TIME RECORD",
   ];
 
   const [uploadedCategories, setUploadedCategories] = useState({});

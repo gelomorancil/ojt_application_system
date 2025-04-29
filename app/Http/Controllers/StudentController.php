@@ -176,7 +176,6 @@ class StudentController extends Controller {
         "CERTIFICATE OF REGISTRATION",
         "INTERNSHIP UNDERTAKING",
         "INTERNSHIP INFORMATION SHEET",
-        "DAILY TIME RECORD",
     ])
     ->get();
 
@@ -189,6 +188,12 @@ class StudentController extends Controller {
     ])
     ->get();
 
+    $dtr = StudentFile::where('Student_Num', $id)
+    ->whereIn('category', [
+        'DTR',
+    ])
+    ->get();
+
         return Inertia::render('Student/StudentDetails', [
             'student' => $student,
             'company_list' => $company_list,
@@ -196,6 +201,7 @@ class StudentController extends Controller {
             'preDeployment' => $preDeployment,
             'deployment' => $deployment,
             'final' => $final,
+            'dtr' => $dtr,
             'auth' => [
                 'user' => Auth::user(),
             ],

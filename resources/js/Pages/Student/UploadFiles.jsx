@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import PreDeploymentFiles from "./Partials/PreDeploymentFiles";
 import DeploymentFiles from "./Partials/DeploymentFiles";
 import FinalRequirementFiles from "./Partials/FinalRequirementFiles";
+import DTRFiles from "./Partials/DTRFiles";
 
-export default function UploadFiles({ id, preDeployment, deployment, final}) {
+export default function UploadFiles({ id, preDeployment, deployment, final, dtr}) {
   const [selectedCategory, setSelectedCategory] = useState("Pre-Deployment");
 
-  const categories = ["Pre-Deployment", "Deployment", "Final Requirements"];
+  const categories = ["Pre-Deployment", "Deployment", "Final Requirements", "Daily Time Record"];
 
   return (
     <div className="max-w-full mx-auto space-y-4">
@@ -48,6 +49,7 @@ export default function UploadFiles({ id, preDeployment, deployment, final}) {
             {selectedCategory === "Pre-Deployment" && <PreDeploymentFiles id={id} preDeployment={preDeployment}/>}
             {selectedCategory === "Deployment" && <DeploymentFiles id={id} deployment={deployment} />}
             {selectedCategory === "Final Requirements" && <FinalRequirementFiles id={id} final={final} />}
+            {selectedCategory === "Daily Time Record" && <DTRFiles id={id} dtr={dtr} />}
           </div>
         </div>
       </div>
