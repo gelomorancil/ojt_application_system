@@ -189,9 +189,8 @@ class StudentController extends Controller {
     ->get();
 
     $dtr = StudentFile::where('Student_Num', $id)
-    ->whereIn('category', [
-        'DTR',
-    ])
+    ->whereIn('category', ['DTR'])
+    ->orderBy('created_at', 'desc')
     ->get();
 
         return Inertia::render('Student/StudentDetails', [

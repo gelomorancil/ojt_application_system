@@ -3,6 +3,8 @@ import { useForm } from '@inertiajs/react';
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from 'react-icons/fa';
 
 export default function DTRFiles({ id, dtr, auth }) {
+
+  console.log(dtr)
   const isCoordinator = true;
   const user = auth?.user;
 
@@ -48,7 +50,8 @@ export default function DTRFiles({ id, dtr, auth }) {
       forceFormData: true,
       onSuccess: () => {
         setUploaded(true);
-        reset('file_name', 'file', 'from_date', 'to_date');
+        // reset('file_name', 'file', 'from_date', 'to_date');
+        reset();
         setFilePreviewUrl(null);
       },
     });
@@ -73,6 +76,7 @@ export default function DTRFiles({ id, dtr, auth }) {
             <input
               type="date"
               value={data.from_date}
+              name='from_date'
               onChange={(e) => setData('from_date', e.target.value)}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 ps-10"
               placeholder="Start date"
@@ -83,6 +87,7 @@ export default function DTRFiles({ id, dtr, auth }) {
             <input
               type="date"
               value={data.to_date}
+              name='to_date'
               onChange={(e) => setData('to_date', e.target.value)}
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 ps-10"
               placeholder="End date"
@@ -130,7 +135,7 @@ export default function DTRFiles({ id, dtr, auth }) {
               </>
             ) : latestDTR ? (
               <>
-                <span className="text-green-600">
+                {/* <span className="text-green-600">
                   {latestDTR.file_name.length > 10
                     ? `${latestDTR.file_name.slice(0, 10)}...`
                     : latestDTR.file_name}
@@ -164,7 +169,7 @@ export default function DTRFiles({ id, dtr, auth }) {
                   >
                     {latestDTR.verified ? <FaCheckCircle /> : '○'}
                   </button>
-                )}
+                )} */}
               </>
             ) : uploaded ? (
               <>
@@ -186,6 +191,98 @@ export default function DTRFiles({ id, dtr, auth }) {
           </div>
         </div>
       </form>
+      {/* Upload History */}
+      {dtr?.length > 0 && (
+        <div className="border-t pt-4 mt-4">
+          <h3 className="text-m font-semibold text-gray-700 mb-2">Upload History</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm text-left text-gray-700 border border-gray-300 rounded">
+              <thead className="bg-gray-100 text-gray-700 uppercase text-xs border-b">
+                <tr>
+                  <th scope="col" className="px-4 py-2">DTR Coverage</th>
+                  <th scope="col" className="px-4 py-2">Date Uploaded</th>
+                  <th scope="col" className="px-4 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dtr
+                  .filter(f => {
+                    if (f.category !== 'DTR') return false;
+                    const created = new Date(f.created_at);
+                    // const from = data.from_date ? new Date(data.from_date) : null;
+                    // const to = data.to_date ? new Date(data.to_date) : null;
+                    // if (from && created < from) return false;
+                    // if (to && created > to) return false;
+                    return true;
+                  })
+                  .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)) // ASCENDING ORDER
+                  .map(file => (
+                    <tr key={file.id} className="border-t">
+                      <td className="px-4 py-2">
+                        {file.from_date && file.to_date ? (
+                          <>
+                            {new Date(file.from_date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })} to {new Date(file.to_date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </>
+                        ) : (
+                          "No date coverage"
+                        )}
+                      </td>
+    
+                      <td className="px-4 py-2">
+                      {new Date(file.created_at).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})} at {new Date(file.created_at).toLocaleTimeString('en-US', {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true,
+})}
+                      </td>
+                      <td className="px-4 py-2 flex items-center gap-2">
+                        <a
+                          href={`/storage/uploads/${file.file_name}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:text-blue-700"
+                          title="View"
+                        >
+                          <FaEye />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDelete(e, file.id)}
+                          className="text-red-600 hover:text-red-800"
+                          title="Delete"
+                        >
+                          <FaTrash />
+                        </button>
+                        {isCoordinator && (
+                          <button
+                            type="button"
+                            onClick={() => post(route('student-files.verify', file.id))}
+                            className="text-green-600"
+                            title="Verify"
+                          >
+                            {file.verified ? <FaCheckCircle /> : '○'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,11 +11,15 @@ class StudentFileController extends Controller
 {
     public function store(Request $request)
 {
+
+    // dd($request->all());
     $validated = $request->validate([
         'Student_Num' => 'required',
         'category' => 'required',
         'file_name' => 'required|string',
         'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:20480',
+        'from_date' => 'nullable',
+        'to_date' => 'nullable|date|after_or_equal:from_date',
     ]);
 
     $file = $request->file('file');
@@ -28,6 +32,9 @@ class StudentFileController extends Controller
         'category' => $request->category,
         'file_name' => $filename,
         'needs_letter_of_intent' => $request->category === 'LETTER OF INTENT' ? true : false,
+        'from_date' => $request->from_date,
+        'to_date' => $request->to_date,
+        'uploaded_by' => auth()->id(),
     ]);
 
     return redirect()->back()->with('success', 'File uploaded successfully.');
