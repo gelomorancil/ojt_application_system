@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
-import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from 'react-icons/fa';
+import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload} from 'react-icons/fa';
 
 export default function DTRFiles({ id, dtr, auth }) {
 
@@ -97,10 +97,15 @@ export default function DTRFiles({ id, dtr, auth }) {
 
         {/* Upload Field */}
         <div className="flex items-center justify-between">
-          <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
+          <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen gap-2">
             <span className={`mr-2 ${data.file_name ? 'text-green-600' : 'text-gray-400'}`}>
-              {data.file_name ? '✓' : '○'}
             </span>
+            <a
+              className="text-uslsgreen hover:text-gray-700"
+              title="Upload File"
+            >
+              <FaUpload />
+            </a>
             DAILY TIME RECORD
             <input
               type="file"
@@ -135,41 +140,6 @@ export default function DTRFiles({ id, dtr, auth }) {
               </>
             ) : latestDTR ? (
               <>
-                {/* <span className="text-green-600">
-                  {latestDTR.file_name.length > 10
-                    ? `${latestDTR.file_name.slice(0, 10)}...`
-                    : latestDTR.file_name}
-                  <span className="text-gray-500 text-xs ml-1">
-                    ({new Date(latestDTR.created_at).toLocaleString()})
-                  </span>
-                </span>
-                <a
-                  href={`/storage/uploads/${latestDTR.file_name}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-700 text-lg ml-2"
-                  title="View File"
-                >
-                  <FaEye />
-                </a>
-                <button
-                  type="button"
-                  onClick={(e) => handleDelete(e, latestDTR.id)}
-                  className="text-red-600 hover:text-red-800 ml-2"
-                  title="Delete DTR"
-                >
-                  <FaTrash />
-                </button>
-                {isCoordinator && (
-                  <button
-                    type="button"
-                    onClick={() => post(route('student-files.verify', latestDTR.id))}
-                    className="text-green-600 ml-2 cursor-pointer"
-                    title="Verify File"
-                  >
-                    {latestDTR.verified ? <FaCheckCircle /> : '○'}
-                  </button>
-                )} */}
               </>
             ) : uploaded ? (
               <>
