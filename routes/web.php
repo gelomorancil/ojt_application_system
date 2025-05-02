@@ -77,7 +77,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified'])->get('/companies', [CompanyController::class, 'index'])->name('companies.index');
 
 // Only Admin can access the others
-Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
     Route::get('/companies/{id}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
     Route::put('/companies/{id}', [CompanyController::class, 'update'])->name('companies.update');

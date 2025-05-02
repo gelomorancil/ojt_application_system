@@ -18,7 +18,7 @@ const provinces = {
     BARMM: ["Basilan", "Lanao del Sur", "Maguindanao del Norte", "Maguindanao del Sur", "Sulu", "Tawi-Tawi"],
     NCR: ["Metro Manila"],
     CAR: ["Abra", "Apayao", "Benguet", "Ifugao", "Kalinga", "Mountain Province"]
-  };  
+  };
 
 export default function CompanyCreate({ data, setData, handleSubmit, editingCompany, resetForm, errors }) {
     return (
