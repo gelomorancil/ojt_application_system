@@ -156,7 +156,7 @@ export default function DeploymentFiles({ id, deployment, auth }) {
                         ? `${latestFiles[category].file_name.slice(0, 10)}...`
                         : latestFiles[category].file_name}{" "}
                       <span className="text-gray-500 text-xs">
-                        ({new Date(latestFiles[category].created_at).toLocaleString()})
+                        ({new Date(latestFiles[category].updated_at).toLocaleString()})
                       </span>
                     </span>
                     <a

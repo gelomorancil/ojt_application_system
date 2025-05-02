@@ -179,10 +179,6 @@ export default function DTRFiles({ id, dtr, auth }) {
                   .filter(f => {
                     if (f.category !== 'DTR') return false;
                     const created = new Date(f.created_at);
-                    // const from = data.from_date ? new Date(data.from_date) : null;
-                    // const to = data.to_date ? new Date(data.to_date) : null;
-                    // if (from && created < from) return false;
-                    // if (to && created > to) return false;
                     return true;
                   })
                   .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)) // ASCENDING ORDER
@@ -207,15 +203,15 @@ export default function DTRFiles({ id, dtr, auth }) {
                       </td>
     
                       <td className="px-4 py-2">
-                      {new Date(file.created_at).toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-})} at {new Date(file.created_at).toLocaleTimeString('en-US', {
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: true,
-})}
+                      {new Date(file.updated_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })} at {new Date(file.updated_at).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
                       </td>
                       <td className="px-4 py-2 flex items-center gap-2">
                         <a
