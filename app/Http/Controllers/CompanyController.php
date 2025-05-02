@@ -24,9 +24,8 @@ class CompanyController extends Controller
                     return is_string($courseId) ? json_decode($courseId, true) : $courseId;
                 })->flatten()->unique()->toArray();
 
-                // Fetch course names
                 $courses = Course::whereIn('id', $courseIds)->pluck('Course')->toArray();
-                $company->course_names = implode(', ', $courses); // Store as a comma-separated string
+                $company->course_names = implode(', ', $courses);
 
                 return $company;
             });
@@ -137,7 +136,7 @@ class CompanyController extends Controller
         return Inertia::render('Companies/View', [
             'company' => $company,
             'course_list' => $course_list,
-            'moa_list' => $moa_list, // Pass MOA list to the frontend
+            // 'moa_list' => $moa_list, // Pass MOA list to the frontend
             'contact_list' => $contact_list ?? [],
             'intern_list' => $intern_list ?? [],
         ]);

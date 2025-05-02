@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentUploadingController;
 use App\Http\Controllers\StudentFileController;
 use App\Http\Middleware\StudentMiddleware;
+
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -61,6 +62,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/student/batch-delete', [StudentController::class, 'batchDelete'])->name('student.batch-delete');
 });
 
+
+
 //Student Management
 Route::middleware(['auth'])->group(function () {
     Route::get('/student-companies', [StudentCompanyController::class, 'index'])->name('student_comp.index');
@@ -68,8 +71,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/student-companies/{studentCompany}', [StudentCompanyController::class, 'update'])->name('student_comp.update');
     Route::delete('/student-companies/{studentCompany}', [StudentCompanyController::class, 'destroy'])->name('student_comp.destroy');
 });
-
-
 
 
 // Student and Admin can access this
@@ -91,7 +92,6 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
     Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
 });
-
 
 
 
@@ -122,6 +122,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
     Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
 
+});
+// STUDNET USER SIDW
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/student/details/{student}', [StudentCompanyController::class, 'show'])
+        ->name('student.studentdetails');
 });
 
 Route::middleware('auth')->group(function () {

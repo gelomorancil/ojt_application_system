@@ -75,6 +75,13 @@ export default function AuthenticatedLayout({ header, children }) {
                             >
                                 <span>Companies</span>
                             </NavLink>
+                            <NavLink href={route('student.studentdetails', { student: user.student_id })}
+                                active={route().current('student.studentdetails')}
+                                className="flex items-center gap-2 text-lg font-medium"
+                            >
+                                <span>Student Management</span>
+                            </NavLink>
+
                         </>
                     )}
                 </div>

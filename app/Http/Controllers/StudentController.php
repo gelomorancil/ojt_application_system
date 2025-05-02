@@ -16,6 +16,8 @@ use App\Exports\StudentsExport;
 use Inertia\Inertia;
 use Inertia\Response;
 use \Illuminate\Support\Facades\Auth;
+use App\Models\User; // <-- import User model
+use Illuminate\Support\Facades\Hash; // <-- import Hash
 use PDF;
 
 class StudentController extends Controller {
@@ -83,54 +85,63 @@ class StudentController extends Controller {
         // Store a new student
         public function store(Request $request)
         {
-        // Define allowed colleges
-        $allowedColleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
+            $allowedColleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
 
-        $validated = $request->validate([
-            'College' => ['required', function ($attribute, $value, $fail) use ($allowedColleges) {
-                if (!in_array($value, $allowedColleges)) {
-                    $fail("The selected college does not exist.");
-                }
-            }],
-            'Course' => ['required', function ($attribute, $value, $fail) use ($request) {
-                $exists = Course::where('College', $request->College)
-                    ->where('Course', $value)
-                    ->exists();
-                if (!$exists) {
-                    $fail("The course '$value' does not exist for the selected college.");
-                }
-            }],
-            'Fname' => 'required|string|max:255',
-            'Lname' => 'required|string|max:255',
-            'Student_Num' => 'required|string|max:20|unique:tbl_student,Student_Num',
-            'Year' => ['nullable', function ($attribute, $value, $fail) {
-                if ($value && !in_array($value, ['2024-2025', '2025-2026'])) {
-                    $fail('The school year must be either 2024-2025 or 2025-2026.');
-                }
-            }],
-        ]);
+            $validated = $request->validate([
+                'College' => ['required', function ($attribute, $value, $fail) use ($allowedColleges) {
+                    if (!in_array($value, $allowedColleges)) {
+                        $fail("The selected college does not exist.");
+                    }
+                }],
+                'Course' => ['required', function ($attribute, $value, $fail) use ($request) {
+                    $exists = \App\Models\Course::where('College', $request->College)
+                        ->where('Course', $value)
+                        ->exists();
+                    if (!$exists) {
+                        $fail("The course '$value' does not exist for the selected college.");
+                    }
+                }],
+                'Fname' => 'required|string|max:255',
+                'Lname' => 'required|string|max:255',
+                'Student_Num' => 'required|string|max:20|unique:tbl_student,Student_Num',
+                'Year' => ['nullable', function ($attribute, $value, $fail) {
+                    if ($value && !in_array($value, ['2024-2025', '2025-2026'])) {
+                        $fail('The school year must be either 2024-2025 or 2025-2026.');
+                    }
+                }],
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:6',
+            ]);
 
-        // Find Course ID for the given College & Course
-        $course = Course::where('College', $validated['College'])
-            ->where('Course', $validated['Course'])
-            ->first();
+            // Find the course
+            $course = \App\Models\Course::where('College', $validated['College'])
+                ->where('Course', $validated['Course'])
+                ->first();
 
-        if (!$course) {
-            return redirect()->back()->withErrors(['Course' => 'The selected course does not exist.']);
+            if (!$course) {
+                return redirect()->back()->withErrors(['Course' => 'The selected course does not exist.']);
+            }
+
+            // Create student first
+            $student = Student::create([
+                'Course_ID' => $course->id,
+                'Fname' => $validated['Fname'],
+                'Lname' => $validated['Lname'],
+                'Student_Num' => $validated['Student_Num'],
+                'Year' => $request->Year ?? '2024-2025',
+            ]);
+
+            // Create user linked to student
+            User::create([
+                'name' => $validated['Fname'] . ' ' . $validated['Lname'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'student', // Optional: default to 'student'
+                'student_id' => $student->id,
+            ]);
+
+            return redirect()->route('student')->with('success', 'Student added successfully!');
         }
-
-        // Store Student with the correct Course_ID
-        Student::create([
-            'Course_ID' => $course->id,
-            'Fname' => $validated['Fname'],
-            'Lname' => $validated['Lname'],
-            'Student_Num' => $validated['Student_Num'],
-            'Year' => $request->Year ?? '2024-2025', // Default value if not provided
-        ]);
-
-        return redirect()->route('student')->with('success', 'Student added successfully!');
-    }
-
     public function show($id)
     {
         $student = Student::select(

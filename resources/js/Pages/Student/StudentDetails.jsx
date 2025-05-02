@@ -5,8 +5,10 @@ import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
 
 function StudentDetails({ company_list, student_company, preDeployment, deployment, final }) {
-    console.log("final time",final);
-    const [studentCompanyList, setStudentCompanyList] = useState(student_company);
+    console.log("final time", final);
+
+    // Make sure student_company is always an array
+    const [studentCompanyList, setStudentCompanyList] = useState(student_company || []);
 
     const { student } = usePage().props;
     const [extraCompanies, setExtraCompanies] = useState([]);
@@ -23,6 +25,10 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
         setStudentCompanyList((prev) => [...prev, newCompany]);
     };
 
+    // Safely access the last student company data without using .at() method
+    const lastStudentCompany = studentCompanyList && studentCompanyList.length > 0
+        ? studentCompanyList[studentCompanyList.length - 1]
+        : null;
 
     return (
         <AuthenticatedLayout>
@@ -45,44 +51,56 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                 </div>
                             </div>
                             <div className="text-right">
-                            <p><strong>Semester:</strong> {studentCompanyList.at(-1)?.Sem ?? "Not Available"}</p>
-                            <p><strong>Year:</strong> {studentCompanyList.at(-1)?.AY ?? "Not Available"}</p>
-                            <p><strong>Company:</strong> {studentCompanyList.at(-1)?.company?.Comp_name ?? "Not Available"}</p>
-                            <p><strong>Status:</strong> {studentCompanyList.at(-1)?.Status ?? "Not Available"}</p>
+                                <p><strong>Semester:</strong> {lastStudentCompany?.Sem ?? "Not Available"}</p>
+                                <p><strong>Year:</strong> {lastStudentCompany?.AY ?? "Not Available"}</p>
+                                <p><strong>Company:</strong> {lastStudentCompany?.company?.Comp_name ?? "Not Available"}</p>
+                                <p><strong>Status:</strong> {lastStudentCompany?.Status ?? "Not Available"}</p>
                             </div>
                         </div>
-                        <div className="col-span-1 bg-white p-6 shadow-xl rounded-lg mb-4 mt-4">
-                        {studentCompanyList.length > 0 ? (
-                            studentCompanyList.map((item, index) => (
-                                <div key={index} className='bg-white rounded mb-2 p-2'>
-                                    <p><strong>Company:</strong> {item.company?.Comp_name ?? "Not Available"}</p>
-                                    <p><strong>Semester:</strong> {item.Sem ?? "Not Available"}</p>
-                                    <p><strong>School Year:</strong> {item.AY ?? "Not Available"}</p>
-                                    <p><strong>Status:</strong> {item.Status ?? "No Status"}</p>
-                                </div>
-                            ))
-                        ) : (
-                            <p>No company assigned.</p>
-                        )}
 
+                        <div className="col-span-1 bg-white p-6 shadow-xl rounded-lg mb-4 mt-4">
+                            {studentCompanyList && studentCompanyList.length > 0 ? (
+                                studentCompanyList.map((item, index) => (
+                                    <div key={index} className='bg-white rounded mb-2 p-2'>
+                                        <p><strong>Company:</strong> {item.company?.Comp_name ?? "Not Available"}</p>
+                                        <p><strong>Semester:</strong> {item.Sem ?? "Not Available"}</p>
+                                        <p><strong>School Year:</strong> {item.AY ?? "Not Available"}</p>
+                                        <p><strong>Status:</strong> {item.Status ?? "No Status"}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No company assigned.</p>
+                            )}
                         </div>
+
                         <div className="rounded-lg mb-4 flex flex-col items-center">
-                        <button
-                            onClick={addCompanyBox}
-                            className="px-4 h-8 bg-gray-500 text-white rounded-lg hover:bg-uslsgreen"
-                        >
-                            Add Company Profile
-                        </button>
-                        {extraCompanies.map((company) => (
-                            <CompanyForm key={company.id} company_list={company_list} onDelete={() => handleDelete(company.id)} student={student} onSave={handleSave} />
-                        ))}
-                    </div>
+                            <button
+                                onClick={addCompanyBox}
+                                className="px-4 h-8 bg-gray-500 text-white rounded-lg hover:bg-uslsgreen"
+                            >
+                                Add Company Profile
+                            </button>
+                            {extraCompanies.map((company) => (
+                                <CompanyForm
+                                    key={company.id}
+                                    company_list={company_list || []}
+                                    onDelete={() => handleDelete(company.id)}
+                                    student={student}
+                                    onSave={handleSave}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
-                    <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final}/>
+                    <UploadFiles
+                        id={student?.id}
+                        preDeployment={preDeployment}
+                        deployment={deployment}
+                        final={final}
+                    />
                 </div>
             </div>
         </AuthenticatedLayout>

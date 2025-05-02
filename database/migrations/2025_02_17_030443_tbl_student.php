@@ -15,13 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('Course_ID')->nullable();  // Make the Course_ID nullable
             $table->enum('role', ['user', 'student'])->default('user');
-            $table->string('name');
             $table->string('Fname');
             $table->string('Lname');
             $table->string('Student_Num')->unique();
             $table->string('Year');
-            $table->string('email')->unique();
-            $table->string('password');
             $table->timestamps();
         });
     }

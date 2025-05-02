@@ -17,17 +17,21 @@ class Student extends Model
         'Lname',
         'Student_Num',
         'Year',
-        'email',
-        'password',
     ];
 
     public function course()
     {
-        return $this->belongsTo(Course::class, 'Course_ID', 'id'); // ✅ Eloquent relation
+        return $this->belongsTo(Course::class, 'Course_ID', 'id');
     }
 
     public function ojtHours()
     {
         return $this->hasOne(OjtHours::class, 'course_name', 'Course_Name');
+    }
+
+    // ✅ Optional: Reverse relation (if you want to access user from student)
+    public function user()
+    {
+        return $this->hasOne(User::class, 'student_id');
     }
 }
