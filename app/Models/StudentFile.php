@@ -12,6 +12,10 @@ class StudentFile extends Model
         'Student_Num',
         'category',
         'file_name',
+        'file',
+        'from_date',
+        'to_date',
+        // 'uploaded_by',
         'needs_letter_of_intent',
         'verified',
     ];

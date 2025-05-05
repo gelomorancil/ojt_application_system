@@ -35,7 +35,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
 
     const currentYear = new Date().getFullYear();
     const schoolYears = [`${currentYear - 1}-${currentYear}`, `${currentYear}-${currentYear + 1}`, `${currentYear + 1}-${currentYear + 2}`];
-
+    
     const [exportCity, setExportCity] = useState("");
     const [exportProvince, setExportProvince] = useState("");
 
@@ -117,7 +117,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
             if (exportYear) formData.append('year', exportYear);
             if (exportCity) formData.append('city', exportCity); // Add city
             if (exportProvince) formData.append('province', exportProvince); // Add province
-
+            
             // Send a POST request to the export endpoint
             const response = await axios.post('/student/export', formData, {
                 responseType: 'blob', // Important for file download
@@ -591,7 +591,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                     {/* Export Button */}
                                     <button
                                     onClick={() => setShowExportModal(true)}
-                                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center"
+                                    className="bg-uslsgreen text-white px-4 py-2 rounded-lg flex items-center"
                                     >
                                     <svg
                                         className="h-5 w-5 mr-2"
@@ -926,7 +926,7 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                             </button>
                             <button
                                 type="submit"
-                                className="bg-green-500 text-white px-4 py-2 rounded flex items-center"
+                                className="bg-uslsgreen text-white px-4 py-2 rounded flex items-center"
                                 disabled={exportLoading}
                             >
                                 {exportLoading ? (

@@ -9,12 +9,11 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MoaProcessController;
 use App\Http\Controllers\DashboardController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentUploadingController;
 use App\Http\Controllers\StudentFileController;
-use App\Http\Middleware\StudentMiddleware;
-
+use App\Http\Controllers\FormsController;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -159,12 +158,28 @@ Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->
 
 Route::post('/student-files', [StudentFileController::class, 'store'])->name('student-files.store');
 Route::delete('/student-files/{id}', [StudentFileController::class, 'destroy'])->name('student-files.destroy');
-// Route::post('/student-files/verify/{id}', [StudentFileController::class, 'verify'])->name('student-files.verify');
+Route::put('/student-files/{id}', [StudentFileController::class, 'update'])->name('student-files.update');
+
 
 
 });
 ;
 Route::post('/student/export', [StudentController::class, 'export'])->name('student.export');
+
+Route::post('/student/{id}/update-remarks', [StudentController::class, 'updateRemarks'])->name('student.update-remarks');
+
+// Downloadable Forms Routing
+Route::middleware(['auth'])->group(function () {
+    Route::get('/forms/{collegeId?}', [FormsController::class, 'index'])->name('forms.index');
+});
+
+// API routes
+Route::prefix('api/forms')->name('api.forms.')->middleware(['auth'])->group(function () {
+    Route::get('/{collegeId?}', [FormsController::class, 'index'])->name('index');
+    Route::post('/upload', [FormsController::class, 'upload'])->name('upload');
+    Route::get('/download/{id}', [FormsController::class, 'download'])->name('download');
+    Route::delete('/delete/{id}', [FormsController::class, 'deleteForm'])->name('delete');
+});
 
 require __DIR__.'/auth.php';
 

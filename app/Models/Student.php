@@ -11,13 +11,7 @@ class Student extends Model
 
     protected $table = 'tbl_student';
 
-    protected $fillable = [
-        'Course_ID',
-        'Fname',
-        'Lname',
-        'Student_Num',
-        'Year',
-    ];
+    protected $fillable = ['Course_ID', 'Fname', 'Lname', 'Student_Num', 'Year', 'Remarks'];
 
     public function course()
     {

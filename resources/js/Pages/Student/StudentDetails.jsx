@@ -3,12 +3,11 @@ import { Head, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
+import StudentRemarks from "./Partials/StudentRemarks";
 
-function StudentDetails({ company_list, student_company, preDeployment, deployment, final }) {
-    console.log("final time", final);
-
-    // Make sure student_company is always an array
-    const [studentCompanyList, setStudentCompanyList] = useState(student_company || []);
+function StudentDetails({ company_list, student_company, preDeployment, deployment, final, dtr }) {
+    console.log("final time",dtr);
+    const [studentCompanyList, setStudentCompanyList] = useState(student_company);
 
     const { student } = usePage().props;
     const [extraCompanies, setExtraCompanies] = useState([]);
@@ -36,6 +35,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
 
             <div className="grid grid-cols-4 gap-5">
                 <div className="col-span-2 space-y-6">
+                    {/* Left side content remains the same */}
                     <div className="bg-white p-6 shadow rounded-lg">
                         <div className="flex justify-between items-start">
                             <div className="flex gap-4 items-center">
@@ -57,10 +57,9 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                 <p><strong>Status:</strong> {lastStudentCompany?.Status ?? "Not Available"}</p>
                             </div>
                         </div>
-
                         <div className="col-span-1 bg-white p-6 shadow-xl rounded-lg mb-4 mt-4">
-                            {studentCompanyList && studentCompanyList.length > 0 ? (
-                                studentCompanyList.map((item, index) => (
+                            {student_company.length > 0 ? (
+                                student_company.map((item, index) => (
                                     <div key={index} className='bg-white rounded mb-2 p-2'>
                                         <p><strong>Company:</strong> {item.company?.Comp_name ?? "Not Available"}</p>
                                         <p><strong>Semester:</strong> {item.Sem ?? "Not Available"}</p>
@@ -81,13 +80,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                 Add Company Profile
                             </button>
                             {extraCompanies.map((company) => (
-                                <CompanyForm
-                                    key={company.id}
-                                    company_list={company_list || []}
-                                    onDelete={() => handleDelete(company.id)}
-                                    student={student}
-                                    onSave={handleSave}
-                                />
+                                <CompanyForm key={company.id} company_list={company_list} onDelete={() => handleDelete(company.id)} student={student} />
                             ))}
                         </div>
                     </div>
@@ -95,12 +88,8 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
-                    <UploadFiles
-                        id={student?.id}
-                        preDeployment={preDeployment}
-                        deployment={deployment}
-                        final={final}
-                    />
+                    <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final} dtr={dtr}/>
+                    <StudentRemarks studentId={student.id} initialRemarks={student.Remarks} />
                 </div>
             </div>
         </AuthenticatedLayout>

@@ -45,7 +45,7 @@ class StudentController extends Controller {
 
         $courses = Course::select('id', 'College', 'Course')->get();
         $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
-
+        
         // Get all provinces and cities from the company table
         $provinces = Company::distinct('Province')->whereNotNull('Province')->pluck('Province')->toArray();
 
@@ -150,6 +150,8 @@ class StudentController extends Controller {
                 'tbl_student.Fname',
                 'tbl_student.Lname',
                 'tbl_student.Year',
+                'tbl_student.Remarks',
+                'tbl_student.Read as remarks_read_at',
                 'tbl_course.College as College_Name',
                 'tbl_course.Course as Course_Name',
                 'tbl_ojt_hrs.Hrs as Ojt_Hours',
@@ -185,7 +187,6 @@ class StudentController extends Controller {
         "CERTIFICATE OF REGISTRATION",
         "INTERNSHIP UNDERTAKING",
         "INTERNSHIP INFORMATION SHEET",
-        "DAILY TIME RECORD",
     ])
     ->get();
 
@@ -198,6 +199,11 @@ class StudentController extends Controller {
     ])
     ->get();
 
+    $dtr = StudentFile::where('Student_Num', $id)
+    ->whereIn('category', ['DTR'])
+    ->orderBy('created_at', 'desc')
+    ->get();
+
         return Inertia::render('Student/StudentDetails', [
             'student' => $student,
             'company_list' => $company_list,
@@ -205,11 +211,22 @@ class StudentController extends Controller {
             'preDeployment' => $preDeployment,
             'deployment' => $deployment,
             'final' => $final,
+            'dtr' => $dtr,
             'auth' => [
                 'user' => Auth::user(),
             ],
             // 'details_list' => $details_list,
         ]);
+
+        // Check if this is a student viewing their own page
+        // This logic depends on your auth system - adjust accordingly
+        if (auth()->user()->role === 'student' && auth()->user()->student_id == $id) {
+            // Only update timestamp if there are remarks to read and it hasn't been read yet
+            if ($student->Remarks && ($student->remarks_read_at == '0000-00-00 00:00:00' || $student->remarks_read_at === null)) {
+                $student->Read = now(); // Use the existing Read column
+                $student->save();
+            }
+        }
     }
 
     // Update student details
@@ -398,5 +415,18 @@ class StudentController extends Controller {
         $filename .= '.xlsx';
 
         return Excel::download(new StudentsExport($students), $filename);
+    }
+
+    public function updateRemarks(Request $request, $id)
+    {
+        $request->validate([
+            'remarks' => 'nullable|string|max:2000'
+        ]);
+
+        $student = Student::findOrFail($id);
+        $student->Remarks = $request->input('remarks');
+        $student->save();
+
+        return redirect()->back()->with('success', 'Remarks updated successfully.');
     }
 }

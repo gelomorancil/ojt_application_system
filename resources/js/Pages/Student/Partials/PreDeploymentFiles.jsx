@@ -1,6 +1,6 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from "react-icons/fa";
+import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
 export default function PreDeploymentFiles({ id, preDeployment = [], auth }) {
   // TEMPORARY: Always treat the user as a coordinator for now
@@ -130,7 +130,12 @@ export default function PreDeploymentFiles({ id, preDeployment = [], auth }) {
                     : "text-gray-400"
                     }`}
                 >
-                  {data.file_name && data.category === category ? "✓" : "○"}
+                  <a
+                  className="text-uslsgreen hover:text-gray-700"
+                  title="Upload File"
+                  >
+                  <FaUpload />
+                  </a>
                 </span>
                 {category}
                 <input
@@ -209,7 +214,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [], auth }) {
                   </>
                 ) : uploadedCategories[category] ? (
                   <>
-                    <span className="text-green-600">Uploaded!</span>
                     {submittedFiles[category] && (
                       <a
                         href={submittedFiles[category]}
@@ -217,7 +221,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [], auth }) {
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:underline ml-2"
                       >
-                        View
                       </a>
                     )}
                   </>
