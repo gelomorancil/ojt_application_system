@@ -789,9 +789,9 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                                         <button onClick={() => editStudent(student.id)} className="text-blue-600 mr-4">
                                                             Edit
                                                         </button>
-                                                        <button onClick={() => handleDelete(student.id)} className="text-red-600">
+                                                        {/* <button onClick={() => handleDelete(student.id)} className="text-red-600">
                                                             Delete
-                                                        </button>
+                                                        </button> */}
                                                     </td>
                                                 </tr>
                                             ))
