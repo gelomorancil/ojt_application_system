@@ -5,8 +5,8 @@ import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
 import StudentRemarks from "./Partials/StudentRemarks";
 
-function StudentDetails({ company_list, student_company, preDeployment, deployment, final }) {
-    console.log("final time",final);
+function StudentDetails({ company_list, student_company, preDeployment, deployment, final, dtr }) {
+    console.log("final time",dtr);
     const [studentCompanyList, setStudentCompanyList] = useState(student_company);
 
     const { student } = usePage().props;
@@ -23,7 +23,11 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
     const handleSave = (newCompany) => {
         setStudentCompanyList((prev) => [...prev, newCompany]);
     };
-    
+
+    // Safely access the last student company data without using .at() method
+    const lastStudentCompany = studentCompanyList && studentCompanyList.length > 0
+        ? studentCompanyList[studentCompanyList.length - 1]
+        : null;
 
     return (
         <AuthenticatedLayout>
@@ -47,10 +51,10 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                 </div>
                             </div>
                             <div className="text-right">
-                            <p><strong>Semester:</strong> {studentCompanyList.at(-1)?.Sem ?? "Not Available"}</p>
-                            <p><strong>Year:</strong> {studentCompanyList.at(-1)?.AY ?? "Not Available"}</p>
-                            <p><strong>Company:</strong> {studentCompanyList.at(-1)?.company?.Comp_name ?? "Not Available"}</p>
-                            <p><strong>Status:</strong> {studentCompanyList.at(-1)?.Status ?? "Not Available"}</p>
+                                <p><strong>Semester:</strong> {lastStudentCompany?.Sem ?? "Not Available"}</p>
+                                <p><strong>Year:</strong> {lastStudentCompany?.AY ?? "Not Available"}</p>
+                                <p><strong>Company:</strong> {lastStudentCompany?.company?.Comp_name ?? "Not Available"}</p>
+                                <p><strong>Status:</strong> {lastStudentCompany?.Status ?? "Not Available"}</p>
                             </div>
                         </div>
                         <div className="col-span-1 bg-white p-6 shadow-xl rounded-lg mb-4 mt-4">
@@ -67,6 +71,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                 <p>No company assigned.</p>
                             )}
                         </div>
+
                         <div className="rounded-lg mb-4 flex flex-col items-center">
                             <button
                                 onClick={addCompanyBox}
@@ -83,7 +88,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
-                    <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final}/>
+                    <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final} dtr={dtr}/>
                     <StudentRemarks studentId={student.id} initialRemarks={student.Remarks} />
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
+import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from "react-icons/fa";
 
 export default function FinalRequirementsFiles({ id, final, auth }) {
   const isCoordinator = true;
@@ -104,12 +104,7 @@ export default function FinalRequirementsFiles({ id, final, auth }) {
                     : "text-gray-400"
                     }`}
                 >
-                <a
-                  className="text-uslsgreen hover:text-gray-700"
-                  title="Upload File"
-                >
-                  <FaUpload />
-                </a>
+                  {data.file_name && data.category === category ? "✓" : "○"}
                 </span>
                 {category}
                 <input

@@ -3,9 +3,7 @@ import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import { usePage } from "@inertiajs/react";
 import { useState } from "react";
-import {
-    FaBars,
-} from "react-icons/fa";
+import { FaBars } from "react-icons/fa";
 
 export default function AuthenticatedLayout({ header, children }) {
     const { user } = usePage().props.auth; // Destructure user directly from props
@@ -18,6 +16,9 @@ export default function AuthenticatedLayout({ header, children }) {
             </div>
         ); // Return a loading state if user data is missing
     }
+
+    // Check user's role
+    const isStudent = user.role === 'student';
 
     return (
         <div className="min-h-screen bg-[#F8F6F0] flex flex-col">
@@ -33,31 +34,56 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 {/* Navigation Links */}
                 <div className={`lg:flex gap-6 ${menuOpen ? 'flex flex-col absolute top-16 left-0 w-full bg-gray-900 p-4' : 'hidden'}`}>
-                    <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-2 text-lg font-medium">
-                        <span>Dashboard</span>
-                    </NavLink>
-                    <NavLink href={route('companies.index')} active={route().current('companies.index')} className="flex items-center gap-2 text-lg font-medium">
-                        <span>Companies</span>
-                    </NavLink>
-                    <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-2 text-lg font-medium">
-                        <span>Student Management</span>
-                    </NavLink>
-                    <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaBook className="w-5 h-5" /> */}
-                        <span>Program</span>
-                    </NavLink>
-                    <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
-                        <span>MOA Status</span>
-                    </NavLink>
-                    <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaFileContract className="w-5 h-5" /> */}
-                        <span>Class List</span>
-                    </NavLink>
-                    <NavLink href={route('forms.index')} active={route().current('forms.index')} className="flex items-center gap-2 text-lg font-medium">
-                        {/* <FaFileContract className="w-5 h-5" /> */}
-                        <span>Downloadable Forms</span>
-                    </NavLink>
+                    {/* Show all links if the user is not a student */}
+                    {!isStudent && (
+                        <>
+                            <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-2 text-lg font-medium">
+                                <span>Dashboard</span>
+                            </NavLink>
+                            <NavLink href={route('companies.index')} active={route().current('companies.index')} className="flex items-center gap-2 text-lg font-medium">
+                                <span>Companies</span>
+                            </NavLink>
+                            <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-2 text-lg font-medium">
+                                <span>Student Management</span>
+                            </NavLink>
+                            <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
+                                <span>Program</span>
+                            </NavLink>
+                            <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
+                                <span>MOA Status</span>
+                            </NavLink>
+                            <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
+                                <span>Class List</span>
+                            </NavLink>
+                        </>
+                    )}
 
+                    {/* Show only the student dashboard link if the user is a student */}
+                    {isStudent && (
+                        <>
+                            <NavLink
+                                href={route('student.dashboard')}
+                                active={route().current('student.dashboard')}
+                                className="flex items-center gap-2 text-lg font-medium"
+                            >
+                                <span>Student Dashboard</span>
+                            </NavLink>
+                            <NavLink
+                                href={route('companies.index')}
+                                active={route().current('companies.index')}
+                                className="flex items-center gap-2 text-lg font-medium"
+                            >
+                                <span>Companies</span>
+                            </NavLink>
+                            <NavLink href={route('student.studentdetails', { student: user.student_id })}
+                                active={route().current('student.studentdetails')}
+                                className="flex items-center gap-2 text-lg font-medium"
+                            >
+                                <span>Student Management</span>
+                            </NavLink>
+
+                        </>
+                    )}
                 </div>
 
                 {/* Right - User Dropdown */}

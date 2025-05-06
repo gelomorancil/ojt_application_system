@@ -1,9 +1,12 @@
 <?php
 
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\StudentMiddleware;
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\AllowUserOrIntern;
+use App\Models\Student;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'user_or_intern' => AllowUserOrIntern::class,
             'guest.intern' => \App\Http\Middleware\RedirectIfAuthenticatedIntern::class,
+
+            "student" => StudentMiddleware::class,
+            'admin' => AdminMiddleware::class,
             // Add more middleware aliases here if needed
         ]);
     })

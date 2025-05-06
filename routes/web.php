@@ -30,6 +30,11 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+    Route::middleware(['auth', 'verified', 'student'])->get('student/dashboard', function () {
+        return Inertia::render('Student/Dashboard');
+    })->name('student.dashboard');
+
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -56,6 +61,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/student/batch-delete', [StudentController::class, 'batchDelete'])->name('student.batch-delete');
 });
 
+
+
 //Student Management
 Route::middleware(['auth'])->group(function () {
     Route::get('/student-companies', [StudentCompanyController::class, 'index'])->name('student_comp.index');
@@ -64,8 +71,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/student-companies/{studentCompany}', [StudentCompanyController::class, 'destroy'])->name('student_comp.destroy');
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+
+// Student and Admin can access this
+Route::middleware(['auth', 'verified'])->get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+
+// Only Admin can access the others
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
     Route::get('/companies/{id}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
     Route::put('/companies/{id}', [CompanyController::class, 'update'])->name('companies.update');
@@ -75,11 +86,12 @@ Route::middleware('auth')->group(function () {
 
     // COMPANY PROFILE
     Route::get('/companies/{id}/profile',[CompanyController::class, 'details']);
-    // MOA STORE FUNCTION
+
+    // MOA store and destroy
     Route::post('/moa', [MoaController::class, 'store'])->name('moa.store');
-    // MOA DELETE FUNCTION
     Route::delete('/moa/{id}', [MoaController::class, 'destroy'])->name('moa.destroy');
 });
+
 
 
 // Route for displaying the courses page
@@ -109,6 +121,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/compcourse/{id}', [ContactController::class, 'update'])->name('compcourse.update');
     Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
 
+});
+// STUDNET USER SIDW
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/student/details/{student}', [StudentCompanyController::class, 'show'])
+        ->name('student.studentdetails');
 });
 
 Route::middleware('auth')->group(function () {
@@ -141,7 +158,8 @@ Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->
 
 Route::post('/student-files', [StudentFileController::class, 'store'])->name('student-files.store');
 Route::delete('/student-files/{id}', [StudentFileController::class, 'destroy'])->name('student-files.destroy');
-Route::post('/student-files/verify/{id}', [StudentFileController::class, 'verify'])->name('student-files.verify');
+Route::put('/student-files/{id}', [StudentFileController::class, 'update'])->name('student-files.update');
+
 
 
 });

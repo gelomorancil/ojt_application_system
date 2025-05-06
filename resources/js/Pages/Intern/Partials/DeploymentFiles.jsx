@@ -1,8 +1,8 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
+import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from "react-icons/fa";
 
-export default function FinalRequirementsFiles({ id, final, auth }) {
+export default function DeploymentFiles({ id, deployment, auth }) {
   const isCoordinator = true;
 
   const user = auth?.user;
@@ -15,10 +15,12 @@ export default function FinalRequirementsFiles({ id, final, auth }) {
   });
 
   const categories = [
-    "DAILY TIME RECORD (DTR)",
-    "ACCOMPLISHMENT REPORT",
-    "STUDENT INTERNSHIP EVALUATION",
-    "CERTIFICATE OF COMPLETION",
+    "INTERNSHIP PROGRAM COVER",
+    "COMPANY PROFILE",
+    "CERTIFICATE OF REGISTRATION",
+    "INTERNSHIP UNDERTAKING",
+    "INTERNSHIP INFORMATION SHEET",
+    "DAILY TIME RECORD",
   ];
 
   const [uploadedCategories, setUploadedCategories] = useState({});
@@ -26,7 +28,7 @@ export default function FinalRequirementsFiles({ id, final, auth }) {
   const [submittedFiles, setSubmittedFiles] = useState({});
 
   const latestFiles = {};
-  final?.forEach((file) => {
+  deployment?.forEach((file) => {
     if (
       !latestFiles[file.category] ||
       new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
@@ -104,12 +106,7 @@ export default function FinalRequirementsFiles({ id, final, auth }) {
                     : "text-gray-400"
                     }`}
                 >
-                <a
-                  className="text-uslsgreen hover:text-gray-700"
-                  title="Upload File"
-                >
-                  <FaUpload />
-                </a>
+                  {data.file_name && data.category === category ? "✓" : "○"}
                 </span>
                 {category}
                 <input
@@ -150,14 +147,14 @@ export default function FinalRequirementsFiles({ id, final, auth }) {
                   </>
                 ) : latestFiles[category] ? (
                   <>
-                  <span className="text-green-600">
-                    {latestFiles[category].file_name.length > 10
-                      ? `${latestFiles[category].file_name.slice(0, 10)}...`
-                      : latestFiles[category].file_name}{" "}
-                    <span className="text-gray-500 text-xs">
-                      ({new Date(latestFiles[category].created_at).toLocaleString()})
+                    <span className="text-green-600">
+                      {latestFiles[category].file_name.length > 10
+                        ? `${latestFiles[category].file_name.slice(0, 10)}...`
+                        : latestFiles[category].file_name}{" "}
+                      <span className="text-gray-500 text-xs">
+                        ({new Date(latestFiles[category].created_at).toLocaleString()})
+                      </span>
                     </span>
-                  </span>
                     <a
                       href={`/storage/uploads/${latestFiles[category].file_name}`}
                       target="_blank"

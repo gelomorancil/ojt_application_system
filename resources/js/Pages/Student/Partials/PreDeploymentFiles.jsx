@@ -1,8 +1,8 @@
 import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
-import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle } from "react-icons/fa";
+import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
-export default function PreDeploymentFiles({ id, preDeployment, auth }) {
+export default function PreDeploymentFiles({ id, preDeployment = [], auth }) {
   // TEMPORARY: Always treat the user as a coordinator for now
   const isCoordinator = true;
 
@@ -16,6 +16,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
   });
 
   const [needsLetterOfIntent, setNeedsLetterOfIntent] = useState(() => {
+    if (!preDeployment || preDeployment.length === 0) return false;
     const letterOfIntentFile = preDeployment.find(
       (file) => file.category === "LETTER OF INTENT"
     );
@@ -36,14 +37,16 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
   const [submittedFiles, setSubmittedFiles] = useState({});
 
   const latestFiles = {};
-  preDeployment.forEach((file) => {
-    if (
-      !latestFiles[file.category] ||
-      new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
-    ) {
-      latestFiles[file.category] = file;
-    }
-  });
+  if (preDeployment && preDeployment.length > 0) {
+    preDeployment.forEach((file) => {
+      if (
+        !latestFiles[file.category] ||
+        new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
+      ) {
+        latestFiles[file.category] = file;
+      }
+    });
+  }
 
   const handleFileChange = (category, file) => {
     setData({
@@ -91,17 +94,17 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
 
     destroy(route('student-files.destroy', fileId), {
       onSuccess: () => {
-        onFinish: () => reset()
+        reset();
       },
     });
   };
 
   const handleVerify = (fileId) => {
     post(route('student-files.verify', fileId), {
-      onSuccess: () => {},
+      onSuccess: () => { },
     });
-  };  
-  
+  };
+
   return (
     <div className="ml-4 space-y-4">
       <div className="mb-4">
@@ -115,6 +118,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
           I am an intern outside of the city (requires Letter of Intent)
         </label>
       </div>
+
       {categories.map((category) => (
         <div key={category} className="border-b border-gray-200 pb-4">
           <form onSubmit={(e) => handleSubmit(category, e)} className="space-y-2">
@@ -122,11 +126,16 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
               <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
                 <span
                   className={`mr-2 ${data.file_name && data.category === category
-                      ? "text-green-600"
-                      : "text-gray-400"
+                    ? "text-green-600"
+                    : "text-gray-400"
                     }`}
                 >
-                  {data.file_name && data.category === category ? "✓" : "○"}
+                  <a
+                  className="text-uslsgreen hover:text-gray-700"
+                  title="Upload File"
+                  >
+                  <FaUpload />
+                  </a>
                 </span>
                 {category}
                 <input
@@ -205,7 +214,6 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
                   </>
                 ) : uploadedCategories[category] ? (
                   <>
-                    <span className="text-green-600">Uploaded!</span>
                     {submittedFiles[category] && (
                       <a
                         href={submittedFiles[category]}
@@ -213,7 +221,6 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:underline ml-2"
                       >
-                        View
                       </a>
                     )}
                   </>

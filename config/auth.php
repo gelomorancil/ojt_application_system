@@ -41,9 +41,9 @@ return [
             'provider' => 'users',
         ],
 
-        'intern' => [
+        'student' => [
             'driver' => 'session',
-            'provider' => 'interns',
+            'provider' => 'students',
         ],
 
     ],
@@ -71,9 +71,9 @@ return [
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 
-        'interns' => [
+        'students' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Intern::class),
+            'model' => env('AUTH_MODEL', App\Models\Student::class),
         ],
 
         // 'users' => [
