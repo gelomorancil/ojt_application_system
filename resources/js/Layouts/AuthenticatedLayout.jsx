@@ -55,6 +55,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
                                 <span>Class List</span>
                             </NavLink>
+                            <NavLink href={route('forms.index')} active={route().current('forms.index')} className="flex items-center gap-2 text-lg font-medium">
+                                <span>Downloadable Forms</span>
+                            </NavLink>
                         </>
                     )}
 

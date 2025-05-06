@@ -40,7 +40,7 @@ class FormsController extends Controller
         }
         
         // For web requests, return Inertia view with data
-        return Inertia::render('Forms', [
+        return Inertia::render('Forms/Forms', [
             'forms' => $forms,
             'collegeId' => $collegeId
         ]);
