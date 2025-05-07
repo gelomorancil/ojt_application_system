@@ -18,6 +18,8 @@ const Forms = () => {
   const [errors, setErrors] = useState({});
   const [processing, setProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+    const user = auth?.user;
+    const isStudent = user?.role;
   
   // Preview modal state
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
@@ -274,7 +276,8 @@ const Forms = () => {
         )}
         
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Upload Form Box */}
+        {/* Upload Form Box - Only shown for non-students */}
+        {isStudent != "student" && (
           <div className="bg-gray-100 p-4 rounded-lg mb-6 md:mb-0 md:w-1/3">
             <h2 className="text-xl font-bold mb-4">Upload New Template</h2>
             <form onSubmit={handleUpload}>
@@ -327,79 +330,81 @@ const Forms = () => {
               </button>
             </form>
           </div>
+        )}
+        
+        {/* Available Templates Box - Full width for students, 2/3 width for non-students */}
+        <div className={isStudent == "student" ? "w-full" : "md:w-2/3"}>
+          <div className="flex flex-col md:flex-row justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">Uploaded Templates</h2>
+            
+            {/* College Filter Dropdown */}
+            <div className="flex items-center mt-2 md:mt-0">
+              <label className="mr-2 text-gray-700 font-medium">Filter by College:</label>
+              <select
+                className="shadow border rounded py-2 px-3 text-gray-700"
+                value={selectedFilterCollege}
+                onChange={handleFilterCollegeChange}
+              >
+                {colleges.map(college => (
+                  <option key={college.id} value={college.id}>
+                    {college.name} - {college.fullName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           
-          {/* Available Templates Box */}
-          <div className="md:w-2/3">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Uploaded Templates</h2>
-              
-              {/* College Filter Dropdown */}
-              <div className="flex items-center mt-2 md:mt-0">
-                <label className="mr-2 text-gray-700 font-medium">Filter by College:</label>
-                <select
-                  className="shadow border rounded py-2 px-3 text-gray-700"
-                  value={selectedFilterCollege}
-                  onChange={handleFilterCollegeChange}
-                >
-                  {colleges.map(college => (
-                    <option key={college.id} value={college.id}>
-                      {college.name} - {college.fullName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Display current selected college */}
+          <div className="bg-gray-50 p-3 mb-4 rounded-lg border border-gray-200">
+            <p className="text-black-700">
+              <span className="font-medium">Showing forms for:</span> {getCurrentCollegeName(selectedFilterCollege)}
+            </p>
+          </div>
+          
+          {loading ? (
+            <div className="flex justify-center items-center py-10">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-uslsgreen"></div>
             </div>
-            
-            {/* Display current selected college */}
-            <div className="bg-gray-50 p-3 mb-4 rounded-lg border border-gray-200">
-              <p className="text-black-700">
-                <span className="font-medium">Showing forms for:</span> {getCurrentCollegeName(selectedFilterCollege)}
-              </p>
+          ) : forms.length === 0 ? (
+            <div className="bg-gray-50 p-10 text-center rounded-lg">
+              <p className="text-gray-500">No templates available for this college.</p>
             </div>
-            
-            {loading ? (
-              <div className="flex justify-center items-center py-10">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-uslsgreen"></div>
-              </div>
-            ) : forms.length === 0 ? (
-              <div className="bg-gray-50 p-10 text-center rounded-lg">
-                <p className="text-gray-500">No templates available for this college.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.entries(groupFormsByCategory()).map(([category, categoryForms]) => (
-                  categoryForms.length > 0 && (
-                    <div key={category} className="bg-white rounded-lg shadow-md overflow-hidden">
-                      <div className="bg-uslsgreen text-white p-3">
-                        <h3 className="text-lg font-semibold">{category}</h3>
-                      </div>
-                      
-                      <div className="p-4">
-                        <ul className="space-y-3">
-                          {categoryForms.map(form => (
-                            <li key={form.id} className="border-b pb-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-800 font-medium">{form.Label}</span>
-                                <div className="flex items-center space-x-2">
-                                  {/* Preview Icon */}
-                                  <button
-                                    onClick={() => handlePreview(form)}
-                                    className="text-blue-500 hover:text-blue-700"
-                                    title="Preview"
-                                  >
-                                    <FileText size={16} />
-                                  </button>
-                                  
-                                  {/* Download Icon */}
-                                  <button
-                                    onClick={() => handleDownload(form.id)}
-                                    className="text-gray-600 hover:text-gray-800"
-                                    title="Download"
-                                  >
-                                    <Download size={16} />
-                                  </button>
-                                  
-                                  {/* Delete Icon */}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(groupFormsByCategory()).map(([category, categoryForms]) => (
+                categoryForms.length > 0 && (
+                  <div key={category} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="bg-uslsgreen text-white p-3">
+                      <h3 className="text-lg font-semibold">{category}</h3>
+                    </div>
+                    
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        {categoryForms.map(form => (
+                          <li key={form.id} className="border-b pb-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-800 font-medium">{form.Label}</span>
+                              <div className="flex items-center space-x-2">
+                                {/* Preview Icon */}
+                                <button
+                                  onClick={() => handlePreview(form)}
+                                  className="text-blue-500 hover:text-blue-700"
+                                  title="Preview"
+                                >
+                                  <FileText size={16} />
+                                </button>
+                                
+                                {/* Download Icon */}
+                                <button
+                                  onClick={() => handleDownload(form.id)}
+                                  className="text-gray-600 hover:text-gray-800"
+                                  title="Download"
+                                >
+                                  <Download size={16} />
+                                </button>
+                                
+                                {/* Delete Icon - Only shown for non-students */}
+                                {isStudent != "student" && (
                                   <button
                                     onClick={() => handleDelete(form.id)}
                                     className="text-red-600 hover:text-red-800"
@@ -407,20 +412,21 @@ const Forms = () => {
                                   >
                                     <Trash2 size={16} />
                                   </button>
-                                </div>
+                                )}
                               </div>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  )
-                ))}
-              </div>
-            )}
-          </div>
+                  </div>
+                )
+              ))}
+            </div>
+          )}
         </div>
       </div>
+    </div>
 
       {/* Preview Modal */}
       {previewModalOpen && previewFormData && (

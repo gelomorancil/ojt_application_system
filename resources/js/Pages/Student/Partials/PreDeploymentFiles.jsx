@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
 export default function PreDeploymentFiles({ id, preDeployment = [] }) {
-  // TEMPORARY: Always treat the user as a coordinator for now
   const isCoordinator = true;
 
   const { auth } = usePage().props;
