@@ -1,14 +1,12 @@
-import { useForm, usePage } from "@inertiajs/react";
 import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
-
+import {useForm} from '@inertiajs/inertia'
+ 
 export default function PreDeploymentFiles({ id, preDeployment, auth, student_company, comp_id }) {
-export default function PreDeploymentFiles({ id, preDeployment = [] }) {
+  // TEMPORARY: Always treat the user as a coordinator for now
   const isCoordinator = true;
 
-  const { auth } = usePage().props;
   const user = auth?.user;
-  const isStudent = user?.role;
 
   const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
@@ -19,7 +17,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
   });
 
   const [needsLetterOfIntent, setNeedsLetterOfIntent] = useState(() => {
-    if (!preDeployment || preDeployment.length === 0) return false;
     const letterOfIntentFile = preDeployment.find(
       (file) => file.category === "LETTER OF INTENT"
     );
@@ -97,17 +94,17 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
 
     destroy(route('student-files.destroy', fileId), {
       onSuccess: () => {
-        reset();
+        onFinish: () => reset()
       },
     });
   };
 
   const handleVerify = (fileId) => {
     post(route('student-files.verify', fileId), {
-      onSuccess: () => { },
+      onSuccess: () => {},
     });
-  };
-
+  };  
+  
   return (
     <div className="ml-4 space-y-4">
       <div className="mb-4">
@@ -121,7 +118,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
           I am an intern outside of the city (requires Letter of Intent)
         </label>
       </div>
-
       {categories.map((category) => (
         <div key={category} className="border-b border-gray-200 pb-4">
           <form onSubmit={(e) => handleSubmit(category, e)} className="space-y-2">
@@ -129,8 +125,8 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
               <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
                 <span
                   className={`mr-2 ${data.file_name && data.category === category
-                    ? "text-green-600"
-                    : "text-gray-400"
+                      ? "text-green-600"
+                      : "text-gray-400"
                     }`}
                 >
                   <a
@@ -192,8 +188,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
                     >
                       <FaEye />
                     </a>
-
-                    {(isStudent != "student") && (
                     <button
                       type="button"
                       onClick={(e) => handleDelete(e, latestFiles[category].id)}
@@ -202,8 +196,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
                     >
                       <FaTrash />
                     </button>
-                    )}
-
                     {isCoordinator && (
                       <button
                         type="button"

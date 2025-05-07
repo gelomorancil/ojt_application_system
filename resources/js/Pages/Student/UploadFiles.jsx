@@ -5,13 +5,11 @@ import FinalRequirementFiles from "./Partials/FinalRequirementFiles";
 import DTRFiles from "./Partials/DTRFiles";
 import UploadedFiles from "./Partials/UploadedFiles";
 
-export default function UploadFiles({ id, preDeployment, deployment, final, dtr, student_company }) {
+export default function UploadFiles({ id, preDeployment, deployment, final, dtr, student_company, }) {
   const [selectedCategory, setSelectedCategory] = useState("Pre-Deployment");
   const categories = ["Pre-Deployment", "Deployment", "Final Requirements", "Daily Time Record", "Uploaded Files"];
 
-  const [selectedCompany, setSelectedCompany] = useState(
-    student_company.length > 0 ? String(student_company[0].id) : ''
-  );
+  const [selectedCompany, setSelectedCompany] = useState('');
   console.log('thisi s the comp id,', selectedCompany)
 
   return (
