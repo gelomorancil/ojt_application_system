@@ -422,22 +422,22 @@ class StudentController extends Controller {
     }
 
     public function updateRemarks(Request $request, $id)
-{
-    $request->validate([
-        'remarks' => 'nullable|string|max:2000'
-    ]);
-    
-    $student = Student::findOrFail($id);
-    
-    // Only reset the Read timestamp if remarks have changed
-    if ($student->Remarks !== $request->input('remarks')) {
-        $student->Remarks = $request->input('remarks');
-        $student->Read = null; // Use null instead of '0000-00-00 00:00:00'
-        $student->save();
+    {
+        $request->validate([
+            'remarks' => 'nullable|string|max:2000'
+        ]);
         
-        return redirect()->back()->with('success', 'Remarks updated successfully.');
+        $student = Student::findOrFail($id);
+        
+        // Only reset the Read timestamp if remarks have changed
+        if ($student->Remarks !== $request->input('remarks')) {
+            $student->Remarks = $request->input('remarks');
+            $student->Read = null; // Use null instead of '0000-00-00 00:00:00'
+            $student->save();
+            
+            return redirect()->back()->with('success', 'Remarks updated successfully.');
+        }
+        
+        return redirect()->back()->with('info', 'No changes made to remarks.');
     }
-    
-    return redirect()->back()->with('info', 'No changes made to remarks.');
-}
 }
