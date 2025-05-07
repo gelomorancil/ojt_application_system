@@ -10,7 +10,6 @@ class StudentFile extends Model
 
     protected $fillable = [
         'Student_Num',
-        'Comp_ID',
         'category',
         'file_name',
         'file',

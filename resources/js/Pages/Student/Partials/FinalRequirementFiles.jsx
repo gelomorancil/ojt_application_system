@@ -2,14 +2,13 @@ import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
-export default function FinalRequirementsFiles({ id, final, auth, comp_id }) {
+export default function FinalRequirementsFiles({ id, final, auth }) {
   const isCoordinator = true;
 
   const user = auth?.user;
 
   const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
-    Comp_ID:comp_id,
     category: "",
     file_name: "",
     file: null,
@@ -30,7 +29,7 @@ export default function FinalRequirementsFiles({ id, final, auth, comp_id }) {
   final?.forEach((file) => {
     if (
       !latestFiles[file.category] ||
-      new Date(file.created_at) > new Date(latestFiles[file.category].updated_at)
+      new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
     ) {
       latestFiles[file.category] = file;
     }
@@ -42,7 +41,6 @@ export default function FinalRequirementsFiles({ id, final, auth, comp_id }) {
       file_name: file ? file.name : "",
       file: file || null,
       category: category,
-      Comp_ID: comp_id,
     });
 
     if (file) {
@@ -58,7 +56,6 @@ export default function FinalRequirementsFiles({ id, final, auth, comp_id }) {
     formData.append("category", category);
     formData.append("file_name", data.file_name);
     formData.append("file", data.file);
-    formData.append("Comp_ID", data.Comp_ID);
 
     post(route("student-files.store"), {
       data: formData,
@@ -158,7 +155,7 @@ export default function FinalRequirementsFiles({ id, final, auth, comp_id }) {
                       ? `${latestFiles[category].file_name.slice(0, 10)}...`
                       : latestFiles[category].file_name}{" "}
                     <span className="text-gray-500 text-xs">
-                      ({new Date(latestFiles[category].updated_at).toLocaleString()})
+                      ({new Date(latestFiles[category].created_at).toLocaleString()})
                     </span>
                   </span>
                     <a
@@ -195,6 +192,7 @@ export default function FinalRequirementsFiles({ id, final, auth, comp_id }) {
                   </>
                 ) : uploadedCategories[category] ? (
                   <>
+                    <span className="text-green-600">Uploaded!</span>
                     {submittedFiles[category] && (
                       <a
                         href={submittedFiles[category]}
@@ -202,6 +200,7 @@ export default function FinalRequirementsFiles({ id, final, auth, comp_id }) {
                         rel="noopener noreferrer"
                         className="text-blue-500 hover:underline ml-2"
                       >
+                        View
                       </a>
                     )}
                   </>
