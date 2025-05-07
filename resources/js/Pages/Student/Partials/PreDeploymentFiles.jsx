@@ -1,12 +1,15 @@
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
 export default function PreDeploymentFiles({ id, preDeployment, auth, student_company, comp_id }) {
+export default function PreDeploymentFiles({ id, preDeployment = [] }) {
   // TEMPORARY: Always treat the user as a coordinator for now
   const isCoordinator = true;
 
+  const { auth } = usePage().props;
   const user = auth?.user;
+  const isStudent = user?.role;
 
   const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
@@ -190,6 +193,8 @@ export default function PreDeploymentFiles({ id, preDeployment, auth, student_co
                     >
                       <FaEye />
                     </a>
+
+                    {(isStudent != "student") && (
                     <button
                       type="button"
                       onClick={(e) => handleDelete(e, latestFiles[category].id)}
@@ -198,6 +203,8 @@ export default function PreDeploymentFiles({ id, preDeployment, auth, student_co
                     >
                       <FaTrash />
                     </button>
+                    )}
+
                     {isCoordinator && (
                       <button
                         type="button"
