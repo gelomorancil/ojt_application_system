@@ -6,7 +6,7 @@ import UploadFiles from "./UploadFiles";
 import StudentRemarks from "./Partials/StudentRemarks";
 
 function StudentDetails({ company_list, student_company, preDeployment, deployment, final, dtr }) {
-    console.log("final time",dtr);
+    // console.log("final time",student_company);
     const [studentCompanyList, setStudentCompanyList] = useState(student_company);
 
     const { student } = usePage().props;
@@ -83,7 +83,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
-                    <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final} dtr={dtr}/>
+                    <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final} dtr={dtr} student_company={student_company}/>
                     <StudentRemarks studentId={student.id} initialRemarks={student.Remarks} />
                 </div>
             </div>

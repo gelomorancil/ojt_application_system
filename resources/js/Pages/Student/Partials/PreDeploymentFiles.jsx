@@ -2,7 +2,7 @@ import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
-export default function PreDeploymentFiles({ id, preDeployment, auth }) {
+export default function PreDeploymentFiles({ id, preDeployment, auth, student_company, comp_id }) {
   // TEMPORARY: Always treat the user as a coordinator for now
   const isCoordinator = true;
 
@@ -10,6 +10,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
 
   const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
+    Comp_ID:comp_id,
     category: "",
     file_name: "",
     file: null,
@@ -39,7 +40,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
   preDeployment.forEach((file) => {
     if (
       !latestFiles[file.category] ||
-      new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
+      new Date(file.created_at) > new Date(latestFiles[file.category].updated_at)
     ) {
       latestFiles[file.category] = file;
     }
@@ -51,6 +52,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
       file_name: file ? file.name : "",
       file: file || null,
       category: category,
+      Comp_ID: comp_id,
     });
 
     if (file) {
@@ -66,6 +68,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
     formData.append("category", category);
     formData.append("file_name", data.file_name);
     formData.append("file", data.file);
+    formData.append("Comp_ID", data.Comp_ID);
     formData.append("needs_letter_of_intent", needsLetterOfIntent ? true : false);
 
     post(route("student-files.store"), {
@@ -174,7 +177,7 @@ export default function PreDeploymentFiles({ id, preDeployment, auth }) {
                       {latestFiles[category].file_name.length > 10
                         ? `${latestFiles[category].file_name.slice(0, 10)}...`
                         : latestFiles[category].file_name}
-                      <span className="text-gray-500 text-xs"> ({new Date(latestFiles[category].created_at).toLocaleString()})</span>
+                      <span className="text-gray-500 text-xs"> ({new Date(latestFiles[category].updated_at).toLocaleString()})</span>
                     </span>
                     <a
                       href={`/storage/uploads/${latestFiles[category].file_name}`}

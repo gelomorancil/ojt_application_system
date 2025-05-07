@@ -2,13 +2,14 @@ import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
-export default function DeploymentFiles({ id, deployment, auth }) {
+export default function DeploymentFiles({ id, deployment, auth, comp_id }) {
   const isCoordinator = true;
 
   const user = auth?.user;
 
   const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
+    Comp_ID: comp_id,
     category: "",
     file_name: "",
     file: null,
@@ -30,7 +31,7 @@ export default function DeploymentFiles({ id, deployment, auth }) {
   deployment?.forEach((file) => {
     if (
       !latestFiles[file.category] ||
-      new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
+      new Date(file.created_at) > new Date(latestFiles[file.category].updated_at)
     ) {
       latestFiles[file.category] = file;
     }
@@ -42,6 +43,7 @@ export default function DeploymentFiles({ id, deployment, auth }) {
       file_name: file ? file.name : "",
       file: file || null,
       category: category,
+      Comp_ID: comp_id,
     });
 
     if (file) {
@@ -54,6 +56,7 @@ export default function DeploymentFiles({ id, deployment, auth }) {
 
     const formData = new FormData();
     formData.append("Student_Num", data.Student_Num);
+    formData.append("Comp_ID", data.Comp_ID);
     formData.append("category", category);
     formData.append("file_name", data.file_name);
     formData.append("file", data.file);
