@@ -6,7 +6,8 @@ import { useState } from "react";
 import { FaBars } from "react-icons/fa";
 
 export default function InternAuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const { auth } = usePage().props; // Access 'auth' from the Inertia.js page props
+    const user = auth.user; // User information
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
@@ -36,6 +37,13 @@ export default function InternAuthenticatedLayout({ header, children }) {
                         className="flex items-center gap-2 text-lg font-medium text-white"
                     >
                         <span>Companies</span>
+                    </NavLink>
+                    <NavLink
+                        href={route('intern.studentdetails', { student: auth.user.id })} // Correct usage of 'auth.user.id'
+                        active={route().current('intern.studentdetails')}
+                        className="flex items-center gap-2 text-lg font-medium text-white"
+                    >
+                        <span>Profile</span>
                     </NavLink>
                 </div>
 

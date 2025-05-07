@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import axios from "axios";
 
+
 export default function Student({ students = [], courses = [], colleges = [], provinces = [], cities = [], citiesByProvince = {} }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editingStudentId, setEditingStudentId] = useState(null);
@@ -16,9 +17,12 @@ export default function Student({ students = [], courses = [], colleges = [], pr
         Fname: "",
         Lname: "",
         Student_Num: "",
+        email: '',
+        password: '',
         Hrs: "",
         Sem: "",
-        Year: ""
+        Year: "",
+
     });
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -498,6 +502,8 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                 { label: "Student Number", name: "Student_Num", type: "text" },
                                 { label: "First Name", name: "Fname", type: "text" },
                                 { label: "Last Name", name: "Lname", type: "text" },
+                                { label: "Email", name: "email", type: "email" }, // <-- added email
+                                { label: "Password", name: "password", type: "password" }, // <-- added password
                                 { label: "College", name: "College", type: "select", options: colleges },
                                 { label: "Course", name: "Course", type: "select", options: filteredCourses.map(c => c.Course) },
                                 { label: "School Year", name: "Year", type: "select", options: schoolYears },
@@ -789,9 +795,9 @@ export default function Student({ students = [], courses = [], colleges = [], pr
                                                         <button onClick={() => editStudent(student.id)} className="text-blue-600 mr-4">
                                                             Edit
                                                         </button>
-                                                        <button onClick={() => handleDelete(student.id)} className="text-red-600">
+                                                        {/* <button onClick={() => handleDelete(student.id)} className="text-red-600">
                                                             Delete
-                                                        </button>
+                                                        </button> */}
                                                     </td>
                                                 </tr>
                                             ))

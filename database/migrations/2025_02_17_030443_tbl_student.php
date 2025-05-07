@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('tbl_student', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('Course_ID');
+            $table->foreignId('Course_ID')->nullable();  // Make the Course_ID nullable
+            $table->enum('role', ['user', 'student'])->default('user');
             $table->string('Fname');
             $table->string('Lname');
             $table->string('Student_Num')->unique();
             $table->string('Year');
-            $table->dateTime('Read');
+            $table->timestamp('Read')->nullable();
             $table->string('Remarks');
             $table->timestamps();
         });

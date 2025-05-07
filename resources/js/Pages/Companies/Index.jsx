@@ -1,11 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import CompanyCreate from './Partials/CompanyCreate';
 import CompanyList from './Partials/CompanyList';
 
 export default function Index({ company_list }) {
-    console.log(company_list);
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({
         Comp_name: '',
         Address: '',
@@ -13,6 +12,10 @@ export default function Index({ company_list }) {
     });
 
     const [editingCompany, setEditingCompany] = useState(null);
+
+    const { auth } = usePage().props;
+    const user = auth?.user;
+    const isStudent = user?.role === 'student';
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -52,17 +55,19 @@ export default function Index({ company_list }) {
             <Head title="Companies" />
             <div className="py-12">
                 <div className="w-11/12 mx-auto grid grid-cols-3 gap-6">
-                    <div className="col-span-1">
-                        <CompanyCreate
-                            data={data}
-                            setData={setData}
-                            handleSubmit={handleSubmit}
-                            editingCompany={editingCompany}
-                            resetForm={resetForm}
-                            errors={errors}
-                        />
-                    </div>
-                    <div className="col-span-2">
+                    {!isStudent && (
+                        <div className="col-span-1">
+                            <CompanyCreate
+                                data={data}
+                                setData={setData}
+                                handleSubmit={handleSubmit}
+                                editingCompany={editingCompany}
+                                resetForm={resetForm}
+                                errors={errors}
+                            />
+                        </div>
+                    )}
+                    <div className={isStudent ? "col-span-3" : "col-span-2"}>
                         <CompanyList
                             company_list={company_list}
                             handleEdit={handleEdit}

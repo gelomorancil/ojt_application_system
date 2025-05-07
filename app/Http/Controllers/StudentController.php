@@ -16,6 +16,8 @@ use App\Exports\StudentsExport;
 use Inertia\Inertia;
 use Inertia\Response;
 use \Illuminate\Support\Facades\Auth;
+use App\Models\User; // <-- import User model
+use Illuminate\Support\Facades\Hash; // <-- import Hash
 use PDF;
 
 class StudentController extends Controller {
@@ -73,17 +75,16 @@ class StudentController extends Controller {
 
     // Show create student form
     public function create()
-        {
-            $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON']; // College Enum
-            return inertia('Students/CreateStudent', [
-                'colleges' => $colleges
-            ]);
-        }
+    {
+        $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON']; // College Enum
+        return inertia('Students/CreateStudent', [
+            'colleges' => $colleges
+        ]);
+    }
 
-        // Store a new student
-        public function store(Request $request)
-        {
-        // Define allowed colleges
+    // Store a new student
+    public function store(Request $request)
+    {
         $allowedColleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
 
         $validated = $request->validate([
@@ -93,7 +94,7 @@ class StudentController extends Controller {
                 }
             }],
             'Course' => ['required', function ($attribute, $value, $fail) use ($request) {
-                $exists = Course::where('College', $request->College)
+                $exists = \App\Models\Course::where('College', $request->College)
                     ->where('Course', $value)
                     ->exists();
                 if (!$exists) {
@@ -108,10 +109,12 @@ class StudentController extends Controller {
                     $fail('The school year must be either 2024-2025 or 2025-2026.');
                 }
             }],
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
         ]);
 
-        // Find Course ID for the given College & Course
-        $course = Course::where('College', $validated['College'])
+        // Find the course
+        $course = \App\Models\Course::where('College', $validated['College'])
             ->where('Course', $validated['Course'])
             ->first();
 
@@ -119,13 +122,24 @@ class StudentController extends Controller {
             return redirect()->back()->withErrors(['Course' => 'The selected course does not exist.']);
         }
 
-        // Store Student with the correct Course_ID
-        Student::create([
+        // Create student with Read field set to '0000-00-00 00:00:00' to indicate unread
+        $student = Student::create([
             'Course_ID' => $course->id,
             'Fname' => $validated['Fname'],
             'Lname' => $validated['Lname'],
             'Student_Num' => $validated['Student_Num'],
-            'Year' => $request->Year ?? '2024-2025', // Default value if not provided
+            'Year' => $request->Year ?? '2024-2025',
+            'Remarks' => '',
+            'Read' => '0000-00-00 00:00:00', 
+        ]);
+
+        // Create user linked to student
+        User::create([
+            'name' => $validated['Fname'] . ' ' . $validated['Lname'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'student', // Optional: default to 'student'
+            'student_id' => $student->id,
         ]);
 
         return redirect()->route('student')->with('success', 'Student added successfully!');
@@ -250,7 +264,8 @@ class StudentController extends Controller {
             'Fname' => $validated['Fname'],
             'Lname' => $validated['Lname'],
             'Student_Num' => $validated['Student_Num'],
-            'Year' => $validated['Year'] ?? $student->Year, // Move this here after validation
+            'Year' => $validated['Year'] ?? $student->Year,
+            'Read' => now(),
         ]);
 
         return redirect()->route('student')->with('success', 'Student updated successfully!');
@@ -411,11 +426,18 @@ class StudentController extends Controller {
         $request->validate([
             'remarks' => 'nullable|string|max:2000'
         ]);
-
+        
         $student = Student::findOrFail($id);
-        $student->Remarks = $request->input('remarks');
-        $student->save();
-
-        return redirect()->back()->with('success', 'Remarks updated successfully.');
+        
+        // Only reset the Read timestamp if remarks have changed
+        if ($student->Remarks !== $request->input('remarks')) {
+            $student->Remarks = $request->input('remarks');
+            $student->Read = null; // Use null instead of '0000-00-00 00:00:00'
+            $student->save();
+            
+            return redirect()->back()->with('success', 'Remarks updated successfully.');
+        }
+        
+        return redirect()->back()->with('info', 'No changes made to remarks.');
     }
 }

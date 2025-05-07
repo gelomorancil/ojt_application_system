@@ -16,13 +16,6 @@ export default function ContactList({
     activeTab,
     setActiveTab,
 }) {
-    // useEffect(() => {
-    //     if (activeTab === 'interns' && companyId) {
-    //         fetch(route('companies.interns', companyId))
-    //             .then(response => response.json())
-    //             .catch(error => console.error('Error fetching interns:', error));
-    //     }
-    // }, [activeTab, companyId]);
 
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full min-w-full">
