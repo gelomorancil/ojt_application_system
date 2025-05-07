@@ -130,7 +130,7 @@ class StudentController extends Controller {
             'Student_Num' => $validated['Student_Num'],
             'Year' => $request->Year ?? '2024-2025',
             'Remarks' => '',
-            'Read' => null, 
+            'Read' => '0000-00-00 00:00:00', 
         ]);
 
         // Create user linked to student
@@ -422,15 +422,22 @@ class StudentController extends Controller {
     }
 
     public function updateRemarks(Request $request, $id)
-    {
-        $request->validate([
-            'remarks' => 'nullable|string|max:2000'
-        ]);
-
-        $student = Student::findOrFail($id);
+{
+    $request->validate([
+        'remarks' => 'nullable|string|max:2000'
+    ]);
+    
+    $student = Student::findOrFail($id);
+    
+    // Only reset the Read timestamp if remarks have changed
+    if ($student->Remarks !== $request->input('remarks')) {
         $student->Remarks = $request->input('remarks');
+        $student->Read = null; // Use null instead of '0000-00-00 00:00:00'
         $student->save();
-
+        
         return redirect()->back()->with('success', 'Remarks updated successfully.');
     }
+    
+    return redirect()->back()->with('info', 'No changes made to remarks.');
+}
 }

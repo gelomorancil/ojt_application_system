@@ -84,6 +84,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             >
                                 <span>Student Management</span>
                             </NavLink>
+                            <NavLink href={route('forms.index', { student: user.student_id })}
+                                active={route().current('forms.index')}
+                                className="flex items-center gap-2 text-lg font-medium"
+                            >
+                                <span>Downloadable Forms</span>
+                            </NavLink>
 
                         </>
                     )}
