@@ -4,7 +4,6 @@ import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "reac
 
 export default function PreDeploymentFiles({ id, preDeployment, auth, student_company, comp_id }) {
 export default function PreDeploymentFiles({ id, preDeployment = [] }) {
-  // TEMPORARY: Always treat the user as a coordinator for now
   const isCoordinator = true;
 
   const { auth } = usePage().props;
