@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Validators\Failure;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\BeforeSheet;
 use Maatwebsite\Excel\Events\AfterSheet;
@@ -24,6 +25,7 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
     private $semester;
     private $courseName;
     private $duplicateStudents = []; // Array to track duplicate student numbers
+    private $importedStudents = []; // Array to track successfully imported students
     
     public function __construct($college, $course, $schoolYear, $semester)
     {
@@ -72,6 +74,14 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
     }
     
     /**
+     * Get the list of imported students
+     */
+    public function getImportedStudents()
+    {
+        return $this->importedStudents;
+    }
+    
+    /**
      * Configure the heading row
      */
     public function headingRow(): int
@@ -106,12 +116,19 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
             AfterSheet::class => function(AfterSheet $event) {
                 Log::info('Finished processing Excel sheet');
                 
+                // After import is complete, create user accounts for all imported students
+                $this->createUserAccounts();
+                
                 if (count($this->duplicateStudents) > 0) {
                     Log::warning('Duplicate student numbers found', [
                         'count' => count($this->duplicateStudents),
                         'student_numbers' => $this->duplicateStudents
                     ]);
                 }
+                
+                Log::info('User accounts created', [
+                    'count' => count($this->importedStudents)
+                ]);
             },
         ];
     }
@@ -175,6 +192,14 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
             // Insert the student data using the insert method
             $studentId = $this->insert($normalizedRow);
             
+            // Store the successfully imported student data for later user account creation
+            $this->importedStudents[] = [
+                'id' => $studentId,
+                'fname' => $firstName,
+                'lname' => $lastName,
+                'student_num' => $studentNum
+            ];
+            
             Log::info('Student successfully inserted', [
                 'student_id' => $studentId,
                 'student_num' => $studentNum,
@@ -225,6 +250,71 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
             Log::error('Insert failed: ', [$e->getMessage()]);
             throw $e;
         }
+    }
+    
+    /**
+     * Create user accounts in 'users' table for all imported students
+     */
+    private function createUserAccounts()
+    {
+        Log::info('Starting user account creation for imported students');
+        
+        foreach ($this->importedStudents as $student) {
+            // Format the email as 's[ID number]@usls.edu.ph'
+            $email = 's' . $student['student_num'] . '@usls.edu.ph';
+            
+            // Format the password as [UPPERCASE first letter of first name][UPPERCASE first letter of last name][ID number]
+            $firstInitial = strtoupper(substr($student['fname'], 0, 1));
+            $lastInitial = strtoupper(substr($student['lname'], 0, 1));
+            $plainPassword = $firstInitial . $lastInitial . $student['student_num'];
+            $hashedPassword = Hash::make($plainPassword);
+            
+            // Format the name as combined first and last name
+            $name = $student['fname'] . ' ' . $student['lname'];
+            
+            // Check if user with this email already exists
+            $existingUser = DB::table('users')
+                ->where('email', $email)
+                ->first();
+                
+            if ($existingUser) {
+                Log::warning('User with email already exists, skipping creation', [
+                    'email' => $email,
+                    'student_num' => $student['student_num']
+                ]);
+                continue;
+            }
+            
+            try {
+                // Create the user record
+                $userData = [
+                    'name' => $name,
+                    'email' => $email,
+                    'role' => 'student',
+                    'password' => $hashedPassword,
+                    'student_id' => $student['id'], // Link to tbl_student.id
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+                
+                // Insert the record into users table
+                $userId = DB::table('users')->insertGetId($userData);
+                
+                Log::info('User account created successfully', [
+                    'user_id' => $userId,
+                    'email' => $email,
+                    'student_num' => $student['student_num']
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to create user account', [
+                    'error' => $e->getMessage(),
+                    'student_num' => $student['student_num'],
+                    'email' => $email
+                ]);
+            }
+        }
+        
+        Log::info('User account creation process completed');
     }
     
     /**
