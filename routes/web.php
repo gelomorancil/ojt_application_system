@@ -124,7 +124,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 // STUDNET USER SIDE
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/student/details/{student}', [StudentCompanyController::class, 'show'])
+    Route::get('/student/details/{student}', [StudentController::class, 'show'])
         ->name('student.studentdetails');
 });
 
