@@ -113,7 +113,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                         </div>
 
                         {/* Only show add company button for coordinators */}
-                        {isCoordinator && (
+
                             <div className="rounded-lg mb-4 flex flex-col items-center">
                                 <button
                                     onClick={addCompanyBox}
@@ -130,7 +130,6 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                     />
                                 ))}
                             </div>
-                        )}
                     </div>
                 </div>
 
