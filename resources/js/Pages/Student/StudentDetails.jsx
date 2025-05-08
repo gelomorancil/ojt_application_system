@@ -34,6 +34,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
         e.preventDefault();
         post(`/student/${student.id}/remarks`);
     };
+    
 
     // Format the timestamp for display
     const formatDate = (dateString) => {
@@ -135,14 +136,15 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
-                    <UploadFiles 
-                        id={student.id} 
-                        preDeployment={preDeployment} 
-                        deployment={deployment} 
-                        final={final} 
-                        dtr={dtr}
-                        isCoordinator={isCoordinator}
-                    />
+                <UploadFiles 
+                id={student.id} 
+                preDeployment={preDeployment} 
+                deployment={deployment} 
+                final={final} 
+                dtr={dtr}
+                student_company={studentCompanyList} // ✅ pass this
+                isCoordinator={isCoordinator}
+                />
                     
                     {/* Student Remarks Section with read/unread status */}
                     <div className="bg-white p-6 shadow rounded-lg">

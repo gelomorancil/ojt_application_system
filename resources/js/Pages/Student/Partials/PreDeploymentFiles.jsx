@@ -1,23 +1,22 @@
-import { useForm, usePage } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
-export default function PreDeploymentFiles({ id, preDeployment = [] }) {
+export default function PreDeploymentFiles({ id, preDeployment, auth, student_company, comp_id }) {
+  // TEMPORARY: Always treat the user as a coordinator for now
   const isCoordinator = true;
 
-  const { auth } = usePage().props;
   const user = auth?.user;
-  const isStudent = user?.role;
 
   const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
+    Comp_ID:comp_id,
     category: "",
     file_name: "",
     file: null,
   });
 
   const [needsLetterOfIntent, setNeedsLetterOfIntent] = useState(() => {
-    if (!preDeployment || preDeployment.length === 0) return false;
     const letterOfIntentFile = preDeployment.find(
       (file) => file.category === "LETTER OF INTENT"
     );
@@ -38,16 +37,14 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
   const [submittedFiles, setSubmittedFiles] = useState({});
 
   const latestFiles = {};
-  if (preDeployment && preDeployment.length > 0) {
-    preDeployment.forEach((file) => {
-      if (
-        !latestFiles[file.category] ||
-        new Date(file.created_at) > new Date(latestFiles[file.category].created_at)
-      ) {
-        latestFiles[file.category] = file;
-      }
-    });
-  }
+  preDeployment.forEach((file) => {
+    if (
+      !latestFiles[file.category] ||
+      new Date(file.created_at) > new Date(latestFiles[file.category].updated_at)
+    ) {
+      latestFiles[file.category] = file;
+    }
+  });
 
   const handleFileChange = (category, file) => {
     setData({
@@ -55,6 +52,7 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
       file_name: file ? file.name : "",
       file: file || null,
       category: category,
+      Comp_ID: comp_id,
     });
 
     if (file) {
@@ -70,6 +68,7 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
     formData.append("category", category);
     formData.append("file_name", data.file_name);
     formData.append("file", data.file);
+    formData.append("Comp_ID", data.Comp_ID);
     formData.append("needs_letter_of_intent", needsLetterOfIntent ? true : false);
 
     post(route("student-files.store"), {
@@ -95,17 +94,17 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
 
     destroy(route('student-files.destroy', fileId), {
       onSuccess: () => {
-        reset();
+        onFinish: () => reset()
       },
     });
   };
 
   const handleVerify = (fileId) => {
     post(route('student-files.verify', fileId), {
-      onSuccess: () => { },
+      onSuccess: () => {},
     });
-  };
-
+  };  
+  
   return (
     <div className="ml-4 space-y-4">
       <div className="mb-4">
@@ -119,7 +118,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
           I am an intern outside of the city (requires Letter of Intent)
         </label>
       </div>
-
       {categories.map((category) => (
         <div key={category} className="border-b border-gray-200 pb-4">
           <form onSubmit={(e) => handleSubmit(category, e)} className="space-y-2">
@@ -127,8 +125,8 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
               <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
                 <span
                   className={`mr-2 ${data.file_name && data.category === category
-                    ? "text-green-600"
-                    : "text-gray-400"
+                      ? "text-green-600"
+                      : "text-gray-400"
                     }`}
                 >
                   <a
@@ -179,7 +177,7 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
                       {latestFiles[category].file_name.length > 10
                         ? `${latestFiles[category].file_name.slice(0, 10)}...`
                         : latestFiles[category].file_name}
-                      <span className="text-gray-500 text-xs"> ({new Date(latestFiles[category].created_at).toLocaleString()})</span>
+                      <span className="text-gray-500 text-xs"> ({new Date(latestFiles[category].updated_at).toLocaleString()})</span>
                     </span>
                     <a
                       href={`/storage/uploads/${latestFiles[category].file_name}`}
@@ -190,8 +188,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
                     >
                       <FaEye />
                     </a>
-
-                    {(isStudent != "student") && (
                     <button
                       type="button"
                       onClick={(e) => handleDelete(e, latestFiles[category].id)}
@@ -200,8 +196,6 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
                     >
                       <FaTrash />
                     </button>
-                    )}
-
                     {isCoordinator && (
                       <button
                         type="button"
