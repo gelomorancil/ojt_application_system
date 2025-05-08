@@ -1,16 +1,21 @@
 import React, { useState, useCallback } from "react";
-import { Head, usePage } from "@inertiajs/react";
+import { Head, usePage, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
-import StudentRemarks from "./Partials/StudentRemarks";
 
 function StudentDetails({ company_list, student_company, preDeployment, deployment, final, dtr }) {
-    console.log("final time",dtr);
+    const { student, auth } = usePage().props;
     const [studentCompanyList, setStudentCompanyList] = useState(student_company);
-
-    const { student } = usePage().props;
     const [extraCompanies, setExtraCompanies] = useState([]);
+    
+    // Setup Inertia form for handling the remarks update
+    const { data, setData, post, processing, errors } = useForm({
+        remarks: student.Remarks || "",
+    });
+
+    // Determine if the current user is a coordinator (not a student)
+    const isCoordinator = auth?.user?.role !== 'student';
 
     const addCompanyBox = useCallback(() => {
         setExtraCompanies(prev => [...prev, { id: Date.now(), saved: false }]);
@@ -24,10 +29,44 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
         setStudentCompanyList((prev) => [...prev, newCompany]);
     };
 
-    // Safely access the last student company data without using .at() method
+    // Handle form submission for remarks
+    const submitRemarks = (e) => {
+        e.preventDefault();
+        post(`/student/${student.id}/remarks`);
+    };
+
+    // Format the timestamp for display
+    const formatDate = (dateString) => {
+        if (!dateString || dateString === '0000-00-00 00:00:00') return 'Student has not read the remarks yet.';
+        
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        } catch (e) {
+            return 'Invalid Date';
+        }
+    };
+
+    // Safely access the last student company data
     const lastStudentCompany = studentCompanyList && studentCompanyList.length > 0
         ? studentCompanyList[studentCompanyList.length - 1]
         : null;
+
+        function formatReadableDate(dateString) {
+            if (!dateString || dateString === '0000-00-00 00:00:00') {
+              return '';
+            }
+            
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
+              hour12: true
+            });
+          }
 
     return (
         <AuthenticatedLayout>
@@ -35,7 +74,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
 
             <div className="grid grid-cols-4 gap-5">
                 <div className="col-span-2 space-y-6">
-                    {/* Left side content remains the same */}
+                    {/* Left side content */}
                     <div className="bg-white p-6 shadow rounded-lg">
                         <div className="flex justify-between items-start">
                             <div className="flex gap-4 items-center">
@@ -72,24 +111,89 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                             )}
                         </div>
 
-                        <div className="rounded-lg mb-4 flex flex-col items-center">
-                            <button
-                                onClick={addCompanyBox}
-                                className="px-4 h-8 bg-gray-500 text-white rounded-lg hover:bg-uslsgreen"
-                            >
-                                Add Company Profile
-                            </button>
-                            {extraCompanies.map((company) => (
-                                <CompanyForm key={company.id} company_list={company_list} onDelete={() => handleDelete(company.id)} student={student} />
-                            ))}
-                        </div>
+                        {/* Only show add company button for coordinators */}
+                        {isCoordinator && (
+                            <div className="rounded-lg mb-4 flex flex-col items-center">
+                                <button
+                                    onClick={addCompanyBox}
+                                    className="px-4 h-8 bg-gray-500 text-white rounded-lg hover:bg-uslsgreen"
+                                >
+                                    Add Company Profile
+                                </button>
+                                {extraCompanies.map((company) => (
+                                    <CompanyForm 
+                                        key={company.id} 
+                                        company_list={company_list} 
+                                        onDelete={() => handleDelete(company.id)} 
+                                        student={student} 
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
-                    <UploadFiles id={student.id} preDeployment={preDeployment} deployment={deployment} final={final} dtr={dtr}/>
-                    <StudentRemarks studentId={student.id} initialRemarks={student.Remarks} />
+                    <UploadFiles 
+                        id={student.id} 
+                        preDeployment={preDeployment} 
+                        deployment={deployment} 
+                        final={final} 
+                        dtr={dtr}
+                        isCoordinator={isCoordinator}
+                    />
+                    
+                    {/* Student Remarks Section with read/unread status */}
+                    <div className="bg-white p-6 shadow rounded-lg">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold">Remarks</h2>
+                        {isCoordinator && (
+                        <div className="text-sm">
+                            {student.remarks_read_at && student.remarks_read_at !== '0000-00-00 00:00:00' ? (
+                            <span className="text-green-600">
+                                Read on {formatReadableDate(student.remarks_read_at)}
+                            </span>
+                            ) : (
+                            <span className="text-red-600">Unread</span>
+                            )}
+                        </div>
+                        )}
+                    </div>
+
+                        {isCoordinator ? (
+                            // Coordinator view with edit functionality
+                            <div>
+                                <form onSubmit={submitRemarks}>
+                                    <textarea
+                                        value={data.remarks}
+                                        onChange={e => setData('remarks', e.target.value)}
+                                        className="w-full h-40 p-3 border border-gray-300 rounded-md"
+                                        placeholder="Add remarks for this student..."
+                                    />
+                                    {errors.remarks && <div className="text-red-500 text-sm mt-1">{errors.remarks}</div>}
+                                    <div className="mt-3 text-right">
+                                        <button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="px-4 py-2 bg-uslsgreen text-white rounded-lg disabled:opacity-75"
+                                        >
+                                            {processing ? 'Updating...' : 'Update Remarks'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        ) : (
+                            // Student view (read-only)
+                            <div className="p-3 border border-gray-200 rounded-md min-h-[10rem] bg-gray-50">
+                                {student.Remarks ? (
+                                    <p className="whitespace-pre-wrap">{student.Remarks}</p>
+                                ) : (
+                                    <p className="text-gray-400 italic">No remarks from coordinator yet.</p>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </AuthenticatedLayout>

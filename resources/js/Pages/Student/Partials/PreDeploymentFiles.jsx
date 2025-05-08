@@ -3,14 +3,11 @@ import React, { useState } from "react";
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from "react-icons/fa";
 
 export default function PreDeploymentFiles({ id, preDeployment = [] }) {
-
-  // TEMPORARY: Always treat the user as a coordinator for now
   const isCoordinator = true;
 
-    const { auth } = usePage().props;
-    const user = auth?.user;
-    const isStudent = user?.role;
-
+  const { auth } = usePage().props;
+  const user = auth?.user;
+  const isStudent = user?.role;
 
   const { data, setData, post, processing, reset, delete: destroy, patch } = useForm({
     Student_Num: id,
@@ -194,7 +191,7 @@ export default function PreDeploymentFiles({ id, preDeployment = [] }) {
                       <FaEye />
                     </a>
 
-                    {(isStudent != "student")  && (
+                    {(isStudent != "student") && (
                     <button
                       type="button"
                       onClick={(e) => handleDelete(e, latestFiles[category].id)}

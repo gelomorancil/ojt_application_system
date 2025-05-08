@@ -122,7 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/compcourse/{id}', [ContactController::class, 'destroy'])->name('compcourse.destroy');
 
 });
-// STUDNET USER SIDW
+// STUDNET USER SIDE
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/student/details/{student}', [StudentCompanyController::class, 'show'])
         ->name('student.studentdetails');
@@ -166,7 +166,7 @@ Route::put('/student-files/{id}', [StudentFileController::class, 'update'])->nam
 ;
 Route::post('/student/export', [StudentController::class, 'export'])->name('student.export');
 
-Route::post('/student/{id}/update-remarks', [StudentController::class, 'updateRemarks'])->name('student.update-remarks');
+Route::post('/student/{id}/remarks', [StudentController::class, 'updateRemarks'])->name('student.remarks.update');
 
 // Downloadable Forms Routing
 Route::middleware(['auth'])->group(function () {
