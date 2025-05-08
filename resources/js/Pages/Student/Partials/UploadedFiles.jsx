@@ -1,7 +1,60 @@
-import React from "react";
-import { FaEye } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { FaEye, FaExclamationTriangle } from "react-icons/fa";
 
 export default function UploadedFiles({ preDeployment, deployment, final, dtr }) {
+  // State to track files with their validity status
+  const [validatedFiles, setValidatedFiles] = useState({
+    Student_Num: [],
+    preDeployment: [],
+    deployment: [],
+    final: [],
+    dtr: []
+  });
+
+  // Effect to validate files when component mounts or props change
+  useEffect(() => {
+    // Helper function to check if file exists
+    const validateFiles = async (files) => {
+      if (!files || !Array.isArray(files)) return [];
+      
+      const validatedList = await Promise.all(files.map(async (file) => {
+        try {
+          // Try to fetch the file to see if it exists
+          const response = await fetch(`/storage/uploads/${file.file_name}`, { method: 'HEAD' });
+          return {
+            ...file,
+            exists: response.ok
+          };
+        } catch (error) {
+          console.error(`Error checking file ${file.file_name}:`, error);
+          return {
+            ...file,
+            exists: false
+          };
+        }
+      }));
+      
+      // Filter out files that don't exist
+      return validatedList.filter(file => file.exists);
+    };
+
+    // Validate all file groups
+    const updateAllFiles = async () => {
+      const validPreDeployment = await validateFiles(preDeployment);
+      const validDeployment = await validateFiles(deployment);
+      const validFinal = await validateFiles(final);
+      const validDtr = await validateFiles(dtr);
+
+      setValidatedFiles({
+        preDeployment: validPreDeployment,
+        deployment: validDeployment,
+        final: validFinal,
+        dtr: validDtr
+      });
+    };
+
+    updateAllFiles();
+  }, [preDeployment, deployment, final, dtr]);
 
   const renderFileGroup = (title, files) => (
     <div className="mb-8">
@@ -37,10 +90,10 @@ export default function UploadedFiles({ preDeployment, deployment, final, dtr })
 
   return (
     <div className="space-y-6 px-4 py-2">
-      {renderFileGroup("Pre-Deployment", preDeployment)}
-      {renderFileGroup("Deployment", deployment)}
-      {renderFileGroup("Final Requirements", final)}
-      {renderFileGroup("Daily Time Record", dtr)}
+      {renderFileGroup("Pre-Deployment", validatedFiles.preDeployment)}
+      {renderFileGroup("Deployment", validatedFiles.deployment)}
+      {renderFileGroup("Final Requirements", validatedFiles.final)}
+      {renderFileGroup("Daily Time Record", validatedFiles.dtr)}
     </div>
   );
 }
