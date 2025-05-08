@@ -206,11 +206,13 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithEve
 
         // Prepare student data for insertion
         $studentData = [
-            'fname' => $row['fname'],
-            'lname' => $row['lname'],
+            'Fname' => $row['fname'],
+            'Lname' => $row['lname'],
             'Student_Num' => $row['student_num'],
             'Course_ID' => $this->courseId,
             'Year' => $this->schoolYear, // Only store school year in tbl_student
+            'Remarks' => '',
+            'Read' => null,
             'created_at' => now(),
             'updated_at' => now()
         ];
