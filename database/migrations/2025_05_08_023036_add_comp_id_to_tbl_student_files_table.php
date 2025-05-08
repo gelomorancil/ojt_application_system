@@ -10,7 +10,7 @@ return new class extends Migration
 {
     Schema::table('tbl_student_files', function (Blueprint $table) {
         $table->unsignedBigInteger('Comp_ID')->nullable()->after('Student_Num');
-        $table->foreign('Comp_ID')->references('id')->on('company')->onDelete('set null');
+        // $table->foreign('Comp_ID')->references('id')->on('company')->onDelete('set null');
     });
 }
 
