@@ -11,9 +11,11 @@ class StudentFileController extends Controller
 {
     public function store(Request $request)
 {
+    // dd($request->all());
     $validated = $request->validate([
         'Student_Num' => 'required',
         'category' => 'required',
+        'Comp_ID' => 'required',
         'file_name' => 'required|string',
         'file' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:20480',
         'from_date' => 'nullable|date',
@@ -27,6 +29,7 @@ class StudentFileController extends Controller
     // Attempt to find an existing file with matching Student_Num, category, and coverage
     $existing = StudentFile::where('Student_Num', $request->Student_Num)
         ->where('category', $request->category)
+        ->where('Comp_ID', $request->Comp_ID)
         ->where('from_date', $request->from_date)
         ->where('to_date', $request->to_date)
         ->first();
@@ -47,6 +50,7 @@ class StudentFileController extends Controller
         StudentFile::create([
             'Student_Num' => $request->Student_Num,
             'category' => $request->category,
+            'Comp_ID' => $request->Comp_ID,
             'file_name' => $filename,
             'needs_letter_of_intent' => $request->category === 'LETTER OF INTENT',
             'from_date' => $request->from_date,
@@ -58,22 +62,28 @@ class StudentFileController extends Controller
     return redirect()->back()->with('success', 'File uploaded successfully.');
 }
    
-    public function show($id)
-    {
-        $files = StudentFile::where('Student_Num', $id)
-            ->get()
-            ->groupBy('category');
+public function show($id)
+{
+    $files = StudentFile::where('Student_Num', $id)->get();
 
-        return Inertia::render('Student/UploadFiles', [
-            'studentFiles' => $files,
-        ]);
-    }
+    $grouped = [
+        'preDeployment' => $files->where('category', 'Pre-Deployment')->values(),
+        'deployment' => $files->where('category', 'Deployment')->values(),
+        'final' => $files->where('category', 'Final Requirements')->values(),
+        'dtr' => $files->where('category', 'Daily Time Record')->values(),
+    ];
 
-    public function download($id)
-    {
-        $file = StudentFile::findOrFail($id);
-        return Storage::download('public/uploads/' . $file->file_name);
-    }
+    $student_company = StudentCompany::with('company')->where('Student_Num', $id)->get();
+
+    return Inertia::render('Student/UploadFiles', [
+        'id' => $id,
+        'preDeployment' => $grouped['preDeployment'],
+        'deployment' => $grouped['deployment'],
+        'final' => $grouped['final'],
+        'dtr' => $grouped['dtr'],
+        'student_company' => $student_company,
+    ]);
+}
 
     public function destroy($fileId)
 {
