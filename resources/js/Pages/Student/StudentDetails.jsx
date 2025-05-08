@@ -8,7 +8,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
     const { student, auth } = usePage().props;
     const [studentCompanyList, setStudentCompanyList] = useState(student_company);
     const [extraCompanies, setExtraCompanies] = useState([]);
-    
+
     // Setup Inertia form for handling the remarks update
     const { data, setData, post, processing, errors } = useForm({
         remarks: student.Remarks || "",
@@ -34,12 +34,12 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
         e.preventDefault();
         post(`/student/${student.id}/remarks`);
     };
-    
+
 
     // Format the timestamp for display
     const formatDate = (dateString) => {
         if (!dateString || dateString === '0000-00-00 00:00:00') return 'Student has not read the remarks yet.';
-        
+
         try {
             const date = new Date(dateString);
             return date.toLocaleString();
@@ -57,7 +57,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
             if (!dateString || dateString === '0000-00-00 00:00:00') {
               return '';
             }
-            
+
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', {
               month: 'long',
@@ -113,7 +113,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                         </div>
 
                         {/* Only show add company button for coordinators */}
-                        {isCoordinator && (
+
                             <div className="rounded-lg mb-4 flex flex-col items-center">
                                 <button
                                     onClick={addCompanyBox}
@@ -122,30 +122,29 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                     Add Company Profile
                                 </button>
                                 {extraCompanies.map((company) => (
-                                    <CompanyForm 
-                                        key={company.id} 
-                                        company_list={company_list} 
-                                        onDelete={() => handleDelete(company.id)} 
-                                        student={student} 
+                                    <CompanyForm
+                                        key={company.id}
+                                        company_list={company_list}
+                                        onDelete={() => handleDelete(company.id)}
+                                        student={student}
                                     />
                                 ))}
                             </div>
-                        )}
                     </div>
                 </div>
 
                 {/* Right Section */}
                 <div className="col-span-2 space-y-6">
-                <UploadFiles 
-                id={student.id} 
-                preDeployment={preDeployment} 
-                deployment={deployment} 
-                final={final} 
+                <UploadFiles
+                id={student.id}
+                preDeployment={preDeployment}
+                deployment={deployment}
+                final={final}
                 dtr={dtr}
                 student_company={studentCompanyList} // ✅ pass this
                 isCoordinator={isCoordinator}
                 />
-                    
+
                     {/* Student Remarks Section with read/unread status */}
                     <div className="bg-white p-6 shadow rounded-lg">
                     <div className="flex justify-between items-center mb-4">

@@ -248,7 +248,7 @@ export default function DTRFiles({ id, dtr, auth, comp_id }) {
                           "No date coverage"
                         )}
                       </td>
-    
+
                       <td className="px-4 py-2">
                       {new Date(file.created_at).toLocaleDateString('en-US', {
   year: 'numeric',
