@@ -2,6 +2,7 @@ import React from "react";
 import { FaEye } from "react-icons/fa";
 
 export default function UploadedFiles({ preDeployment, deployment, final, dtr }) {
+
   const renderFileGroup = (title, files) => (
     <div className="mb-8">
       <h4 className="text-lg font-semibold text-uslsgreen border-b pb-2 mb-3">{title}</h4>
