@@ -191,7 +191,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                 {student.Remarks ? (
                                     <p className="whitespace-pre-wrap">{student.Remarks}</p>
                                 ) : (
-                                    <p className="text-gray-400 italic">No remarks from coordinator yet.</p>
+                                    <p className="text-gray-400 italic">No remarks yet.</p>
                                 )}
                             </div>
                         )}
