@@ -102,18 +102,18 @@ export default function DTRFiles({ id, dtr, auth, comp_id }) {
         <div className="flex items-center justify-between">
           <label className="flex items-center text-sm text-gray-700 cursor-pointer hover:text-uslsgreen">
             <span
-                              className={`mr-2 ${data.file_name && data.category === category
-                                ? "text-green-600"
-                                : "text-gray-400"
-                                }`}
-                            >
-                            <a
-                              className="text-uslsgreen hover:text-gray-700"
-                              title="Upload File"
-                            >
-                              <FaUpload />
-                            </a>
-                            </span>
+              className={`mr-2 ${data.file_name && data.category === 'DTR'
+                ? "text-green-600"
+                : "text-gray-400"
+                }`}
+            >
+              <a
+                className="text-uslsgreen hover:text-gray-700"
+                title="Upload File"
+              >
+                <FaUpload />
+              </a>
+            </span>
             DAILY TIME RECORD
             <input
               type="file"
