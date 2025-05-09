@@ -46,7 +46,7 @@ class StudentController extends Controller {
 
         $courses = Course::select('id', 'College', 'Course')->get();
         $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
-        
+
         // Get all provinces and cities from the company table
         $provinces = Company::distinct('Province')->whereNotNull('Province')->pluck('Province')->toArray();
 
@@ -210,13 +210,12 @@ class StudentController extends Controller {
             ->whereIn('category', ['DTR'])
             ->orderBy('created_at', 'desc')
             ->get();
-            
         // Check if this is a student viewing their own page
         // Update read status before rendering view
         if (auth()->user() && auth()->user()->role === 'student' && auth()->user()->student_id == $id) {
             // Only update timestamp if there are remarks and it hasn't been read
             $studentRecord = Student::find($id);
-            if ($studentRecord && $studentRecord->Remarks && 
+            if ($studentRecord && $studentRecord->Remarks &&
                 ($studentRecord->Read === null || $studentRecord->Read == '0000-00-00 00:00:00')) {
                 $studentRecord->Read = now();
                 $studentRecord->save();
@@ -282,15 +281,15 @@ class StudentController extends Controller {
     {
         try {
             $student = Student::with('user')->findOrFail($id);
-            
+
             // Delete associated user record first
             if ($student->user) {
                 $student->user->delete();
             }
-            
+
             // Now delete the student
             $student->delete();
-            
+
             return response()->json(['message' => 'Student deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error deleting student: ' . $e->getMessage()], 400);
@@ -340,16 +339,16 @@ class StudentController extends Controller {
                 'message' => 'No students selected for deletion'
             ]);
         }
-        
+
         // Check for active transactions in tbl_student_comp
         $studentsWithTransactions = StudentCompany::whereIn('Student_ID', $studentIds)
             ->where('Status', 'On going')
             ->pluck('Student_ID')
             ->toArray();
-        
+
         // Filter out students with active transactions
         $eligibleStudentIds = array_diff($studentIds, $studentsWithTransactions);
-        
+
         // If all students have active transactions, return error
         if (empty($eligibleStudentIds)) {
             $restrictedStudents = Student::whereIn('id', $studentsWithTransactions)
@@ -360,7 +359,7 @@ class StudentController extends Controller {
                 'message' => 'Cannot delete any students. All selected students have active transactions: ' . implode(', ', $restrictedStudents)
             ]);
         }
-        
+
         // Process students with active transactions for the warning message
         $skippedStudents = [];
         if (!empty($studentsWithTransactions)) {
@@ -368,7 +367,7 @@ class StudentController extends Controller {
                 ->pluck('Student_Num')
                 ->toArray();
         }
-        
+
         // Proceed with deletion for students without active transactions
         try {
             // Find the related users and delete them first
@@ -376,15 +375,15 @@ class StudentController extends Controller {
             if (!empty($userIds)) {
                 User::whereIn('id', $userIds)->delete();
             }
-            
+
             // Now delete the eligible students
             $deletedCount = Student::whereIn('id', $eligibleStudentIds)->delete();
-            
+
             $message = $deletedCount . ' student(s) deleted successfully';
             if (!empty($skippedStudents)) {
                 $message .= '. Skipped students with active transactions: ' . implode(', ', $skippedStudents);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -463,9 +462,9 @@ class StudentController extends Controller {
         $request->validate([
             'remarks' => 'nullable|string|max:2000'
         ]);
-        
+
         $student = Student::findOrFail($id);
-        
+
         // Only reset the Read timestamp if remarks have changed
         if ($student->Remarks !== $request->input('remarks')) {
             // Update the remarks
@@ -476,10 +475,10 @@ class StudentController extends Controller {
             
             // Save the changes to the database
             $student->save();
-            
+
             return redirect()->back()->with('success', 'Remarks updated successfully.');
         }
-        
+
         return redirect()->back()->with('info', 'No changes made to remarks.');
     }
 }
