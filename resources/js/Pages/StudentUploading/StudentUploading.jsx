@@ -7,6 +7,8 @@ export default function StudentUploading({ colleges, flash }) {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [duplicateStudents, setDuplicateStudents] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   
   // useForm hook
   const { data, setData, post, reset, errors, processing } = useForm({
@@ -177,18 +179,62 @@ export default function StudentUploading({ colleges, flash }) {
     setShowConfirmation(true);
   };
   
+  // Simulate upload progress
+  const simulateProgress = () => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    const interval = setInterval(() => {
+      setUploadProgress(prevProgress => {
+        // When real upload completes, we'll set to 100 manually
+        // This simulation will only go up to 95%
+        if (prevProgress >= 95) {
+          clearInterval(interval);
+          return 95;
+        }
+        return prevProgress + Math.random() * 10;
+      });
+    }, 300);
+    
+    return () => clearInterval(interval);
+  };
+  
   // Handle form submission after confirmation
   const handleSubmit = () => {
     setShowConfirmation(false);
+    
+    // Start progress simulation
+    const clearSimulation = simulateProgress();
+    
     post("/upload-students", {
       forceFormData: true,
+      onProgress: (progress) => {
+        // If we have real progress from the server, use it
+        if (progress && progress.percentage) {
+          setUploadProgress(progress.percentage);
+        }
+      },
       onSuccess: () => {
-        reset(); // Clears the form
-        // Reset other states
-        setCourses([]);
-        setCoursesFetched(false);
-        setAvailableSemesters([]);
-        setSemestersFetched(false);
+        // Ensure progress shows 100% when complete
+        setUploadProgress(100);
+        setTimeout(() => {
+          setIsUploading(false);
+          clearSimulation();
+          reset(); // Clears the form
+          // Reset other states
+          setCourses([]);
+          setCoursesFetched(false);
+          setAvailableSemesters([]);
+          setSemestersFetched(false);
+        }, 500); // Short delay to show 100% before resetting
+      },
+      onError: () => {
+        // If upload fails, stop the progress indicator
+        clearSimulation();
+        setIsUploading(false);
+      },
+      onFinish: () => {
+        // This might run before onSuccess, so don't reset here
       }
     });
   };
@@ -207,6 +253,32 @@ export default function StudentUploading({ colleges, flash }) {
   return (
     <AuthenticatedLayout>
       <Head title="Class List" />
+      
+      {/* Upload Progress Overlay */}
+      {isUploading && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">Uploading Students</h3>
+            <div className="mb-2">
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div 
+                  className="bg-uslsgreen h-4 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${Math.min(Math.round(uploadProgress), 100)}%` }}
+                ></div>
+              </div>
+              <p className="text-right text-sm font-medium mt-1">
+                {Math.min(Math.round(uploadProgress), 100)}%
+              </p>
+            </div>
+            <p className="text-center text-sm text-gray-600">
+              {uploadProgress < 100 
+                ? "Processing your file. Please don't close this window..."
+                : "Upload complete! Processing data..."}
+            </p>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg">
         <h2 className="text-xl font-semibold mb-4">Class List</h2>
         
@@ -238,7 +310,7 @@ export default function StudentUploading({ colleges, flash }) {
               onChange={(e) => setData('college', e.target.value)}
               className="w-full p-2 border rounded"
               required
-              disabled={isLoading}
+              disabled={isLoading || isUploading}
             >
               <option value="">Select a college</option>
               {colleges && colleges.length > 0 && colleges.map((col) => (
@@ -258,7 +330,7 @@ export default function StudentUploading({ colleges, flash }) {
               onChange={(e) => setData('course', e.target.value)}
               className="w-full p-2 border rounded"
               required
-              disabled={!data.college || isLoading}
+              disabled={!data.college || isLoading || isUploading}
             >
               <option value="">Select a course</option>
               {courses.map((c) => (
@@ -281,7 +353,7 @@ export default function StudentUploading({ colleges, flash }) {
               onChange={(e) => setData('semester', e.target.value)}
               className="w-full p-2 border rounded"
               required
-              disabled={!data.course || isLoading}
+              disabled={!data.course || isLoading || isUploading}
             >
               <option value="">Select semester</option>
               {availableSemesters.map((sem) => (
@@ -304,7 +376,7 @@ export default function StudentUploading({ colleges, flash }) {
               onChange={(e) => setData('schoolYear', e.target.value)}
               className="w-full p-2 border rounded"
               required
-              disabled={!data.semester || isLoading}
+              disabled={!data.semester || isLoading || isUploading}
             >
               <option value="">Select school year</option>
               {availableSchoolYears.map((year) => (
@@ -325,7 +397,7 @@ export default function StudentUploading({ colleges, flash }) {
               className="w-full p-2 border rounded"
               accept=".xlsx,.xls,.csv"
               required
-              disabled={!data.schoolYear}
+              disabled={!data.schoolYear || isLoading || isUploading}
             />
             {errors.file && <p className="text-sm text-red-500 mt-1">{errors.file}</p>}
           </div>
@@ -333,8 +405,8 @@ export default function StudentUploading({ colleges, flash }) {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-gray-400 text-white p-2 rounded hover:bg-gray-500"
-            disabled={isLoading || processing || !data.schoolYear || !data.file}
+            className="w-full bg-gray-400 text-white p-2 rounded hover:bg-gray-500 disabled:opacity-50"
+            disabled={isLoading || processing || !data.schoolYear || !data.file || isUploading}
           >
             {processing ? "Uploading..." : "Upload"}
           </button>
