@@ -18,6 +18,7 @@ use Inertia\Response;
 use \Illuminate\Support\Facades\Auth;
 use App\Models\User; // <-- import User model
 use Illuminate\Support\Facades\Hash; // <-- import Hash
+use Illuminate\Support\Facades\DB; // <-- import DB facade
 use PDF;
 
 class StudentController extends Controller {
@@ -45,7 +46,7 @@ class StudentController extends Controller {
 
         $courses = Course::select('id', 'College', 'Course')->get();
         $colleges = ['CECS', 'CAS', 'CBA', 'CE', 'CON'];
-        
+
         // Get all provinces and cities from the company table
         $provinces = Company::distinct('Province')->whereNotNull('Province')->pluck('Province')->toArray();
 
@@ -122,27 +123,31 @@ class StudentController extends Controller {
             return redirect()->back()->withErrors(['Course' => 'The selected course does not exist.']);
         }
 
-        // Create student with Read field set to '0000-00-00 00:00:00' to indicate unread
-        $student = Student::create([
-            'Course_ID' => $course->id,
-            'Fname' => $validated['Fname'],
-            'Lname' => $validated['Lname'],
-            'Student_Num' => $validated['Student_Num'],
-            'Year' => $request->Year ?? '2024-2025',
-            'Remarks' => '',
-            'Read' => '0000-00-00 00:00:00', 
-        ]);
+        try {
+            // Create student with Read field not explicitly set (will be NULL by default)
+            $student = Student::create([
+                'Course_ID' => $course->id,
+                'Fname' => $validated['Fname'],
+                'Lname' => $validated['Lname'],
+                'Student_Num' => $validated['Student_Num'],
+                'Year' => $request->Year ?? '2024-2025',
+                'Remarks' => '',
+                // No 'Read' field - will default to NULL
+            ]);
 
-        // Create user linked to student
-        User::create([
-            'name' => $validated['Fname'] . ' ' . $validated['Lname'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'student', // Optional: default to 'student'
-            'student_id' => $student->id,
-        ]);
+            // Create user linked to student
+            User::create([
+                'name' => $validated['Fname'] . ' ' . $validated['Lname'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => 'student',
+                'student_id' => $student->id,
+            ]);
 
-        return redirect()->route('student')->with('success', 'Student added successfully!');
+            return redirect()->route('student')->with('success', 'Student added successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Error adding student: ' . $e->getMessage()]);
+        }
     }
 
     public function show($id)
@@ -165,47 +170,58 @@ class StudentController extends Controller {
             ->where('tbl_student.id', $id)
             ->firstOrFail();
 
-            $company_list = Company::all();
-            // $details_list = OjtHours::all();
-            $student_company = StudentCompany::where('Student_ID', $id)
-        ->with('company') // Load related company details
-        ->get();
+        $company_list = Company::all();
+        // $details_list = OjtHours::all();
+        $student_company = StudentCompany::where('Student_ID', $id)
+            ->with('company') // Load related company details
+            ->get();
 
-    $preDeployment = StudentFile::where('Student_Num', $id)
-    ->whereIn('category', [
-        'RESUME',
-        'ENDORSEMENT LETTER',
-        'APPLICATION LETTER',
-        "PARENT'S/GUARDIAN CONSENT",
-        "PARENT'S/GUARDIAN ID",
-        "LETTER OF INTENT",
-    ])
-    ->get();
+        $preDeployment = StudentFile::where('Student_Num', $id)
+            ->whereIn('category', [
+                'RESUME',
+                'ENDORSEMENT LETTER',
+                'APPLICATION LETTER',
+                "PARENT'S/GUARDIAN CONSENT",
+                "PARENT'S/GUARDIAN ID",
+                "LETTER OF INTENT",
+            ])
+            ->get();
 
+        $deployment = StudentFile::where('Student_Num', $id)
+            ->whereIn('category', [
+                "INTERNSHIP PROGRAM COVER",
+                "COMPANY PROFILE",
+                "CERTIFICATE OF REGISTRATION",
+                "INTERNSHIP UNDERTAKING",
+                "INTERNSHIP INFORMATION SHEET",
+            ])
+            ->get();
 
-    $deployment = StudentFile::where('Student_Num', $id)
-    ->whereIn('category', [
-        "INTERNSHIP PROGRAM COVER",
-        "COMPANY PROFILE",
-        "CERTIFICATE OF REGISTRATION",
-        "INTERNSHIP UNDERTAKING",
-        "INTERNSHIP INFORMATION SHEET",
-    ])
-    ->get();
+        $final = StudentFile::where('Student_Num', $id)
+            ->whereIn('category', [
+                "DAILY TIME RECORD (DTR)",
+                "ACCOMPLISHMENT REPORT",
+                "STUDENT INTERNSHIP EVALUATION",
+                "CERTIFICATE OF COMPLETION",
+            ])
+            ->get();
 
-    $final = StudentFile::where('Student_Num', $id)
-    ->whereIn('category', [
-        "DAILY TIME RECORD (DTR)",
-        "ACCOMPLISHMENT REPORT",
-        "STUDENT INTERNSHIP EVALUATION",
-        "CERTIFICATE OF COMPLETION",
-    ])
-    ->get();
+        $dtr = StudentFile::where('Student_Num', $id)
+            ->whereIn('category', ['DTR'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    $dtr = StudentFile::where('Student_Num', $id)
-    ->whereIn('category', ['DTR'])
-    ->orderBy('created_at', 'desc')
-    ->get();
+        // Check if this is a student viewing their own page
+        // Update read status before rendering view
+        if (auth()->user() && auth()->user()->role === 'student' && auth()->user()->student_id == $id) {
+            // Only update timestamp if there are remarks and it hasn't been read
+            $studentRecord = Student::find($id);
+            if ($studentRecord && $studentRecord->Remarks &&
+                ($studentRecord->Read === null || $studentRecord->Read == '0000-00-00 00:00:00')) {
+                $studentRecord->Read = now();
+                $studentRecord->save();
+            }
+        }
 
         return Inertia::render('Student/StudentDetails', [
             'student' => $student,
@@ -220,16 +236,6 @@ class StudentController extends Controller {
             ],
             // 'details_list' => $details_list,
         ]);
-
-        // Check if this is a student viewing their own page
-        // This logic depends on your auth system - adjust accordingly
-        if (auth()->user()->role === 'student' && auth()->user()->student_id == $id) {
-            // Only update timestamp if there are remarks to read and it hasn't been read yet
-            if ($student->Remarks && ($student->remarks_read_at == '0000-00-00 00:00:00' || $student->remarks_read_at === null)) {
-                $student->Read = now(); // Use the existing Read column
-                $student->save();
-            }
-        }
     }
 
     // Update student details
@@ -276,15 +282,15 @@ class StudentController extends Controller {
     {
         try {
             $student = Student::with('user')->findOrFail($id);
-            
+
             // Delete associated user record first
             if ($student->user) {
                 $student->user->delete();
             }
-            
+
             // Now delete the student
             $student->delete();
-            
+
             return response()->json(['message' => 'Student deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error deleting student: ' . $e->getMessage()], 400);
@@ -334,16 +340,16 @@ class StudentController extends Controller {
                 'message' => 'No students selected for deletion'
             ]);
         }
-        
+
         // Check for active transactions in tbl_student_comp
         $studentsWithTransactions = StudentCompany::whereIn('Student_ID', $studentIds)
             ->where('Status', 'On going')
             ->pluck('Student_ID')
             ->toArray();
-        
+
         // Filter out students with active transactions
         $eligibleStudentIds = array_diff($studentIds, $studentsWithTransactions);
-        
+
         // If all students have active transactions, return error
         if (empty($eligibleStudentIds)) {
             $restrictedStudents = Student::whereIn('id', $studentsWithTransactions)
@@ -354,7 +360,7 @@ class StudentController extends Controller {
                 'message' => 'Cannot delete any students. All selected students have active transactions: ' . implode(', ', $restrictedStudents)
             ]);
         }
-        
+
         // Process students with active transactions for the warning message
         $skippedStudents = [];
         if (!empty($studentsWithTransactions)) {
@@ -362,7 +368,7 @@ class StudentController extends Controller {
                 ->pluck('Student_Num')
                 ->toArray();
         }
-        
+
         // Proceed with deletion for students without active transactions
         try {
             // Find the related users and delete them first
@@ -370,15 +376,15 @@ class StudentController extends Controller {
             if (!empty($userIds)) {
                 User::whereIn('id', $userIds)->delete();
             }
-            
+
             // Now delete the eligible students
             $deletedCount = Student::whereIn('id', $eligibleStudentIds)->delete();
-            
+
             $message = $deletedCount . ' student(s) deleted successfully';
             if (!empty($skippedStudents)) {
                 $message .= '. Skipped students with active transactions: ' . implode(', ', $skippedStudents);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -457,18 +463,23 @@ class StudentController extends Controller {
         $request->validate([
             'remarks' => 'nullable|string|max:2000'
         ]);
-        
+
         $student = Student::findOrFail($id);
-        
+
         // Only reset the Read timestamp if remarks have changed
         if ($student->Remarks !== $request->input('remarks')) {
+            // Update the remarks
             $student->Remarks = $request->input('remarks');
-            $student->Read = null; // Use null instead of '0000-00-00 00:00:00'
+
+            // Mark as unread by setting to NULL explicitly
+            $student->Read = null;
+
+            // Save the changes to the database
             $student->save();
-            
+
             return redirect()->back()->with('success', 'Remarks updated successfully.');
         }
-        
+
         return redirect()->back()->with('info', 'No changes made to remarks.');
     }
 }
