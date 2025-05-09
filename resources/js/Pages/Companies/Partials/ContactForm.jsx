@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import Select from "react-select";
 
 export default function ContactForm({
@@ -11,11 +11,13 @@ export default function ContactForm({
     errors,
     course_list,
 }) {
+    const { auth } = usePage().props;
+    const user = auth?.user;
+    const isStudent = user?.role === 'student';
 
+    if (isStudent) return null; // Don’t render form for students
 
     return (
-
-
         <div className="bg-white p-6 shadow-sm sm:rounded-lg w-full max-w-md m-4">
             <h3 className="mb-4 text-lg font-semibold">
                 {editingContact ? "Edit Contact" : "Add Contacts"}
@@ -38,7 +40,7 @@ export default function ContactForm({
                     required
                 />
 
-<Select
+                <Select
                     isMulti
                     options={course_list.map(course => ({
                         value: course.id,
@@ -86,7 +88,6 @@ export default function ContactForm({
                     <option value="Work from Home">Work from Home</option>
                 </select>
 
-
                 <button
                     type="submit"
                     className="w-full bg-blue-500 text-white py-2 rounded"
@@ -94,7 +95,6 @@ export default function ContactForm({
                     {editingContact ? "Update Contact" : "Add Contact"}
                 </button>
                 {editingContact && (
-
                     <button
                         type="button"
                         onClick={resetForm}

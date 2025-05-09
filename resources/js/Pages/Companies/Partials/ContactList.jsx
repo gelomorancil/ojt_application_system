@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import React, { useEffect } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import React from 'react';
 import { FiEdit } from 'react-icons/fi';
 import { MdDelete } from 'react-icons/md';
 import InternList from './InternList';
@@ -16,6 +16,9 @@ export default function ContactList({
     activeTab,
     setActiveTab,
 }) {
+    const { auth } = usePage().props;
+    const user = auth?.user;
+    const isStudent = user?.role === 'student';
 
     return (
         <div className="bg-white p-6 shadow-sm sm:rounded-lg overflow-x-auto min-h-full min-w-full">
@@ -28,28 +31,33 @@ export default function ContactList({
                     >
                         List of Contacts
                     </button>
-                    <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'interns' ? 'border-b-2 border-black' : 'text-gray-500'}`}
-                        onClick={() => setActiveTab('interns')}
-                    >
-                        List of Programs
-                    </button>
-                    <button
-                        className={`py-2 px-4 font-medium ${activeTab === 'moa' ? 'border-b-2 border-black' : 'text-gray-500'}`}
-                        onClick={() => setActiveTab('moa')}
-                    >
-                        Status of MOA
-                    </button>
+
+                    {!isStudent && (
+                        <>
+                            <button
+                                className={`py-2 px-4 font-medium ${activeTab === 'interns' ? 'border-b-2 border-black' : 'text-gray-500'}`}
+                                onClick={() => setActiveTab('interns')}
+                            >
+                                List of Programs
+                            </button>
+                            <button
+                                className={`py-2 px-4 font-medium ${activeTab === 'moa' ? 'border-b-2 border-black' : 'text-gray-500'}`}
+                                onClick={() => setActiveTab('moa')}
+                            >
+                                Status of MOA
+                            </button>
+                        </>
+                    )}
                 </nav>
             </div>
 
             {/* Interns Tab */}
-            {activeTab === 'interns' && (
+            {!isStudent && activeTab === 'interns' && (
                 <InternList intern_list={intern_list} />
             )}
 
             {/* MOA Tab */}
-            {activeTab === 'moa' && (
+            {!isStudent && activeTab === 'moa' && (
                 <MoaList moa_list={moa_list} />
             )}
 
@@ -66,7 +74,9 @@ export default function ContactList({
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacity</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            {!isStudent && (
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            )}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -85,19 +95,21 @@ export default function ContactList({
                                     <td className="align-top px-4 py-4">{contact.contact_number}</td>
                                     <td className="align-top px-4 py-4">{contact.Capacity || 'N/A'}</td>
                                     <td className="align-top px-4 py-4">{contact.mode}</td>
-                                    <td className="align-top px-4 py-4 flex gap-1">
-                                        <button onClick={() => handleEdit(contact)} className="text-blue-500 hover:text-blue-700">
-                                            <FiEdit size={18} />
-                                        </button>
-                                        <button onClick={() => handleDelete(contact.id)} className="text-red-500 hover:text-red-700 ml-2">
-                                            <MdDelete size={20} />
-                                        </button>
-                                    </td>
+                                    {!isStudent && (
+                                        <td className="align-top px-4 py-4 flex gap-1">
+                                            <button onClick={() => handleEdit(contact)} className="text-blue-500 hover:text-blue-700">
+                                                <FiEdit size={18} />
+                                            </button>
+                                            <button onClick={() => handleDelete(contact.id)} className="text-red-500 hover:text-red-700 ml-2">
+                                                <MdDelete size={20} />
+                                            </button>
+                                        </td>
+                                    )}
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="9" className="px-4 py-3 text-center text-gray-500">
+                                <td colSpan={isStudent ? 8 : 9} className="px-4 py-3 text-center text-gray-500">
                                     No contacts available.
                                 </td>
                             </tr>

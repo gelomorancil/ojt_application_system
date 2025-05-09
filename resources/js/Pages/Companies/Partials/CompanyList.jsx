@@ -93,15 +93,12 @@ export default function CompanyList({ company_list, handleEdit, handleDelete }) 
                         return (
                             <tr key={items.id}>
                                 <td className="align-top px-4 py-4">{index + 1}</td>
-                                <td className="align-top px-4 py-4">
-                                    {!isStudent ? ( // 👈 Only show Link if not a student
-                                        <Link href={`/companies/${items.id}/profile`}>
-                                            {items.Comp_name}
-                                        </Link>
-                                    ) : (
-                                        items.Comp_name
-                                    )}
-                                </td>
+<td className="align-top px-4 py-4">
+    <Link href={`/companies/${items.id}/profile`}>
+        {items.Comp_name}
+    </Link>
+</td>
+
                                 <td className="align-top px-4 py-4 max-w-[250px] truncate">
                                     {fullAddress || 'N/A'}
                                 </td>
