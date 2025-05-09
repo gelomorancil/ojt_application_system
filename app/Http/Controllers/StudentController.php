@@ -275,11 +275,19 @@ class StudentController extends Controller {
     public function destroy($id)
     {
         try {
-            $student = Student::findOrFail($id);
+            $student = Student::with('user')->findOrFail($id);
+            
+            // Delete associated user record first
+            if ($student->user) {
+                $student->user->delete();
+            }
+            
+            // Now delete the student
             $student->delete();
-            return response()->json(['message' => 'Student deleted successfully'], 200); // return a success response
+            
+            return response()->json(['message' => 'Student deleted successfully'], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Error deleting student'], 400); // return error response
+            return response()->json(['message' => 'Error deleting student: ' . $e->getMessage()], 400);
         }
     }
 
@@ -320,39 +328,62 @@ class StudentController extends Controller {
     public function batchDelete(Request $request)
     {
         $studentIds = $request->input('studentIds', []);
-
         if (empty($studentIds)) {
             return response()->json([
                 'success' => false,
                 'message' => 'No students selected for deletion'
             ]);
         }
-
+        
         // Check for active transactions in tbl_student_comp
         $studentsWithTransactions = StudentCompany::whereIn('Student_ID', $studentIds)
             ->where('Status', 'On going')
             ->pluck('Student_ID')
             ->toArray();
-
-        if (!empty($studentsWithTransactions)) {
-            // Get student numbers for the restricted students
+        
+        // Filter out students with active transactions
+        $eligibleStudentIds = array_diff($studentIds, $studentsWithTransactions);
+        
+        // If all students have active transactions, return error
+        if (empty($eligibleStudentIds)) {
             $restrictedStudents = Student::whereIn('id', $studentsWithTransactions)
                 ->pluck('Student_Num')
                 ->toArray();
-
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot delete students with active transactions: ' . implode(', ', $restrictedStudents)
+                'message' => 'Cannot delete any students. All selected students have active transactions: ' . implode(', ', $restrictedStudents)
             ]);
         }
-
+        
+        // Process students with active transactions for the warning message
+        $skippedStudents = [];
+        if (!empty($studentsWithTransactions)) {
+            $skippedStudents = Student::whereIn('id', $studentsWithTransactions)
+                ->pluck('Student_Num')
+                ->toArray();
+        }
+        
         // Proceed with deletion for students without active transactions
         try {
-            Student::whereIn('id', $studentIds)->delete();
-
+            // Find the related users and delete them first
+            $userIds = User::whereIn('student_id', $eligibleStudentIds)->pluck('id')->toArray();
+            if (!empty($userIds)) {
+                User::whereIn('id', $userIds)->delete();
+            }
+            
+            // Now delete the eligible students
+            $deletedCount = Student::whereIn('id', $eligibleStudentIds)->delete();
+            
+            $message = $deletedCount . ' student(s) deleted successfully';
+            if (!empty($skippedStudents)) {
+                $message .= '. Skipped students with active transactions: ' . implode(', ', $skippedStudents);
+            }
+            
             return response()->json([
                 'success' => true,
-                'message' => count($studentIds) . ' student(s) deleted successfully'
+                'message' => $message,
+                'deleted_count' => $deletedCount,
+                'skipped_count' => count($skippedStudents)
             ]);
         } catch (\Exception $e) {
             return response()->json([
