@@ -22,7 +22,7 @@ class Student extends Model
     ];
 
     // Disable Laravel's timestamp fields if they don't exist in your table
-    public $timestamps = false;
+    // public $timestamps = false;
 
     /**
      * The "booted" method of the model.

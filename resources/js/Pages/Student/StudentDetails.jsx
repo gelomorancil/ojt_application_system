@@ -179,7 +179,7 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                             disabled={processing}
                                             className="px-4 py-2 bg-uslsgreen text-white rounded-lg disabled:opacity-75"
                                         >
-                                            {processing ? 'Updating...' : 'Update Remarks'}
+                                            {processing ? 'Updating...' : 'Add Remarks'}
                                         </button>
                                     </div>
                                 </form>
