@@ -274,7 +274,6 @@ export default function DTRFiles({ id, dtr, comp_id }) {
                           <FaEye />
                         </a>
 
-
                         {(isStudent != "student")  && (
                         <button
                           type="button"
@@ -286,13 +285,13 @@ export default function DTRFiles({ id, dtr, comp_id }) {
                         </button>
                         )}
 
-
                         {isCoordinator && (
                           <button
                             type="button"
                             onClick={() => post(route('student-files.verify', file.id))}
                             className="text-green-600"
                             title="Verify"
+                            disabled={isStudent === "student"} // Disable button for students
                           >
                             {file.verified ? <FaCheckCircle /> : '○'}
                           </button>
