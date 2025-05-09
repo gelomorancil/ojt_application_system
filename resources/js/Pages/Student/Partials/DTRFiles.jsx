@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { FaEye, FaSave, FaSpinner, FaTrash, FaCheckCircle, FaUpload } from 'react-icons/fa';
 
-export default function DTRFiles({ id, dtr, auth, comp_id }) {
+export default function DTRFiles({ id, dtr, comp_id }) {
 
   console.log(dtr)
   const isCoordinator = true;
-  const user = auth?.user;
+    const { auth } = usePage().props;
+    const user = auth?.user;
+    const isStudent = user?.role;
+
 
   const { data, setData, post, processing, reset, delete: destroy } = useForm({
     Student_Num: id,
@@ -270,6 +273,9 @@ export default function DTRFiles({ id, dtr, auth, comp_id }) {
                         >
                           <FaEye />
                         </a>
+
+
+                        {(isStudent != "student")  && (
                         <button
                           type="button"
                           onClick={(e) => handleDelete(e, file.id)}
@@ -278,6 +284,9 @@ export default function DTRFiles({ id, dtr, auth, comp_id }) {
                         >
                           <FaTrash />
                         </button>
+                        )}
+
+
                         {isCoordinator && (
                           <button
                             type="button"
