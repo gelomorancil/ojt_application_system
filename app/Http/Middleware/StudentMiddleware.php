@@ -21,7 +21,7 @@ class StudentMiddleware
         $user = Auth::user();
 
         if ($user && $user->role !== UserRole::Student) {
-            return redirect()->route('dashboard'); // Redirect to the dashboard or other page
+            return redirect()->route('companies.index'); // Redirect to the dashboard or other page
         }
 
         return $next($request);

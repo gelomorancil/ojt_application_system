@@ -22,8 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // ✅ All route middleware aliases go here
         $middleware->alias([
-            'user_or_intern' => AllowUserOrIntern::class,
-            'guest.intern' => \App\Http\Middleware\RedirectIfAuthenticatedIntern::class,
 
             "student" => StudentMiddleware::class,
             'admin' => AdminMiddleware::class,

@@ -61,7 +61,6 @@ class StudentFileController extends Controller
 
     return redirect()->back()->with('success', 'File uploaded successfully.');
 }
-   
 public function show($id)
 {
     $files = StudentFile::where('Student_Num', $id)->get();

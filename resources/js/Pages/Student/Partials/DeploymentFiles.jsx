@@ -189,6 +189,7 @@ export default function DeploymentFiles({ id, deployment, comp_id }) {
                         onClick={() => handleVerify(latestFiles[category].id)}
                         className="text-green-600 ml-2 cursor-pointer"
                         title="Verify File"
+                        disabled={isStudent === "student"} // Disable button for students
                       >
                         {latestFiles[category]?.verified === 1 || latestFiles[category]?.verified === true ? (
                           <FaCheckCircle />

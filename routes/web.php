@@ -30,10 +30,6 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-    Route::middleware(['auth', 'verified', 'student'])->get('student/dashboard', function () {
-        return Inertia::render('Student/Dashboard');
-    })->name('student.dashboard');
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -159,7 +155,7 @@ Route::post('/upload-students', [StudentUploadingController::class, 'upload'])->
 Route::post('/student-files', [StudentFileController::class, 'store'])->name('student-files.store');
 Route::delete('/student-files/{id}', [StudentFileController::class, 'destroy'])->name('student-files.destroy');
 Route::put('/student-files/{id}', [StudentFileController::class, 'update'])->name('student-files.update');
-Route::post('/student-files/{id}', [StudentFileController::class, 'verify'])->name('student-files.verify');
+Route::post('/student-files/{id}/verify', [StudentFileController::class, 'verify'])->name('student-files.verify');
 
 
 
@@ -183,6 +179,4 @@ Route::prefix('api/forms')->name('api.forms.')->middleware(['auth'])->group(func
 });
 
 require __DIR__.'/auth.php';
-
-require __DIR__.'/intern-auth.php';
 

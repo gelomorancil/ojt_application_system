@@ -65,13 +65,6 @@ export default function AuthenticatedLayout({ header, children }) {
                     {isStudent && (
                         <>
                             <NavLink
-                                href={route('student.dashboard')}
-                                active={route().current('student.dashboard')}
-                                className="flex items-center gap-2 text-lg font-medium"
-                            >
-                                <span>Student Dashboard</span>
-                            </NavLink>
-                            <NavLink
                                 href={route('companies.index')}
                                 active={route().current('companies.index')}
                                 className="flex items-center gap-2 text-lg font-medium"
