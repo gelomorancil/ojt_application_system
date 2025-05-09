@@ -152,6 +152,9 @@ class StudentController extends Controller {
 
     public function show($id)
     {
+            if (Auth::check() && Auth::user()->role === 'student' && Auth::user()->student_id != $id) {
+        abort(403, 'Unauthorized action.');
+    }
         $student = Student::select(
                 'tbl_student.id',
                 'tbl_student.Student_Num',
