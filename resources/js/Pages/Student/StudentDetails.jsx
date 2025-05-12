@@ -1,18 +1,31 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Head, usePage, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import CompanyForm from "./CompanyForm";
 import UploadFiles from "./UploadFiles";
 
 function StudentDetails({ company_list, student_company, preDeployment, deployment, final, dtr }) {
-    const { student, auth } = usePage().props;
+    const { student, auth, flash } = usePage().props;
     const [studentCompanyList, setStudentCompanyList] = useState(student_company);
     const [extraCompanies, setExtraCompanies] = useState([]);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     // Setup Inertia form for handling the remarks update
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         remarks: student.Remarks || "",
     });
+
+    // Show success message when flash message exists
+    useEffect(() => {
+        if (flash.success) {
+            setShowSuccessMessage(true);
+            // Auto-hide the success message after 5 seconds
+            const timer = setTimeout(() => {
+                setShowSuccessMessage(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash.success]);
 
     // Determine if the current user is a coordinator (not a student)
     const isCoordinator = auth?.user?.role !== 'student';
@@ -32,9 +45,19 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
     // Handle form submission for remarks
     const submitRemarks = (e) => {
         e.preventDefault();
-        post(`/student/${student.id}/remarks`);
+        post(`/student/${student.id}/remarks`, {
+            onSuccess: () => {
+                // Show success message if no flash message is set by the backend
+                if (!flash.success) {
+                    setShowSuccessMessage(true);
+                    // Auto-hide after 5 seconds
+                    setTimeout(() => {
+                        setShowSuccessMessage(false);
+                    }, 5000);
+                }
+            }
+        });
     };
-
 
     // Format the timestamp for display
     const formatDate = (dateString) => {
@@ -72,6 +95,23 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
     return (
         <AuthenticatedLayout>
             <Head title="Student Details" />
+
+            {/* Success Message Alert */}
+            {showSuccessMessage && (
+                <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md flex justify-between items-center z-50">
+                    <div className="flex items-center">
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span>{flash.success || "Remarks updated successfully!"}</span>
+                    </div>
+                    <button onClick={() => setShowSuccessMessage(false)} className="text-green-700 hover:text-green-900 ml-4">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            )}
 
             <div className="grid grid-cols-4 gap-5">
                 <div className="col-span-2 space-y-6">
@@ -174,13 +214,13 @@ function StudentDetails({ company_list, student_company, preDeployment, deployme
                                     />
                                     {errors.remarks && <div className="text-red-500 text-sm mt-1">{errors.remarks}</div>}
                                     <div className="mt-3 text-right">
-                                        <button
-                                            type="submit"
-                                            disabled={processing}
-                                            className="px-4 py-2 bg-uslsgreen text-white rounded-lg disabled:opacity-75"
-                                        >
-                                            {processing ? 'Updating...' : 'Add Remarks'}
-                                        </button>
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="px-4 py-2 bg-uslsgreen text-white rounded-lg disabled:opacity-75"
+                                    >
+                                        {processing ? 'Updating...' : (student.Remarks ? 'Update Remarks' : 'Add Remarks')}
+                                    </button>
                                     </div>
                                 </form>
                             </div>

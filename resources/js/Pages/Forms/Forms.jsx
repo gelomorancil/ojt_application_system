@@ -303,6 +303,7 @@ const Forms = () => {
                   className="shadow border rounded py-2 px-3 text-gray-700 w-full"
                   value={formData.label}
                   onChange={handleFormChange}
+                  placeholder="ex. label: INTERNSHIP PORTFOLIO (All Caps)"
                   required
                 />
               </div>
