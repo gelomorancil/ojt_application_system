@@ -213,7 +213,6 @@ class StudentController extends Controller {
             ->whereIn('category', ['DTR'])
             ->orderBy('created_at', 'desc')
             ->get();
-
         // Check if this is a student viewing their own page
         // Update read status before rendering view
         if (auth()->user() && auth()->user()->role === 'student' && auth()->user()->student_id == $id) {
@@ -473,10 +472,10 @@ class StudentController extends Controller {
         if ($student->Remarks !== $request->input('remarks')) {
             // Update the remarks
             $student->Remarks = $request->input('remarks');
-
+            
             // Mark as unread by setting to NULL explicitly
             $student->Read = null;
-
+            
             // Save the changes to the database
             $student->save();
 
