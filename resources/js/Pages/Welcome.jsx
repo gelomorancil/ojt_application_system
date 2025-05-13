@@ -47,9 +47,6 @@ export default function Welcome() {
                                 <Link href={route('register')} className="px-6 py-3 rounded-md bg-[#087830] text-white font-medium hover:bg-[#065d26] transition">
                                     Get Started
                                 </Link>
-                                <Link href="#" className="px-6 py-3 rounded-md border-2 border-white text-white font-medium hover:bg-white hover:text-[#087830] transition">
-                                    View Demo
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -58,7 +55,7 @@ export default function Welcome() {
                 {/* Features */}
                 <section className="py-12 bg-gray-50">
                     <div className="max-w-6xl mx-auto px-4">
-                        <h2 className="text-3xl font-bold text-center mb-12">Platform Features</h2>
+                        <h2 className="text-3xl font-bold text-center mb-12">System Features</h2>
                         <div className="grid gap-8 grid-cols-1 md:grid-cols-3">
                             <div className="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
                                 <div className="text-4xl mb-4">🗓️</div>
