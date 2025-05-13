@@ -35,10 +35,10 @@ export default function Register() {
                 </div>
                 <div className="absolute bottom-20 left-8 right-8 text-white">
                     <div className="mb-2 text-2xl font-bold">
-                        "Education is the foundation of innovation."
+                        "Confidence comes not from always being right, but from not fearing to be wrong."
                     </div>
-                    <div className="text-lg font-medium">Add Something</div>
-                    <div className="text-sm text-gray-200">Position</div>
+                    <div className="text-lg font-medium">— Peter T. McIntyre</div>
+                    {/* <div className="text-sm text-gray-200">Position</div> */}
                 </div>
                 <div className="absolute left-8 top-8">
                     <div className="flex items-center">

@@ -35,10 +35,10 @@ export default function Login({ status, canResetPassword }) {
                 </div>
                 <div className="absolute bottom-20 left-8 right-8 text-white">
                     <div className="mb-2 text-2xl font-bold">
-                        "We are all winners."
+                        "Don’t wait for opportunity. Create it."
                     </div>
-                    <div className="text-lg font-medium">Add something</div>
-                    <div className="text-sm text-gray-200">Position</div>
+                    <div className="text-lg font-medium">— George Bernard Shaw</div>
+                    {/* <div className="text-sm text-gray-200">Position</div> */}
                 </div>
                 <div className="absolute left-8 top-8">
                     <div className="flex items-center">
