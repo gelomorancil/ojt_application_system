@@ -37,8 +37,8 @@ export default function Register() {
                     <div className="mb-2 text-2xl font-bold">
                         "Education is the foundation of innovation."
                     </div>
-                    <div className="text-lg font-medium">Tony Gallego</div>
-                    <div className="text-sm text-gray-200">University President</div>
+                    <div className="text-lg font-medium">Add Something</div>
+                    <div className="text-sm text-gray-200">Position</div>
                 </div>
                 <div className="absolute left-8 top-8">
                     <div className="flex items-center">
