@@ -10,7 +10,7 @@ export default function Welcome() {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between items-center py-4">
                             <div className="flex items-center space-x-2">
-                                <img src="/stellarpath-logo.png" alt="Stellar.Path Logo" className="h-8 w-auto" />
+                                <img src="/StellarPathLogo.png" alt="Stellar.Path Logo" className="h-12 w-auto" />
                                 <span className="text-xl font-bold">
                                     <span>Stellar.</span><span className="text-[#087830]">Path</span>
                                 </span>
