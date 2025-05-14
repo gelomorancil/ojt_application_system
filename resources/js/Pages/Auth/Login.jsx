@@ -23,6 +23,8 @@ export default function Login({ status, canResetPassword }) {
     };
 
     return (
+        <>
+        <Head title="Stellar.Path - Career Development Centre" />
         <div className="flex min-h-screen bg-white">
             {/* Left column with image and testimonial */}
             <div className="relative hidden w-2/5 bg-gray-700 lg:block">
@@ -144,5 +146,6 @@ export default function Login({ status, canResetPassword }) {
                 </div>
             </div>
         </div>
+        </>
     );
 }
