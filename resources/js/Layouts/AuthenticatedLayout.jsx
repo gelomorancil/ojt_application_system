@@ -6,131 +6,102 @@ import { useState } from "react";
 import { FaBars } from "react-icons/fa";
 
 export default function AuthenticatedLayout({ header, children }) {
-    const { user } = usePage().props.auth; // Destructure user directly from props
+    const { user } = usePage().props.auth;
     const [menuOpen, setMenuOpen] = useState(false);
+    const isStudent = user.role === "student";
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-[#F8F6F0] flex justify-center items-center">
+            <div className="min-h-screen bg-green-950 flex justify-center items-center">
                 <span>Loading...</span>
             </div>
-        ); // Return a loading state if user data is missing
+        );
     }
-
-    // Check user's role
-    const isStudent = user.role === 'student';
 
     return (
         <div className="min-h-screen bg-[#F8F6F0] flex flex-col">
-            {/* Top Navigation Bar */}
-            <nav className="border-b border-gray-100 bg-green-950 flex justify-between items-center text-white">
-                {/* Logo and Mobile Menu Button */}
-                <div className="flex items-center gap-4">
-                    <button className="lg:hidden text-black" onClick={() => setMenuOpen(!menuOpen)}>
-                        <FaBars className="text-2xl" />
-                    </button>
-                    <ApplicationLogo className="h-10 w-auto fill-current text-black" />
-                </div>
-
-                {/* Navigation Links */}
-                <div className={`lg:flex gap-6 ${menuOpen ? 'flex flex-col absolute top-16 left-0 w-full bg-gray-900 p-4' : 'hidden'}`}>
-                    {/* Show all links if the user is not a student */}
-                    {!isStudent && (
-                        <>
-                            <NavLink href={route('dashboard')} active={route().current('dashboard')} className="flex items-center gap-2 text-lg font-medium">
-                                <span>Dashboard</span>
-                            </NavLink>
-                            <NavLink href={route('companies.index')} active={route().current('companies.index')} className="flex items-center gap-2 text-lg font-medium">
-                                <span>Companies</span>
-                            </NavLink>
-                            <NavLink href={route('student')} active={route().current('student')} className="flex items-center gap-2 text-lg font-medium">
-                                <span>Student Management</span>
-                            </NavLink>
-                            <NavLink href={route('course.index')} active={route().current('course.index')} className="flex items-center gap-2 text-lg font-medium">
-                                <span>Program</span>
-                            </NavLink>
-                            <NavLink href={route('moaprocess.index')} active={route().current('moaprocess.index')} className="flex items-center gap-2 text-lg font-medium">
-                                <span>MOA Status</span>
-                            </NavLink>
-                            <NavLink href={route('studentuploading.index')} active={route().current('studentuploading.index')} className="flex items-center gap-2 text-lg font-medium">
-                                <span>Class List</span>
-                            </NavLink>
-                            <NavLink href={route('forms.index')} active={route().current('forms.index')} className="flex items-center gap-2 text-lg font-medium">
-                                <span>Downloadable Forms</span>
-                            </NavLink>
-                        </>
-                    )}
-
-                    {/* Show only the student dashboard link if the user is a student */}
-                    {isStudent && (
-                        <>
-                            <NavLink
-                                href={route('companies.index')}
-                                active={route().current('companies.index')}
-                                className="flex items-center gap-2 text-lg font-medium"
-                            >
-                                <span>Companies</span>
-                            </NavLink>
-                            <NavLink href={route('student.studentdetails', { student: user.student_id })}
-                                active={route().current('student.studentdetails')}
-                                className="flex items-center gap-2 text-lg font-medium"
-                            >
-                                <span>Student Management</span>
-                            </NavLink>
-                            <NavLink href={route('forms.index', { student: user.student_id })}
-                                active={route().current('forms.index')}
-                                className="flex items-center gap-2 text-lg font-medium"
-                            >
-                                <span>Downloadable Forms</span>
-                            </NavLink>
-
-                        </>
-                    )}
-                </div>
-
-                {/* Right - User Dropdown */}
-                <div className="flex items-center gap-6">
-                    {/* User Dropdown */}
-                    <Dropdown>
-                        <Dropdown.Trigger>
-                            <button className="flex items-center bg-white px-3 py-2 text-lg font-medium text-black rounded-md hover:text-gray-700 transition">
-                                {user.name}
-                                <svg
-                                    className="ml-2 h-5 w-5"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
+            {/* Navbar */}
+            <nav className="border-b border-gray-200 bg-green-950">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between h-16 items-center">
+                        {/* Left Side: Logo + Menu Button */}
+                        <div className="flex items-center gap-4">
+                            <button className="lg:hidden text-gray-700" onClick={() => setMenuOpen(!menuOpen)}>
+                                <FaBars className="text-2xl" />
                             </button>
-                        </Dropdown.Trigger>
+                            <ApplicationLogo className="h-10 w-auto fill-current text-black" />
+                        </div>
 
-                        <Dropdown.Content className="bg-white shadow-lg border border-gray-300">
-                            <Dropdown.Link
-                                href={route("profile.edit")}
-                                className="text-black hover:bg-gray-100"
-                            >
-                                Profile
-                            </Dropdown.Link>
-                            <Dropdown.Link
-                                href={route("logout")}
-                                method="post"
-                                as="button"
-                                className="text-black hover:bg-gray-100"
-                            >
-                                Log Out
-                            </Dropdown.Link>
-                        </Dropdown.Content>
-                    </Dropdown>
+                        {/* Desktop Nav Links */}
+                        <div className="hidden lg:flex gap-6 items-center">
+                            {!isStudent ? (
+                                <>
+                                    <NavLink href={route("dashboard")} active={route().current("dashboard")}>Dashboard</NavLink>
+                                    <NavLink href={route("companies.index")} active={route().current("companies.index")}>Companies</NavLink>
+                                    <NavLink href={route("student")} active={route().current("student")}>Student Management</NavLink>
+                                    <NavLink href={route("course.index")} active={route().current("course.index")}>Program</NavLink>
+                                    <NavLink href={route("moaprocess.index")} active={route().current("moaprocess.index")}>MOA Status</NavLink>
+                                    <NavLink href={route("studentuploading.index")} active={route().current("studentuploading.index")}>Class List</NavLink>
+                                    <NavLink href={route("forms.index")} active={route().current("forms.index")}>Downloadable Forms</NavLink>
+                                </>
+                            ) : (
+                                <>
+                                    <NavLink href={route("companies.index")} active={route().current("companies.index")}>Companies</NavLink>
+                                    <NavLink href={route("student.studentdetails", { student: user.student_id })} active={route().current("student.studentdetails")}>Student Management</NavLink>
+                                    <NavLink href={route("forms.index", { student: user.student_id })} active={route().current("forms.index")}>Downloadable Forms</NavLink>
+                                </>
+                            )}
+                        </div>
+
+                        {/* User Dropdown */}
+                        <div className="hidden lg:flex items-center">
+                            <Dropdown>
+                                <Dropdown.Trigger>
+                                    <button className="flex items-center bg-white px-3 py-2 text-sm font-medium text-gray-700 rounded hover:text-gray-900">
+                                        {user.name}
+                                        <svg className="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </Dropdown.Trigger>
+                                <Dropdown.Content className="bg-white">
+                                    <Dropdown.Link href={route("profile.edit")} className="text-black hover:bg-gray-100">Profile</Dropdown.Link>
+                                    <Dropdown.Link method="post" href={route("logout")} as="button" className="text-black hover:bg-gray-100">Log Out</Dropdown.Link>
+                                </Dropdown.Content>
+                            </Dropdown>
+                        </div>
+                    </div>
                 </div>
+
+                {/* Mobile Menu */}
+                {menuOpen && (
+                    <div className="lg:hidden bg-gray-50 border-t border-gray-200 px-4 py-4 space-y-2">
+                        {!isStudent ? (
+                            <>
+                                <NavLink href={route("dashboard")} active={route().current("dashboard")}>Dashboard</NavLink>
+                                <NavLink href={route("companies.index")} active={route().current("companies.index")}>Companies</NavLink>
+                                <NavLink href={route("student")} active={route().current("student")}>Student Management</NavLink>
+                                <NavLink href={route("course.index")} active={route().current("course.index")}>Program</NavLink>
+                                <NavLink href={route("moaprocess.index")} active={route().current("moaprocess.index")}>MOA Status</NavLink>
+                                <NavLink href={route("studentuploading.index")} active={route().current("studentuploading.index")}>Class List</NavLink>
+                                <NavLink href={route("forms.index")} active={route().current("forms.index")}>Downloadable Forms</NavLink>
+                            </>
+                        ) : (
+                            <>
+                                <NavLink href={route("companies.index")} active={route().current("companies.index")}>Companies</NavLink>
+                                <NavLink href={route("student.studentdetails", { student: user.student_id })} active={route().current("student.studentdetails")}>Student Management</NavLink>
+                                <NavLink href={route("forms.index", { student: user.student_id })} active={route().current("forms.index")}>Downloadable Forms</NavLink>
+                            </>
+                        )}
+                        <div className="border-t border-gray-300 pt-3">
+                            <NavLink href={route("profile.edit")}>Profile</NavLink>
+                            <NavLink method="post" href={route("logout")} as="button">Log Out</NavLink>
+                        </div>
+                    </div>
+                )}
             </nav>
 
-            {/* Page Header */}
+            {/* Header */}
             {header && (
                 <header className="bg-white shadow">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

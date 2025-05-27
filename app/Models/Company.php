@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Company extends Model
 {
@@ -45,5 +46,11 @@ class Company extends Model
     public function CompCourse(): HasMany
     {
         return $this->hasMany(CompCourse::class, 'Comp_ID', 'id');
+    }
+
+    // Add relationship to MOA Process
+    public function moaProcess(): HasOne
+    {
+        return $this->hasOne(MoaProcess::class, 'Comp_ID', 'id');
     }
 }
